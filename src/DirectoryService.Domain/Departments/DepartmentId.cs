@@ -9,4 +9,6 @@ public record DepartmentId
     public static DepartmentId CreateNew() => new(Guid.NewGuid());
 
     public static DepartmentId CreateEmpty() => new(Guid.Empty);
+
+    public static DepartmentId Create(Guid id) => new(id);
 }

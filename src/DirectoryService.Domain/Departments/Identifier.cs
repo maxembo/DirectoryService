@@ -17,7 +17,7 @@ public record Identifier
     {
         if (string.IsNullOrWhiteSpace(value) ||
             value.Length < Constants.MIN_TEXT_LENGTH ||
-            value.Length > Constants.MAX_DEPARTMENT_NAME_LENGTH ||
+            value.Length > Constants.MAX_DEPARTMENT_IDENTIFIER_LENGTH ||
             !_identifierRegex.IsMatch(value))
         {
             return Result.Failure<Identifier>(

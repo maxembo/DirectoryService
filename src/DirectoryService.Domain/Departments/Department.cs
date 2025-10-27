@@ -5,18 +5,17 @@ namespace DirectoryService.Domain.Departments;
 public class Department : Shared.Entity<DepartmentId>
 {
     // ef core
-    private Department(DepartmentId departmentId)
-        : base(departmentId)
-    {
-    }
+    private Department(DepartmentId id)
+        : base(id)
+    { }
 
     private Department(
-        DepartmentId departmentId,
+        DepartmentId id,
         DepartmentName name,
         Identifier identifier,
         DepartmentId? parentId,
         Path path)
-        : base(departmentId)
+        : base(id)
     {
         Name = name;
         Identifier = identifier;
@@ -36,13 +35,15 @@ public class Department : Shared.Entity<DepartmentId>
 
     public IReadOnlyList<DepartmentPosition> Positions => _positions.AsReadOnly();
 
-    public DepartmentName Name { get; private set; }
+    public DepartmentName Name { get; private set; } = null!;
 
-    public Identifier Identifier { get; private set; }
+    public Identifier Identifier { get; private set; } = null!;
 
     public DepartmentId? ParentId { get; private set; }
 
-    public Path Path { get; private set; }
+    public Department Parent { get; private set; } = null!;
+
+    public Path Path { get; private set; } = null!;
 
     public bool IsActive { get; private set; } = true;
 
