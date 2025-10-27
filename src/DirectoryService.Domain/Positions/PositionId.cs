@@ -9,4 +9,6 @@ public record PositionId
     public static PositionId CreateNew() => new(Guid.NewGuid());
 
     public static PositionId CreateEmpty() => new(Guid.Empty);
+
+    public static PositionId Create(Guid id) => new(id);
 }
