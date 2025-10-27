@@ -6,15 +6,14 @@ namespace DirectoryService.Domain.Locations;
 public class Location : Shared.Entity<LocationId>
 {
     // ef core
-    private Location(LocationId locationId)
-        : base(locationId)
-    {
-    }
+    private Location(LocationId id)
+        : base(id)
+    { }
 
-    private Location(LocationId locationId, LocationName locationName, Timezone timezone, Address address)
-        : base(locationId)
+    private Location(LocationId id, LocationName name, Timezone timezone, Address address)
+        : base(id)
     {
-        LocationName = locationName;
+        Name = name;
         Timezone = timezone;
         Address = address;
     }
@@ -23,13 +22,13 @@ public class Location : Shared.Entity<LocationId>
 
     public IReadOnlyList<Department> Departments => _departments.AsReadOnly();
 
-    public LocationName LocationName { get; private set; }
+    public LocationName Name { get; private set; } = null!;
 
-    public Timezone Timezone { get; private set; }
+    public Timezone Timezone { get; private set; } = null!;
 
     public bool IsActive { get; private set; } = true;
 
-    public Address Address { get; private set; }
+    public Address Address { get; private set; } = null!;
 
     public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
 
