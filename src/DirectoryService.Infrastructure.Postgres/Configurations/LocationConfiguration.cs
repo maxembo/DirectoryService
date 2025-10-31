@@ -54,7 +54,7 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
                 lb.Property(l => l.Country)
                     .HasMaxLength(Constants.MAX_LOCATION_ADDRESS_LENGTH)
                     .IsRequired()
-                    .HasColumnName("street");
+                    .HasColumnName("country");
 
                 lb.Property(l => l.Street)
                     .HasMaxLength(Constants.MAX_LOCATION_ADDRESS_LENGTH)
