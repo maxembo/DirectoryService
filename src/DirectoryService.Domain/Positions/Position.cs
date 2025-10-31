@@ -7,15 +7,14 @@ namespace DirectoryService.Domain.Positions;
 public class Position : Shared.Entity<PositionId>
 {
     // ef core
-    private Position(PositionId positionId)
-        : base(positionId)
-    {
-    }
+    private Position(PositionId id)
+        : base(id)
+    { }
 
-    private Position(PositionId positionId, PositionName departmentName, string description)
-        : base(positionId)
+    private Position(PositionId id, PositionName name, string? description)
+        : base(id)
     {
-        PositionName = departmentName;
+        Name = name;
         Description = description;
     }
 
@@ -23,9 +22,9 @@ public class Position : Shared.Entity<PositionId>
 
     public IReadOnlyList<Department> Departments => _departments.AsReadOnly();
 
-    public PositionName PositionName { get; private set; }
+    public PositionName Name { get; private set; } = null!;
 
-    public string Description { get; private set; }
+    public string? Description { get; private set; }
 
     public static Result<Position> Create(PositionId positionId, PositionName positionName, string description)
     {

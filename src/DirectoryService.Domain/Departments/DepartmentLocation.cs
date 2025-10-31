@@ -1,19 +1,33 @@
+using CSharpFunctionalExtensions;
 using DirectoryService.Domain.Locations;
-using DirectoryService.Domain.Shared;
 
 namespace DirectoryService.Domain.Departments;
 
-public class DepartmentLocation : Entity<DepartmentLocationId>
+public class DepartmentLocation : Shared.Entity<DepartmentLocationId>
 {
-    private DepartmentLocation(
-        DepartmentLocationId departmentLocationId, DepartmentId departmentId, LocationId locationId)
-        : base(departmentLocationId)
+    // ef core
+    private DepartmentLocation(DepartmentLocationId id)
+        : base(id)
+    { }
+
+    private DepartmentLocation(DepartmentLocationId id, DepartmentId departmentId, LocationId locationId)
+        : base(id)
     {
-        Department = departmentId;
+        DepartmentId = departmentId;
         LocationId = locationId;
     }
 
-    public DepartmentId Department { get; private set; }
+    public DepartmentId DepartmentId { get; private set; } = null!;
 
-    public LocationId LocationId { get; private set; }
+    public LocationId LocationId { get; private set; } = null!;
+
+    public static Result<DepartmentLocation> Create(
+        DepartmentLocationId id,
+        DepartmentId departmentId,
+        LocationId locationId)
+    {
+        var departmentLocation = new DepartmentLocation(id, departmentId, locationId);
+
+        return Result.Success(departmentLocation);
+    }
 }

@@ -1,7 +1,12 @@
+using DirectoryService.Infrastructure.Postgres;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+
+builder.Services.AddScoped<DirectoryServiceDbContext>();
+builder.Services.AddLogging();
 
 var app = builder.Build();
 

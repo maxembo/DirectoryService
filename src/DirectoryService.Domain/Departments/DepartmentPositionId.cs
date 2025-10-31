@@ -9,4 +9,6 @@ public record DepartmentPositionId
     public static DepartmentPositionId CreateNew() => new(Guid.NewGuid());
 
     public static DepartmentPositionId CreateEmpty() => new(Guid.Empty);
+
+    public static DepartmentPositionId Create(Guid id) => new(id);
 }
