@@ -34,10 +34,9 @@ public class Location : Shared.Entity<LocationId>
 
     public DateTime UpdatedAt { get; private set; } = DateTime.UtcNow;
 
-    public static Result<Location> Create(
-        LocationId locationId, LocationName locationName, Timezone timezone, Address address)
+    public static Result<Location> Create(LocationName locationName, Timezone timezone, Address address)
     {
-        var location = new Location(locationId, locationName, timezone, address);
+        var location = new Location(LocationId.CreateNew(), locationName, timezone, address);
 
         return Result.Success(location);
     }
