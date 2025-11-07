@@ -1,6 +1,6 @@
 using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstractions;
-using DirectoryService.Contracts.Locations;
+using DirectoryService.Contracts.Locations.CreateLocations;
 using DirectoryService.Domain.Locations;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
@@ -14,7 +14,8 @@ public class CreateLocationHandler : ICommandHandler<Guid, CreateLocationRequest
     private readonly ILogger<CreateLocationHandler> _logger;
 
     public CreateLocationHandler(
-        ILocationsRepository locationsRepository, IValidator<CreateLocationDto> validator,
+        ILocationsRepository locationsRepository,
+        IValidator<CreateLocationDto> validator,
         ILogger<CreateLocationHandler> logger)
     {
         _locationsRepository = locationsRepository;
@@ -24,34 +25,24 @@ public class CreateLocationHandler : ICommandHandler<Guid, CreateLocationRequest
 
     public async Task<Result<Guid>> Handle(CreateLocationRequest request, CancellationToken cancellationToken = default)
     {
-        try
-        {
-            var validationResult = await _validator.ValidateAsync(request.LocationDto, cancellationToken);
-            if (!validationResult.IsValid)
-                throw new ValidationException(validationResult.Errors);
+        var validationResult = await _validator.ValidateAsync(request.LocationDto, cancellationToken);
+        if (!validationResult.IsValid)
+            throw new ValidationException(validationResult.Errors);
 
-            var locationResult = Location.Create(
-                LocationName.Create(request.LocationDto.Name).Value,
-                Timezone.Create(request.LocationDto.Timezone).Value,
-                Address.Create(
-                    request.LocationDto.Address.City,
-                    request.LocationDto.Address.Country,
-                    request.LocationDto.Address.Street,
-                    request.LocationDto.Address.House).Value);
+        var location = new Location(
+            LocationId.CreateNew(),
+            LocationName.Create(request.LocationDto.Name).Value,
+            Timezone.Create(request.LocationDto.Timezone).Value,
+            Address.Create(
+                request.LocationDto.Address.City,
+                request.LocationDto.Address.Country,
+                request.LocationDto.Address.Street,
+                request.LocationDto.Address.House).Value);
 
-            if (locationResult.IsFailure)
-                return Result.Failure<Guid>(locationResult.Error);
+        await _locationsRepository.AddAsync(location, cancellationToken);
 
-            await _locationsRepository.AddAsync(locationResult.Value, cancellationToken);
+        _logger.LogInformation("Location {Location.Id} has been created.", location.Id);
 
-            _logger.LogInformation($"Location {locationResult.Value.Id} has been created.");
-
-            return Result.Success(locationResult.Value.Id.Value);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to create location!");
-            return Result.Failure<Guid>(ex.Message);
-        }
+        return Result.Success(location.Id.Value);
     }
 }

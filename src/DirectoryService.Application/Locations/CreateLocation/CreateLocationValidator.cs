@@ -1,4 +1,5 @@
 using DirectoryService.Contracts.Locations;
+using DirectoryService.Contracts.Locations.CreateLocations;
 using DirectoryService.Domain.Shared;
 using FluentValidation;
 
