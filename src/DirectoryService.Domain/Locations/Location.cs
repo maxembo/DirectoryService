@@ -1,21 +1,21 @@
-using CSharpFunctionalExtensions;
 using DirectoryService.Domain.Departments;
 
 namespace DirectoryService.Domain.Locations;
 
 public class Location : Shared.Entity<LocationId>
 {
-    // ef core
-    private Location(LocationId id)
-        : base(id)
-    { }
-
-    private Location(LocationId id, LocationName name, Timezone timezone, Address address)
+    public Location(LocationId id, LocationName name, Timezone timezone, Address address)
         : base(id)
     {
         Name = name;
         Timezone = timezone;
         Address = address;
+    }
+
+    // ef core
+    private Location(LocationId id)
+        : base(id)
+    {
     }
 
     private readonly List<Department> _departments = [];
@@ -33,12 +33,4 @@ public class Location : Shared.Entity<LocationId>
     public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
 
     public DateTime UpdatedAt { get; private set; } = DateTime.UtcNow;
-
-    public static Result<Location> Create(
-        LocationId locationId, LocationName locationName, Timezone timezone, Address address)
-    {
-        var location = new Location(locationId, locationName, timezone, address);
-
-        return Result.Success(location);
-    }
 }

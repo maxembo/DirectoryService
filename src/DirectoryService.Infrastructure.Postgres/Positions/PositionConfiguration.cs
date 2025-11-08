@@ -3,7 +3,7 @@ using DirectoryService.Domain.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace DirectoryService.Infrastructure.Postgres.Configurations;
+namespace DirectoryService.Infrastructure.Postgres.Positions;
 
 public class PositionConfiguration : IEntityTypeConfiguration<Position>
 {
