@@ -1,6 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using CSharpFunctionalExtensions;
 using DirectoryService.Domain.Shared;
+using Shared;
 
 namespace DirectoryService.Domain.Departments;
 
@@ -13,19 +14,18 @@ public record Identifier
 
     public string Value { get; }
 
-    public static Result<Identifier> Create(string value)
+    public static Result<Identifier, Error> Create(string value)
     {
         if (string.IsNullOrWhiteSpace(value) ||
             value.Length < Constants.MIN_TEXT_LENGTH ||
             value.Length > Constants.MAX_DEPARTMENT_IDENTIFIER_LENGTH ||
             !_identifierRegex.IsMatch(value))
         {
-            return Result.Failure<Identifier>(
-                "Identifier must be at least 3 characters long and no more than 150 characters long.");
+            return GeneralErrors.ValueIsInvalid("identifier");
         }
 
         var identifier = new Identifier(value);
 
-        return Result.Success(identifier);
+        return identifier;
     }
 }

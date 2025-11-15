@@ -1,6 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Shared;
+using Shared;
 
 namespace DirectoryService.Domain.Positions;
 
@@ -10,17 +11,16 @@ public record PositionName
 
     public string Value { get; }
 
-    public static Result<PositionName> Create(string value)
+    public static Result<PositionName, Error> Create(string value)
     {
         if (string.IsNullOrWhiteSpace(value) ||
             value.Length > Constants.MAX_POSITION_NAME_LENGTH || value.Length < Constants.MIN_TEXT_LENGTH)
         {
-            Result.Failure<DepartmentName>(
-                "PositionName must be at least 3 characters long and no more than 100 characters long.");
+            return GeneralErrors.ValueIsInvalid("position name");
         }
 
         var positionName = new PositionName(value);
 
-        return Result.Success(positionName);
+        return positionName;
     }
 }

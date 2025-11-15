@@ -10,7 +10,7 @@ public class DepartmentLocation : Shared.Entity<DepartmentLocationId>
         : base(id)
     { }
 
-    private DepartmentLocation(DepartmentLocationId id, DepartmentId departmentId, LocationId locationId)
+    public DepartmentLocation(DepartmentLocationId id, DepartmentId departmentId, LocationId locationId)
         : base(id)
     {
         DepartmentId = departmentId;
@@ -20,14 +20,4 @@ public class DepartmentLocation : Shared.Entity<DepartmentLocationId>
     public DepartmentId DepartmentId { get; private set; } = null!;
 
     public LocationId LocationId { get; private set; } = null!;
-
-    public static Result<DepartmentLocation> Create(
-        DepartmentLocationId id,
-        DepartmentId departmentId,
-        LocationId locationId)
-    {
-        var departmentLocation = new DepartmentLocation(id, departmentId, locationId);
-
-        return Result.Success(departmentLocation);
-    }
 }
