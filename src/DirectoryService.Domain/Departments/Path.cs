@@ -1,4 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
+using Shared;
 
 namespace DirectoryService.Domain.Departments;
 
@@ -16,15 +17,15 @@ public record Path
 
     public short Depth { get; }
 
-    public static Result<Path> Create(string value)
+    public static Result<Path, Error> Create(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
-            Result.Failure<Path>("Path should not be empty.");
+            return GeneralErrors.ValueIsInvalid("path");
 
         string[] values = value.Split(SEPARATOR);
 
         if (values.Any(string.IsNullOrWhiteSpace))
-            return Result.Failure<Path>("Path value should not be empty.");
+            return GeneralErrors.ValueIsInvalid("path");
 
         short depth = (short)values.Length;
 
@@ -32,24 +33,27 @@ public record Path
 
         var path = new Path(joinValue, depth);
 
-        return Result.Success(path);
+        return path;
     }
 
-    public Result<Path> Child(string child)
+    public Result<Path, Error> Child(string child)
     {
         if (child.Contains(SEPARATOR))
-            return Result.Failure<Path>("Path child cannot contain the separator");
+            return GeneralErrors.ValueIsInvalid("path");
 
         string value = $"{Value}{SEPARATOR}{child}";
         short depth = (short)(Depth + 1);
 
         var path = new Path(value, depth);
-        return Result.Success(path);
+        return path;
     }
 
-    public Result<Path> Parent()
+    public Result<Path, Error> Parent()
     {
         var values = Value.Split(SEPARATOR);
+
+        if (values.Count() <= 1)
+            return GeneralErrors.ValueIsInvalid("path");
 
         var parent = values.Take(values.Length - 1);
 
@@ -57,6 +61,6 @@ public record Path
         short depth = (short)(Depth - 1);
 
         var path = new Path(value, depth);
-        return Result.Success(path);
+        return path;
     }
 }

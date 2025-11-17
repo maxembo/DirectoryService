@@ -1,4 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
+using Shared;
 
 namespace DirectoryService.Domain.Departments;
 
@@ -7,9 +8,10 @@ public class Department : Shared.Entity<DepartmentId>
     // ef core
     private Department(DepartmentId id)
         : base(id)
-    { }
+    {
+    }
 
-    private Department(
+    public Department(
         DepartmentId id,
         DepartmentName name,
         Identifier identifier,
@@ -51,111 +53,98 @@ public class Department : Shared.Entity<DepartmentId>
 
     public DateTime UpdatedAt { get; private set; } = DateTime.UtcNow;
 
-    public static Result<Department> Create(
-        DepartmentId departmentId,
-        DepartmentName departmentName,
-        Identifier identifier,
-        DepartmentId? parentId,
-        Path path)
-    {
-        var departments = new Department(departmentId, departmentName, identifier, parentId, path);
-
-        return Result.Success(departments);
-    }
-
-    public Result Rename(string name)
+    public UnitResult<Error> Rename(string name)
     {
         var nameResult = DepartmentName.Create(name);
 
         if (nameResult.IsFailure)
-            return Result.Failure(nameResult.Error);
+            return nameResult.Error;
 
         Name = nameResult.Value;
 
-        return Result.Success();
+        return UnitResult.Success<Error>();
     }
 
-    public Result SetPath(Identifier identifier, Path? path = null)
+    public UnitResult<Error> SetPath(Identifier identifier, Path? path = null)
     {
         if (path == null)
         {
             var resultPath = Path.Create(identifier.Value);
 
             if (resultPath.IsFailure)
-                return Result.Failure(resultPath.Error);
+                return resultPath.Error;
 
             Path = resultPath.Value;
-            return Result.Success();
         }
 
         var resultChildPath = Path.Child(identifier.Value);
 
         if (resultChildPath.IsFailure)
-            return Result.Failure(resultChildPath.Error);
+            return resultChildPath.Error;
 
         Path = resultChildPath.Value;
 
-        return Result.Success();
+        return UnitResult.Success<Error>();
     }
 
-    public Result AddLocation(DepartmentLocation location)
+    public UnitResult<Error> AddLocation(DepartmentLocation location)
     {
         if (_locations.Contains(location))
-            return Result.Failure($"Location {location} is already added.");
+            return GeneralErrors.ValueIsInvalid("deparment");
 
         _locations.Add(location);
 
-        return Result.Success();
+        return UnitResult.Success<Error>();
     }
 
-    public Result RemoveLocation(DepartmentLocation location)
+    public UnitResult<Error> RemoveLocation(DepartmentLocation location)
     {
         if (!_locations.Contains(location))
-            return Result.Failure($"Location {location} is not added.");
+            return GeneralErrors.ValueIsInvalid("department");
 
         _locations.Remove(location);
 
-        return Result.Success();
+        return UnitResult.Success<Error>();
     }
 
-    public Result AddChild(Department department)
+    public UnitResult<Error> AddChild(Department department)
     {
         if (_childrens.Contains(department))
-            return Result.Failure($"Department {department} is already added.");
+            return GeneralErrors.ValueIsInvalid("department");
 
         _childrens.Add(department);
 
-        return Result.Success();
+        return UnitResult.Success<Error>();
     }
 
-    public Result RemoveChild(Department department)
+    public UnitResult<Error> RemoveChild(Department department)
     {
         if (!_childrens.Contains(department))
-            return Result.Failure($"Department {department} is not added.");
+            return GeneralErrors.ValueIsInvalid("department");
 
         _childrens.Remove(department);
 
-        return Result.Success();
+        return UnitResult.Success<Error>();
     }
 
-    public Result AddPosition(DepartmentPosition position)
+    public UnitResult<Error> AddPosition(DepartmentPosition position)
     {
         if (_positions.Contains(position))
-            return Result.Failure($"Position {position} is already added.");
+            return GeneralErrors.ValueIsInvalid("department");
 
         _positions.Add(position);
 
-        return Result.Success();
+        return UnitResult.Success<Error>();
     }
 
-    public Result RemovePosition(DepartmentPosition position)
+    public UnitResult<Error> RemovePosition(DepartmentPosition position)
     {
         if (!_positions.Contains(position))
-            return Result.Failure($"Position {position} is not added.");
+            return GeneralErrors.ValueIsInvalid("department");
 
         _positions.Remove(position);
 
-        return Result.Success();
+        return UnitResult.Success<Error>();
     }
 
     public void MarkAsDelete()

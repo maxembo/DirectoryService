@@ -1,5 +1,6 @@
 using CSharpFunctionalExtensions;
 using DirectoryService.Domain.Shared;
+using Shared;
 
 namespace DirectoryService.Domain.Locations;
 
@@ -12,16 +13,16 @@ public record Timezone
 
     public string Value { get; }
 
-    public static Result<Timezone> Create(string value)
+    public static Result<Timezone, Error> Create(string value)
     {
         if (string.IsNullOrWhiteSpace(value) || value.Length > Constants.MAX_LOCATION_TIMEZONE_LENGTH)
-            return Result.Failure<Timezone>("Timezone cannot be empty.");
+            return GeneralErrors.ValueIsInvalid("timezone");
 
         if (!TimeZoneInfo.TryFindSystemTimeZoneById(value, out _))
-            return Result.Failure<Timezone>("Timezone cannot be found.");
+            return GeneralErrors.ValueIsInvalid("timezone");
 
         var timezone = new Timezone(value);
 
-        return Result.Success(timezone);
+        return timezone;
     }
 }
