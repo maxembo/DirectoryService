@@ -5,7 +5,7 @@ using Shared;
 
 namespace DirectoryService.Domain.Positions;
 
-public record PositionName
+public sealed record PositionName
 {
     private PositionName(string value) => Value = value;
 
@@ -13,14 +13,16 @@ public record PositionName
 
     public static Result<PositionName, Error> Create(string value)
     {
-        if (string.IsNullOrWhiteSpace(value) ||
-            value.Length > Constants.MAX_POSITION_NAME_LENGTH || value.Length < Constants.MIN_TEXT_LENGTH)
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return GeneralErrors.ValueIsRequired("position name");
+        }
+
+        if (value.Length is > Constants.MAX_POSITION_NAME_LENGTH or < Constants.MIN_TEXT_LENGTH)
         {
             return GeneralErrors.ValueIsInvalid("position name");
         }
 
-        var positionName = new PositionName(value);
-
-        return positionName;
+        return new PositionName(value);
     }
 }

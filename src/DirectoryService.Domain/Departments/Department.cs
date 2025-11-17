@@ -1,28 +1,31 @@
 ﻿using CSharpFunctionalExtensions;
+using DirectoryService.Domain.DepartmentLocations;
+using DirectoryService.Domain.DepartmentPositions;
 using Shared;
 
 namespace DirectoryService.Domain.Departments;
 
-public class Department : Shared.Entity<DepartmentId>
+public sealed class Department : Shared.Entity<DepartmentId>
 {
     // ef core
     private Department(DepartmentId id)
         : base(id)
-    {
-    }
+    { }
 
     public Department(
         DepartmentId id,
         DepartmentName name,
         Identifier identifier,
         DepartmentId? parentId,
-        Path path)
+        Path path,
+        IEnumerable<DepartmentLocation> locations)
         : base(id)
     {
         Name = name;
         Identifier = identifier;
         ParentId = parentId;
         Path = path;
+        _locations = locations.ToList();
     }
 
     private readonly List<DepartmentLocation> _locations = [];
@@ -43,8 +46,6 @@ public class Department : Shared.Entity<DepartmentId>
 
     public DepartmentId? ParentId { get; private set; }
 
-    public Department Parent { get; private set; } = null!;
-
     public Path Path { get; private set; } = null!;
 
     public bool IsActive { get; private set; } = true;
@@ -58,7 +59,7 @@ public class Department : Shared.Entity<DepartmentId>
         var nameResult = DepartmentName.Create(name);
 
         if (nameResult.IsFailure)
-            return nameResult.Error;
+            return GeneralErrors.ValueIsInvalid("department rename");
 
         Name = nameResult.Value;
 
@@ -72,7 +73,7 @@ public class Department : Shared.Entity<DepartmentId>
             var resultPath = Path.Create(identifier.Value);
 
             if (resultPath.IsFailure)
-                return resultPath.Error;
+                return GeneralErrors.ValueIsInvalid("department path");
 
             Path = resultPath.Value;
         }
@@ -80,7 +81,7 @@ public class Department : Shared.Entity<DepartmentId>
         var resultChildPath = Path.Child(identifier.Value);
 
         if (resultChildPath.IsFailure)
-            return resultChildPath.Error;
+            return GeneralErrors.ValueIsInvalid("department path");
 
         Path = resultChildPath.Value;
 
@@ -90,7 +91,7 @@ public class Department : Shared.Entity<DepartmentId>
     public UnitResult<Error> AddLocation(DepartmentLocation location)
     {
         if (_locations.Contains(location))
-            return GeneralErrors.ValueIsInvalid("deparment");
+            return GeneralErrors.ValueIsInvalid("department location");
 
         _locations.Add(location);
 
@@ -100,7 +101,7 @@ public class Department : Shared.Entity<DepartmentId>
     public UnitResult<Error> RemoveLocation(DepartmentLocation location)
     {
         if (!_locations.Contains(location))
-            return GeneralErrors.ValueIsInvalid("department");
+            return GeneralErrors.ValueIsInvalid("department location");
 
         _locations.Remove(location);
 
@@ -110,7 +111,7 @@ public class Department : Shared.Entity<DepartmentId>
     public UnitResult<Error> AddChild(Department department)
     {
         if (_childrens.Contains(department))
-            return GeneralErrors.ValueIsInvalid("department");
+            return GeneralErrors.ValueIsInvalid("department child");
 
         _childrens.Add(department);
 
@@ -120,7 +121,7 @@ public class Department : Shared.Entity<DepartmentId>
     public UnitResult<Error> RemoveChild(Department department)
     {
         if (!_childrens.Contains(department))
-            return GeneralErrors.ValueIsInvalid("department");
+            return GeneralErrors.ValueIsInvalid("department child");
 
         _childrens.Remove(department);
 
@@ -130,7 +131,7 @@ public class Department : Shared.Entity<DepartmentId>
     public UnitResult<Error> AddPosition(DepartmentPosition position)
     {
         if (_positions.Contains(position))
-            return GeneralErrors.ValueIsInvalid("department");
+            return GeneralErrors.ValueIsInvalid("department position");
 
         _positions.Add(position);
 
@@ -140,7 +141,7 @@ public class Department : Shared.Entity<DepartmentId>
     public UnitResult<Error> RemovePosition(DepartmentPosition position)
     {
         if (!_positions.Contains(position))
-            return GeneralErrors.ValueIsInvalid("department");
+            return GeneralErrors.ValueIsInvalid("department position");
 
         _positions.Remove(position);
 

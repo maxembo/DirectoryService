@@ -1,6 +1,6 @@
-namespace DirectoryService.Domain.Departments;
+namespace DirectoryService.Domain.DepartmentPositions;
 
-public record DepartmentPositionId
+public sealed record DepartmentPositionId
 {
     private DepartmentPositionId(Guid value) => Value = value;
 

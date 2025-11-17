@@ -1,6 +1,5 @@
 using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstractions;
-using DirectoryService.Application.Locations;
 using DirectoryService.Domain.Locations;
 using Microsoft.Extensions.Logging;
 
@@ -25,7 +24,7 @@ public class LocationsRepository : ILocationsRepository
 
             await _dbContext.SaveChangesAsync(cancellationToken);
 
-            _logger.LogInformation($"Location {location.Id} has been added.");
+            _logger.LogInformation("Location {Location.Id} has been added.", location.Id);
 
             return location.Id.Value;
         }

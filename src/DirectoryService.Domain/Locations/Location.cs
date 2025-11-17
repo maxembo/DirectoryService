@@ -1,8 +1,9 @@
+using DirectoryService.Domain.DepartmentLocations;
 using DirectoryService.Domain.Departments;
 
 namespace DirectoryService.Domain.Locations;
 
-public class Location : Shared.Entity<LocationId>
+public sealed class Location : Shared.Entity<LocationId>
 {
     public Location(LocationId id, LocationName name, Timezone timezone, Address address)
         : base(id)
@@ -15,12 +16,11 @@ public class Location : Shared.Entity<LocationId>
     // ef core
     private Location(LocationId id)
         : base(id)
-    {
-    }
+    { }
 
-    private readonly List<Department> _departments = [];
+    private readonly List<DepartmentLocation> _departmentLocations = [];
 
-    public IReadOnlyList<Department> Departments => _departments.AsReadOnly();
+    public IReadOnlyList<DepartmentLocation> DepartmentLocations => _departmentLocations.AsReadOnly();
 
     public LocationName Name { get; private set; } = null!;
 

@@ -4,7 +4,7 @@ using Shared;
 
 namespace DirectoryService.Domain.Departments;
 
-public record DepartmentName
+public sealed record DepartmentName
 {
     private DepartmentName(string value) => Value = value;
 
@@ -12,15 +12,16 @@ public record DepartmentName
 
     public static Result<DepartmentName, Error> Create(string value)
     {
-        if (string.IsNullOrWhiteSpace(value) ||
-            value.Length > Constants.MAX_DEPARTMENT_NAME_LENGTH ||
-            value.Length < Constants.MIN_TEXT_LENGTH)
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return GeneralErrors.ValueIsRequired("department name");
+        }
+
+        if (value.Length is > Constants.MAX_DEPARTMENT_NAME_LENGTH or < Constants.MIN_TEXT_LENGTH)
         {
             return GeneralErrors.ValueIsInvalid("department name");
         }
 
-        var departmentName = new DepartmentName(value);
-
-        return departmentName;
+        return new DepartmentName(value);
     }
 }

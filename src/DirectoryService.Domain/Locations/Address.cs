@@ -4,7 +4,7 @@ using Shared;
 
 namespace DirectoryService.Domain.Locations;
 
-public record Address
+public sealed record Address
 {
     private Address(string city, string country, string street, string house)
     {
@@ -36,8 +36,6 @@ public record Address
         if (string.IsNullOrWhiteSpace(house) || house.Length > Constants.MAX_LOCATION_ADDRESS_LENGTH)
             return GeneralErrors.ValueIsInvalid("address house");
 
-        var address = new Address(city, country, street, house);
-
-        return address;
+        return new Address(city, country, street, house);
     }
 }

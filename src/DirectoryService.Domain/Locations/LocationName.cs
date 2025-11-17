@@ -5,7 +5,7 @@ using Shared;
 
 namespace DirectoryService.Domain.Locations;
 
-public record LocationName
+public sealed record LocationName
 {
     private LocationName(string value) => Value = value;
 
@@ -13,14 +13,16 @@ public record LocationName
 
     public static Result<LocationName, Error> Create(string value)
     {
-        if (string.IsNullOrWhiteSpace(value) ||
-            value.Length > Constants.MAX_LOCATION_NAME_LENGTH || value.Length < Constants.MIN_TEXT_LENGTH)
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return GeneralErrors.ValueIsRequired("location name");
+        }
+
+        if (value.Length is > Constants.MAX_LOCATION_NAME_LENGTH or < Constants.MIN_TEXT_LENGTH)
         {
             return GeneralErrors.ValueIsInvalid("location name");
         }
 
-        var locationName = new LocationName(value);
-
-        return locationName;
+        return new LocationName(value);
     }
 }
