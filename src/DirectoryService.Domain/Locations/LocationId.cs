@@ -1,6 +1,6 @@
 namespace DirectoryService.Domain.Locations;
 
-public record LocationId
+public sealed record LocationId
 {
     private LocationId(Guid value) => Value = value;
 

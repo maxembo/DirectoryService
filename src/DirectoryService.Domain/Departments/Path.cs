@@ -3,7 +3,7 @@ using Shared;
 
 namespace DirectoryService.Domain.Departments;
 
-public record Path
+public sealed record Path
 {
     private const string SEPARATOR = ".";
 
@@ -20,47 +20,43 @@ public record Path
     public static Result<Path, Error> Create(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
-            return GeneralErrors.ValueIsInvalid("path");
+            return GeneralErrors.ValueIsRequired("path");
 
         string[] values = value.Split(SEPARATOR);
 
         if (values.Any(string.IsNullOrWhiteSpace))
-            return GeneralErrors.ValueIsInvalid("path");
+            return GeneralErrors.ValueIsRequired("path");
 
         short depth = (short)values.Length;
 
         string joinValue = string.Join(SEPARATOR, values);
 
-        var path = new Path(joinValue, depth);
-
-        return path;
+        return new Path(joinValue, depth);
     }
 
     public Result<Path, Error> Child(string child)
     {
         if (child.Contains(SEPARATOR))
-            return GeneralErrors.ValueIsInvalid("path");
+            return GeneralErrors.ValueIsInvalid("path child");
 
         string value = $"{Value}{SEPARATOR}{child}";
         short depth = (short)(Depth + 1);
 
-        var path = new Path(value, depth);
-        return path;
+        return new Path(value, depth);
     }
 
     public Result<Path, Error> Parent()
     {
-        var values = Value.Split(SEPARATOR);
+        string[] values = Value.Split(SEPARATOR);
 
-        if (values.Count() <= 1)
-            return GeneralErrors.ValueIsInvalid("path");
+        if (values.Length <= 1)
+            return GeneralErrors.ValueIsInvalid("path parent");
 
         var parent = values.Take(values.Length - 1);
 
         string value = string.Join(SEPARATOR, parent);
         short depth = (short)(Depth - 1);
 
-        var path = new Path(value, depth);
-        return path;
+        return new Path(value, depth);
     }
 }

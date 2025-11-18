@@ -5,10 +5,10 @@ using Shared;
 
 namespace DirectoryService.Domain.Departments;
 
-public record Identifier
+public sealed record Identifier
 {
     private static readonly Regex _identifierRegex =
-        new Regex("^[A-Za-z]+$", RegexOptions.Compiled);
+        new("^[A-Za-z]+$", RegexOptions.Compiled);
 
     private Identifier(string value) => Value = value;
 
@@ -16,16 +16,21 @@ public record Identifier
 
     public static Result<Identifier, Error> Create(string value)
     {
-        if (string.IsNullOrWhiteSpace(value) ||
-            value.Length < Constants.MIN_TEXT_LENGTH ||
-            value.Length > Constants.MAX_DEPARTMENT_IDENTIFIER_LENGTH ||
-            !_identifierRegex.IsMatch(value))
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return GeneralErrors.ValueIsRequired("identifier");
+        }
+
+        if (!_identifierRegex.IsMatch(value))
         {
             return GeneralErrors.ValueIsInvalid("identifier");
         }
 
-        var identifier = new Identifier(value);
+        if (value.Length is < Constants.MIN_TEXT_LENGTH or > Constants.MAX_DEPARTMENT_IDENTIFIER_LENGTH)
+        {
+            return GeneralErrors.ValueIsInvalid("identifier");
+        }
 
-        return identifier;
+        return new Identifier(value);
     }
 }

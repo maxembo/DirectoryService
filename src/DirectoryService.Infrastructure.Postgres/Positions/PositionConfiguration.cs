@@ -31,9 +31,13 @@ public class PositionConfiguration : IEntityTypeConfiguration<Position>
                     .IsUnique();
             });
 
-        builder.Property(p => p.Description)
-            .HasMaxLength(Constants.MAX_POSITION_DESCRIPTION_LENGTH)
-            .IsRequired(false)
-            .HasColumnName("description");
+        builder.OwnsOne(
+            p => p.Description, pb =>
+            {
+                pb.Property(p => p.Value)
+                    .IsRequired(false)
+                    .HasMaxLength(Constants.MAX_POSITION_DESCRIPTION_LENGTH)
+                    .HasColumnName("description");
+            });
     }
 }

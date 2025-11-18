@@ -65,10 +65,11 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
             .IsRequired(false)
             .HasColumnName("parent_id");
 
-        builder.HasOne(d => d.Parent)
-            .WithMany(d => d.Childrens)
+        builder.HasMany(d => d.Childrens)
+            .WithOne()
             .HasForeignKey(d => d.ParentId)
-            .OnDelete(DeleteBehavior.Cascade)
-            .HasConstraintName("fk_parent_id");
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired(false)
+            .HasConstraintName("fk_departments_children");
     }
 }

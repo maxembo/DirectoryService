@@ -4,7 +4,7 @@ using Shared;
 
 namespace DirectoryService.Domain.Locations;
 
-public record Timezone
+public sealed record Timezone
 {
     private Timezone(string value)
     {
@@ -15,14 +15,21 @@ public record Timezone
 
     public static Result<Timezone, Error> Create(string value)
     {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return GeneralErrors.ValueIsRequired("timezone");
+        }
+
         if (string.IsNullOrWhiteSpace(value) || value.Length > Constants.MAX_LOCATION_TIMEZONE_LENGTH)
+        {
             return GeneralErrors.ValueIsInvalid("timezone");
+        }
 
         if (!TimeZoneInfo.TryFindSystemTimeZoneById(value, out _))
+        {
             return GeneralErrors.ValueIsInvalid("timezone");
+        }
 
-        var timezone = new Timezone(value);
-
-        return timezone;
+        return new Timezone(value);
     }
 }

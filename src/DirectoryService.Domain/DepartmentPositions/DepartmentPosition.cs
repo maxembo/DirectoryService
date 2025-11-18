@@ -1,9 +1,9 @@
-using CSharpFunctionalExtensions;
+using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Positions;
 
-namespace DirectoryService.Domain.Departments;
+namespace DirectoryService.Domain.DepartmentPositions;
 
-public class DepartmentPosition : Shared.Entity<DepartmentPositionId>
+public sealed class DepartmentPosition : Shared.Entity<DepartmentPositionId>
 {
     // ef core
     private DepartmentPosition(DepartmentPositionId id)
