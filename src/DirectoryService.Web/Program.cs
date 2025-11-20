@@ -1,10 +1,7 @@
 using System.Globalization;
-using DirectoryService.Presentation.Response;
 using DirectoryService.Web;
 using DirectoryService.Web.Middlewares;
-using Microsoft.OpenApi.Models;
 using Serilog;
-using Shared;
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
