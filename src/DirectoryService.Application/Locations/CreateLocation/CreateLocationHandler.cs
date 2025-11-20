@@ -24,11 +24,16 @@ public class CreateLocationHandler : ICommandHandler<Guid, CreateLocationRequest
         _logger = logger;
     }
 
-    public async Task<Result<Guid, Errors>> Handle(CreateLocationRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result<Guid, Errors>> Handle(
+        CreateLocationRequest request, CancellationToken cancellationToken = default)
     {
         var validationResult = await _validator.ValidateAsync(request.LocationDto, cancellationToken);
         if (!validationResult.IsValid)
-            return GeneralErrors.ValueIsInvalid("location").ToErrors();
+        {
+            return GeneralErrors
+                .Invalid("location")
+                .ToErrors();
+        }
 
         var location = new Location(
             LocationId.CreateNew(),

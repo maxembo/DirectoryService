@@ -20,12 +20,12 @@ public sealed record Path
     public static Result<Path, Error> Create(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
-            return GeneralErrors.ValueIsRequired("path");
+            return GeneralErrors.Required("path");
 
         string[] values = value.Split(SEPARATOR);
 
         if (values.Any(string.IsNullOrWhiteSpace))
-            return GeneralErrors.ValueIsRequired("path");
+            return GeneralErrors.Required("path");
 
         short depth = (short)values.Length;
 
@@ -37,7 +37,7 @@ public sealed record Path
     public Result<Path, Error> Child(string child)
     {
         if (child.Contains(SEPARATOR))
-            return GeneralErrors.ValueIsInvalid("path child");
+            return GeneralErrors.Invalid("path child");
 
         string value = $"{Value}{SEPARATOR}{child}";
         short depth = (short)(Depth + 1);
@@ -50,7 +50,7 @@ public sealed record Path
         string[] values = Value.Split(SEPARATOR);
 
         if (values.Length <= 1)
-            return GeneralErrors.ValueIsInvalid("path parent");
+            return GeneralErrors.Invalid("path parent");
 
         var parent = values.Take(values.Length - 1);
 

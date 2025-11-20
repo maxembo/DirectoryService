@@ -15,12 +15,13 @@ public sealed record PositionName
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            return GeneralErrors.ValueIsRequired("position name");
+            return GeneralErrors.Required("position name");
         }
 
         if (value.Length is > Constants.MAX_POSITION_NAME_LENGTH or < Constants.MIN_TEXT_LENGTH)
         {
-            return GeneralErrors.ValueIsInvalid("position name");
+            return GeneralErrors.LengthOutOfRange(
+                "position name", Constants.MAX_POSITION_NAME_LENGTH, Constants.MIN_TEXT_LENGTH);
         }
 
         return new PositionName(value);
