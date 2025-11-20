@@ -18,27 +18,6 @@ try
 
     builder.Services.AddProgramDependencies(builder.Configuration);
 
-    builder.Services.AddOpenApi(
-        options =>
-        {
-            options.AddSchemaTransformer(
-                (schema, context, _) =>
-                {
-                    if (context.JsonTypeInfo.Type == typeof(Envelope<Errors>))
-                    {
-                        if (schema.Properties.TryGetValue("errors", out var errorsProp))
-                        {
-                            errorsProp.Items.Reference = new OpenApiReference()
-                            {
-                                Type = ReferenceType.Schema, Id = "Error",
-                            };
-                        }
-                    }
-
-                    return Task.CompletedTask;
-                });
-        });
-
     var app = builder.Build();
 
     app.UseSerilogRequestLogging();
