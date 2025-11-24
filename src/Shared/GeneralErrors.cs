@@ -23,7 +23,7 @@ public static class GeneralErrors
     public static Error LengthOutOfRange(string? name, int maxLength, int minLength = 0)
     {
         return Error.Validation(
-            "value.length.out.of.range", $"{name ?? string.Empty} должно быть от{minLength} до {maxLength} символов");
+            "value.length.out.of.range", $"{name ?? string.Empty} должно быть от {minLength} до {maxLength} символов");
     }
 
     public static Error AlreadyExist(string? name = null)
@@ -41,5 +41,10 @@ public static class GeneralErrors
     {
         string label = name ?? string.Empty;
         return Error.Validation("value.mismatch.regex", $"{label} имеет недопустимый формат", name);
+    }
+
+    public static Error Database(string? code = null)
+    {
+        return Error.Failure(code, "Произошла ошибка в базе данных.");
     }
 }
