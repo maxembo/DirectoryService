@@ -1,5 +1,3 @@
-using DirectoryService.Contracts.Commands;
-
 namespace DirectoryService.Contracts.Locations.CreateLocations;
 
-public record CreateLocationRequest(CreateLocationDto LocationDto) : ICommand;
+public record CreateLocationRequest(string Name, AddressDto Address, string Timezone);
