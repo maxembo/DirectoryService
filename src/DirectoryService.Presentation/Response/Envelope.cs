@@ -1,4 +1,5 @@
-﻿using Shared;
+﻿using System.Text.Json.Serialization;
+using Shared;
 
 namespace DirectoryService.Presentation.Response;
 
@@ -12,7 +13,8 @@ public record Envelope
 
     public DateTime TimeGenerated { get; }
 
-    public Envelope(object? result, Errors? errorsList)
+    [JsonConstructor]
+    private Envelope(object? result, Errors? errorsList)
     {
         Result = result;
         ErrorsList = errorsList;
@@ -21,7 +23,7 @@ public record Envelope
 
     public static Envelope Ok(object? result = null) => new(result, null);
 
-    public static Envelope Error(Errors errorsList) => new(null, errorsList);
+    public static Envelope Error(Errors errors) => new(null, errors);
 }
 
 public record Envelope<T>
@@ -34,7 +36,8 @@ public record Envelope<T>
 
     public DateTime TimeGenerated { get; }
 
-    public Envelope(T? result, Errors? errorsList)
+    [JsonConstructor]
+    private Envelope(T? result, Errors? errorsList)
     {
         Result = result;
         ErrorsList = errorsList;
@@ -43,5 +46,5 @@ public record Envelope<T>
 
     public static Envelope<T> Ok(T? result = default) => new(result, null);
 
-    public static Envelope<T> Error(Errors errorsList) => new(default, errorsList);
+    public static Envelope<T> Error(Errors errors) => new(default, errors);
 }
