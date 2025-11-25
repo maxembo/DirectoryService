@@ -14,12 +14,12 @@ public record Description
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            return GeneralErrors.ValueIsRequired("description");
+            return GeneralErrors.Required("description");
         }
 
         if (value.Length > Constants.MAX_POSITION_DESCRIPTION_LENGTH)
         {
-            return GeneralErrors.ValueIsInvalid("description");
+            return GeneralErrors.LengthOutOfRange("description", Constants.MAX_POSITION_DESCRIPTION_LENGTH);
         }
 
         return new Description(value);

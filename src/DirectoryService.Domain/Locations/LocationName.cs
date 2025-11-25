@@ -15,12 +15,13 @@ public sealed record LocationName
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            return GeneralErrors.ValueIsRequired("location name");
+            return GeneralErrors.Required("location name");
         }
 
         if (value.Length is > Constants.MAX_LOCATION_NAME_LENGTH or < Constants.MIN_TEXT_LENGTH)
         {
-            return GeneralErrors.ValueIsInvalid("location name");
+            return GeneralErrors.LengthOutOfRange(
+                "location name", Constants.MAX_LOCATION_NAME_LENGTH, Constants.MIN_TEXT_LENGTH);
         }
 
         return new LocationName(value);

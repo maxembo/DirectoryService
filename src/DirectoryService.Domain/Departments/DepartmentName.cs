@@ -14,12 +14,13 @@ public sealed record DepartmentName
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            return GeneralErrors.ValueIsRequired("department name");
+            return GeneralErrors.Required("department name");
         }
 
         if (value.Length is > Constants.MAX_DEPARTMENT_NAME_LENGTH or < Constants.MIN_TEXT_LENGTH)
         {
-            return GeneralErrors.ValueIsInvalid("department name");
+            return GeneralErrors.LengthOutOfRange(
+                "department name", Constants.MAX_DEPARTMENT_NAME_LENGTH, Constants.MIN_TEXT_LENGTH);
         }
 
         return new DepartmentName(value);

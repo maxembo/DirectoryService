@@ -2,10 +2,10 @@
 
 public static class GeneralErrors
 {
-    public static Error ValueIsInvalid(string? name = null)
+    public static Error Invalid(string? name = null)
     {
         string label = name ?? "значение";
-        return Error.Validation("value.is.invalid", $"{label} не действительно", name);
+        return Error.Validation("value.is.invalid", $"{label} содержит недопустимое значение", name);
     }
 
     public static Error NotFound(Guid? id = null, string? name = null)
@@ -14,19 +14,37 @@ public static class GeneralErrors
         return Error.NotFound("value.not.found", $"{name ?? "запись"} не найдена {forId}");
     }
 
-    public static Error ValueIsRequired(string? name = null)
+    public static Error Required(string? name = null)
     {
         string label = name ?? string.Empty;
-        return Error.Validation("length.is.invalid", $"Поле {label} обязательно", name);
+        return Error.Validation("length.is.invalid", $"{label} обязателен", name);
     }
 
-    public static Error AlreadyExist()
+    public static Error LengthOutOfRange(string? name, int maxLength, int minLength = 0)
     {
-        return Error.Conflict("record.already.exist", "Запись уже существует");
+        return Error.Validation(
+            "value.length.out.of.range", $"{name ?? string.Empty} должно быть от {minLength} до {maxLength} символов");
+    }
+
+    public static Error AlreadyExist(string? name = null)
+    {
+        string label = name ?? string.Empty;
+        return Error.Conflict("value.already.exist", $"{name} уже существует");
     }
 
     public static Error Failure()
     {
         return Error.Failure("server.failure", "Серверная ошибка");
+    }
+
+    public static Error MismatchRegex(string? name = null)
+    {
+        string label = name ?? string.Empty;
+        return Error.Validation("value.mismatch.regex", $"{label} имеет недопустимый формат", name);
+    }
+
+    public static Error Database(string? code = null)
+    {
+        return Error.Failure(code, "Произошла ошибка в базе данных.");
     }
 }

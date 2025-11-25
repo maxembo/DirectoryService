@@ -17,17 +17,17 @@ public sealed record Timezone
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            return GeneralErrors.ValueIsRequired("timezone");
+            return GeneralErrors.Required("timezone");
         }
 
-        if (string.IsNullOrWhiteSpace(value) || value.Length > Constants.MAX_LOCATION_TIMEZONE_LENGTH)
+        if (value.Length > Constants.MAX_LOCATION_TIMEZONE_LENGTH)
         {
-            return GeneralErrors.ValueIsInvalid("timezone");
+            return GeneralErrors.LengthOutOfRange("timezone", Constants.MAX_LOCATION_TIMEZONE_LENGTH);
         }
 
         if (!TimeZoneInfo.TryFindSystemTimeZoneById(value, out _))
         {
-            return GeneralErrors.ValueIsInvalid("timezone");
+            return GeneralErrors.Invalid("timezone");
         }
 
         return new Timezone(value);

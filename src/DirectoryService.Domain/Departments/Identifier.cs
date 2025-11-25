@@ -18,17 +18,17 @@ public sealed record Identifier
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            return GeneralErrors.ValueIsRequired("identifier");
+            return GeneralErrors.Required("identifier");
         }
 
         if (!_identifierRegex.IsMatch(value))
         {
-            return GeneralErrors.ValueIsInvalid("identifier");
+            return GeneralErrors.MismatchRegex("identifier");
         }
 
         if (value.Length is < Constants.MIN_TEXT_LENGTH or > Constants.MAX_DEPARTMENT_IDENTIFIER_LENGTH)
         {
-            return GeneralErrors.ValueIsInvalid("identifier");
+            return GeneralErrors.Invalid("identifier");
         }
 
         return new Identifier(value);
