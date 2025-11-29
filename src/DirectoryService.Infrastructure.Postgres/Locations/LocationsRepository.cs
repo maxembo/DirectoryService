@@ -21,40 +21,47 @@ public class LocationsRepository : ILocationsRepository
 
     public async Task<Result<Guid, Error>> AddAsync(Location location, CancellationToken cancellationToken = default)
     {
-        string name = location.Name.Value;
-        string? address = location.Address.ToString();
-        try
-        {
-            await _dbContext.AddAsync(location, cancellationToken);
+        await _dbContext.AddAsync(location, cancellationToken);
 
-            await _dbContext.SaveChangesAsync(cancellationToken);
+        var saveChangesResult = await _dbContext.SaveChangesResultAsync(cancellationToken);
+        if (saveChangesResult.IsFailure)
+            return saveChangesResult.Error;
 
-            _logger.LogInformation("Location {Location.Id} has been added.", location.Id);
+        return location.Id.Value;
+    }
 
-            return location.Id.Value;
-        }
-        catch (DbUpdateException ex) when (ex.InnerException is PostgresException pgEx)
-        {
-            if (pgEx is { SqlState: PostgresErrorCodes.UniqueViolation, ConstraintName: not null })
-            {
-                if (pgEx.ConstraintName.Contains("name"))
-                {
-                    return GeneralErrors.AlreadyExist(name);
-                }
+    public async Task<Result<Location, Error>> GetByIdAsync(
+        Guid locationId, CancellationToken cancellationToken = default)
+    {
+        var location = await _dbContext.Locations.FirstOrDefaultAsync(
+            l => l.Id == LocationId.Create(locationId), cancellationToken);
 
-                if (pgEx.ConstraintName.Contains("address"))
-                {
-                    return GeneralErrors.AlreadyExist(address);
-                }
-            }
+        if (location == null)
+            return GeneralErrors.NotFound(locationId, "location");
 
-            _logger.LogError(ex, "Error adding a location with a name {name}", name);
-            return GeneralErrors.Database();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to create location!");
-            return GeneralErrors.Database();
-        }
+        return location;
+    }
+
+    public async Task<UnitResult<Errors>> CheckExistingAndActiveIdsAsync(
+        Guid[] ids, CancellationToken cancellationToken = default)
+    {
+        var locationIds = LocationId.Create(ids);
+
+        var existingIds = await _dbContext.Locations
+            .Where(l => locationIds.Contains(l.Id) && l.IsActive == true)
+            .Select(l => l.Id.Value)
+            .ToListAsync(cancellationToken);
+
+        var missingIds = ids
+            .Except(existingIds)
+            .ToList();
+
+        var errors = missingIds
+            .Select(missingId => GeneralErrors.NotFound(missingId, "location"))
+            .ToList();
+
+        return errors.Count != 0
+            ? UnitResult.Failure(new Errors(errors))
+            : UnitResult.Success<Errors>();
     }
 }
