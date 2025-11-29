@@ -11,4 +11,6 @@ public sealed record DepartmentId
     public static DepartmentId CreateEmpty() => new(Guid.Empty);
 
     public static DepartmentId Create(Guid id) => new(id);
+
+    public static DepartmentId[] Create(Guid[] ids) => ids.Select(Create).ToArray();
 }

@@ -16,9 +16,9 @@ public sealed class Department : Shared.Entity<DepartmentId>
         DepartmentId id,
         DepartmentName name,
         Identifier identifier,
-        DepartmentId? parentId,
         Path path,
-        IEnumerable<DepartmentLocation> locations)
+        IEnumerable<DepartmentLocation> locations,
+        DepartmentId? parentId = null)
         : base(id)
     {
         Name = name;
@@ -66,27 +66,59 @@ public sealed class Department : Shared.Entity<DepartmentId>
         return UnitResult.Success<Error>();
     }
 
-    public UnitResult<Error> SetPath(Identifier identifier, Path? path = null)
+    public static Result<Department, Error> CreateParent(
+        DepartmentName name,
+        Identifier identifier,
+        IEnumerable<DepartmentLocation> locations,
+        DepartmentId? departmentId = null)
     {
-        if (path == null)
-        {
-            var resultPath = Path.Create(identifier.Value);
+        var locationsList = locations.ToList();
+        if (locationsList.Count == 0)
+            return GeneralErrors.Required("locations");
 
-            if (resultPath.IsFailure)
-                return GeneralErrors.Invalid("department path");
+        var path = Path.CreateParent(identifier);
 
-            Path = resultPath.Value;
-        }
-
-        var resultChildPath = Path.Child(identifier.Value);
-
-        if (resultChildPath.IsFailure)
-            return GeneralErrors.Invalid("department path");
-
-        Path = resultChildPath.Value;
-
-        return UnitResult.Success<Error>();
+        return new Department(departmentId ?? DepartmentId.CreateNew(), name, identifier, path, locationsList);
     }
+
+    public static Result<Department, Error> CreateChild(
+        DepartmentName name,
+        Identifier identifier,
+        Department parent,
+        IEnumerable<DepartmentLocation> locations,
+        DepartmentId? departmentId = null)
+    {
+        var locationsList = locations.ToList();
+        if (locationsList.Count == 0)
+            return GeneralErrors.Required("locations");
+
+        var path = parent.Path.CreateChild(identifier);
+
+        return new Department(
+            departmentId ?? DepartmentId.CreateNew(), name, identifier, path, locationsList, parent.Id);
+    }
+
+    // public UnitResult<Error> SetPath(Identifier identifier, Path? path = null)
+    // {
+    //     if (path == null)
+    //     {
+    //         var resultPath = Path.Create(identifier.Value);
+    //
+    //         if (resultPath.IsFailure)
+    //             return GeneralErrors.Invalid("department path");
+    //
+    //         Path = resultPath.Value;
+    //     }
+    //
+    //     var resultChildPath = Path.Child(identifier.Value);
+    //
+    //     if (resultChildPath.IsFailure)
+    //         return GeneralErrors.Invalid("department path");
+    //
+    //     Path = resultChildPath.Value;
+    //
+    //     return UnitResult.Success<Error>();
+    // }
 
     public UnitResult<Error> AddLocation(DepartmentLocation location)
     {

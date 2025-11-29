@@ -13,16 +13,21 @@ public sealed class Position : Shared.Entity<PositionId>
         : base(id)
     { }
 
-    public Position(PositionId id, PositionName name, Description? description)
+    public Position(
+        PositionId id,
+        PositionName name,
+        Description? description,
+        IEnumerable<DepartmentPosition> departments)
         : base(id)
     {
         Name = name;
         Description = description;
+        _departments = departments.ToList();
     }
 
-    private readonly List<DepartmentPosition> _departmentPositions = [];
+    private readonly List<DepartmentPosition> _departments = [];
 
-    public IReadOnlyList<DepartmentPosition> DepartmentPositions => _departmentPositions.AsReadOnly();
+    public IReadOnlyList<DepartmentPosition> Departments => _departments.AsReadOnly();
 
     public PositionName Name { get; private set; } = null!;
 

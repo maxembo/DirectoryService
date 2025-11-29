@@ -1,3 +1,4 @@
+using System.Runtime.Intrinsics.Arm;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Shared;
 using Microsoft.EntityFrameworkCore;
@@ -29,13 +30,16 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
                     .HasColumnName("name");
             });
 
-        builder.ComplexProperty(
+        builder.OwnsOne(
             d => d.Identifier, db =>
             {
                 db.Property(d => d.Value)
                     .HasMaxLength(Constants.MAX_DEPARTMENT_IDENTIFIER_LENGTH)
                     .IsRequired()
                     .HasColumnName("identifier");
+
+                db.HasIndex(d => d.Value)
+                    .IsUnique();
             });
 
         builder.ComplexProperty(
@@ -69,7 +73,6 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
             .WithOne()
             .HasForeignKey(d => d.ParentId)
             .OnDelete(DeleteBehavior.Restrict)
-            .IsRequired(false)
-            .HasConstraintName("fk_departments_children");
+            .IsRequired(false);
     }
 }

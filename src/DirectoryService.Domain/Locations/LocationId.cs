@@ -1,3 +1,5 @@
+using DirectoryService.Domain.DepartmentLocations;
+
 namespace DirectoryService.Domain.Locations;
 
 public sealed record LocationId
@@ -11,4 +13,6 @@ public sealed record LocationId
     public static LocationId CreateEmpty() => new(Guid.Empty);
 
     public static LocationId Create(Guid id) => new(id);
+
+    public static LocationId[] Create(Guid[] ids) => ids.Select(Create).ToArray();
 }

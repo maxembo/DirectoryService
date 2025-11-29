@@ -26,9 +26,9 @@ public class CreateLocationHandler : ICommandHandler<Guid, CreateLocationCommand
     }
 
     public async Task<Result<Guid, Errors>> Handle(
-        CreateLocationCommand locationCommand, CancellationToken cancellationToken = default)
+        CreateLocationCommand command, CancellationToken cancellationToken = default)
     {
-        var validationResult = await _validator.ValidateAsync(locationCommand.LocationRequest, cancellationToken);
+        var validationResult = await _validator.ValidateAsync(command.LocationRequest, cancellationToken);
         if (!validationResult.IsValid)
         {
             var errors = validationResult.ToErrors();
@@ -38,13 +38,13 @@ public class CreateLocationHandler : ICommandHandler<Guid, CreateLocationCommand
 
         var location = new Location(
             LocationId.CreateNew(),
-            LocationName.Create(locationCommand.LocationRequest.Name).Value,
-            Timezone.Create(locationCommand.LocationRequest.Timezone).Value,
+            LocationName.Create(command.LocationRequest.Name).Value,
+            Timezone.Create(command.LocationRequest.Timezone).Value,
             Address.Create(
-                locationCommand.LocationRequest.Address.City,
-                locationCommand.LocationRequest.Address.Country,
-                locationCommand.LocationRequest.Address.Street,
-                locationCommand.LocationRequest.Address.House).Value);
+                command.LocationRequest.Address.City,
+                command.LocationRequest.Address.Country,
+                command.LocationRequest.Address.Street,
+                command.LocationRequest.Address.House).Value);
 
         var repositoryResult = await _locationsRepository.AddAsync(location, cancellationToken);
         if (repositoryResult.IsFailure)

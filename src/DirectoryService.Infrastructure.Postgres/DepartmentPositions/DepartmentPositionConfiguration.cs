@@ -21,22 +21,22 @@ public class DepartmentPositionConfiguration : IEntityTypeConfiguration<Departme
                 value => DepartmentPositionId.Create(value))
             .HasColumnName("id");
 
-        builder.Property(dp => dp.DepartmentId)
-            .HasColumnName("department_id");
-
-        builder.Property(dp => dp.PositionId)
-            .HasColumnName("position_id");
-
         builder.HasOne<Department>()
             .WithMany(d => d.Positions)
             .HasForeignKey(d => d.DepartmentId)
             .OnDelete(DeleteBehavior.Cascade)
-            .HasConstraintName("fk_department_positions_position_id");
+            .IsRequired();
+
+        builder.Property(e => e.DepartmentId)
+            .HasColumnName("department_id");
 
         builder.HasOne<Position>()
-            .WithMany()
+            .WithMany(p => p.Departments)
             .HasForeignKey(d => d.PositionId)
             .OnDelete(DeleteBehavior.Cascade)
-            .HasConstraintName("fk_department_positions_department_id");
+            .IsRequired();
+
+        builder.Property(e => e.PositionId)
+            .HasColumnName("position_id");
     }
 }

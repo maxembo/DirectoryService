@@ -11,4 +11,6 @@ public sealed record PositionId
     public static PositionId CreateEmpty() => new(Guid.Empty);
 
     public static PositionId Create(Guid id) => new(id);
+
+    public static PositionId[] Create(Guid[] ids) => ids.Select(Create).ToArray();
 }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using DirectoryService.Infrastructure.Postgres;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DirectoryService.Infrastructure.Postgres.Migrations
 {
     [DbContext(typeof(DirectoryServiceDbContext))]
-    partial class DirectoryServiceDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251129102443_FixDepartmentPositions")]
+    partial class FixDepartmentPositions
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -92,6 +95,17 @@ namespace DirectoryService.Infrastructure.Postgres.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
+
+                    b.ComplexProperty<Dictionary<string, object>>("Identifier", "DirectoryService.Domain.Departments.Department.Identifier#Identifier", b1 =>
+                        {
+                            b1.IsRequired();
+
+                            b1.Property<string>("Value")
+                                .IsRequired()
+                                .HasMaxLength(150)
+                                .HasColumnType("character varying(150)")
+                                .HasColumnName("identifier");
+                        });
 
                     b.ComplexProperty<Dictionary<string, object>>("Name", "DirectoryService.Domain.Departments.Department.Name#DepartmentName", b1 =>
                         {
@@ -210,31 +224,6 @@ namespace DirectoryService.Infrastructure.Postgres.Migrations
                         .WithMany("Childrens")
                         .HasForeignKey("ParentId")
                         .OnDelete(DeleteBehavior.Restrict);
-
-                    b.OwnsOne("DirectoryService.Domain.Departments.Identifier", "Identifier", b1 =>
-                        {
-                            b1.Property<Guid>("DepartmentId")
-                                .HasColumnType("uuid");
-
-                            b1.Property<string>("Value")
-                                .IsRequired()
-                                .HasMaxLength(150)
-                                .HasColumnType("character varying(150)")
-                                .HasColumnName("identifier");
-
-                            b1.HasKey("DepartmentId");
-
-                            b1.HasIndex("Value")
-                                .IsUnique();
-
-                            b1.ToTable("departments");
-
-                            b1.WithOwner()
-                                .HasForeignKey("DepartmentId");
-                        });
-
-                    b.Navigation("Identifier")
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("DirectoryService.Domain.Locations.Location", b =>

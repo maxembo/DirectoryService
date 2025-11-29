@@ -34,29 +34,17 @@ public sealed record Path
         return new Path(joinValue, depth);
     }
 
-    public Result<Path, Error> Child(string child)
+    public static Path CreateParent(Identifier identifier)
     {
-        if (child.Contains(SEPARATOR))
-            return GeneralErrors.Invalid("path child");
-
-        string value = $"{Value}{SEPARATOR}{child}";
-        short depth = (short)(Depth + 1);
-
-        return new Path(value, depth);
+        return new Path(identifier.Value, 0);
     }
 
-    public Result<Path, Error> Parent()
+    public Path CreateChild(Identifier identifier)
     {
-        string[] values = Value.Split(SEPARATOR);
+        string path = $"{Value}{SEPARATOR}{identifier.Value}";
 
-        if (values.Length <= 1)
-            return GeneralErrors.Invalid("path parent");
+        string[] depth = path.Split(SEPARATOR);
 
-        var parent = values.Take(values.Length - 1);
-
-        string value = string.Join(SEPARATOR, parent);
-        short depth = (short)(Depth - 1);
-
-        return new Path(value, depth);
+        return new Path(path, (short)(depth.Length - 1));
     }
 }

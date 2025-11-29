@@ -18,9 +18,9 @@ public sealed class Location : Shared.Entity<LocationId>
         : base(id)
     { }
 
-    private readonly List<DepartmentLocation> _departmentLocations = [];
+    private readonly List<DepartmentLocation> _departments = [];
 
-    public IReadOnlyList<DepartmentLocation> DepartmentLocations => _departmentLocations.AsReadOnly();
+    public IReadOnlyList<DepartmentLocation> Departments => _departments.AsReadOnly();
 
     public LocationName Name { get; private set; } = null!;
 
