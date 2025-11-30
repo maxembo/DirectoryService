@@ -47,4 +47,9 @@ public static class GeneralErrors
     {
         return Error.Failure(code, "Произошла ошибка в базе данных.");
     }
+
+    public static Error ArrayContainsDuplicates(string? code, string? message = null)
+    {
+        return Error.Validation(code, message ?? "Array contains duplicate values.");
+    }
 }
