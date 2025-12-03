@@ -1,6 +1,7 @@
 using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstractions;
 using DirectoryService.Domain.Locations;
+using DirectoryService.Infrastructure.Postgres.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Npgsql;
@@ -31,13 +32,12 @@ public class LocationsRepository : ILocationsRepository
     }
 
     public async Task<Result<Location, Error>> GetByIdAsync(
-        Guid locationId, CancellationToken cancellationToken = default)
+        LocationId locationId, CancellationToken cancellationToken = default)
     {
-        var location = await _dbContext.Locations.FirstOrDefaultAsync(
-            l => l.Id == LocationId.Create(locationId), cancellationToken);
+        var location = await _dbContext.Locations.FirstOrDefaultAsync(l => l.Id == locationId, cancellationToken);
 
         if (location == null)
-            return GeneralErrors.NotFound(locationId, "location");
+            return GeneralErrors.NotFound(locationId.Value, "location");
 
         return location;
     }
