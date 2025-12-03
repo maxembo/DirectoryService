@@ -9,7 +9,7 @@ using FluentValidation;
 using Microsoft.Extensions.Logging;
 using Shared;
 
-namespace DirectoryService.Application.Departments.CreateDepartment;
+namespace DirectoryService.Application.Departments.CreateDepartments;
 
 public class CreateDepartmentHandler : ICommandHandler<Guid, CreateDepartmentCommand>
 {
@@ -69,8 +69,10 @@ public class CreateDepartmentHandler : ICommandHandler<Guid, CreateDepartmentCom
         }
         else
         {
+            var parentDepartmentId = DepartmentId.Create(parentId.Value);
+
             var getParentDepartmentResult =
-                await _departmentsRepository.GetByIdAsync(parentId.Value, cancellationToken);
+                await _departmentsRepository.GetByIdAsync(parentDepartmentId, cancellationToken);
             if (getParentDepartmentResult.IsFailure)
                 return getParentDepartmentResult.Error.ToErrors();
 

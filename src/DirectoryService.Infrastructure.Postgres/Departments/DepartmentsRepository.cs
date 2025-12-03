@@ -1,6 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstractions;
 using DirectoryService.Domain.Departments;
+using DirectoryService.Infrastructure.Postgres.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Npgsql;
@@ -32,13 +33,14 @@ public class DepartmentsRepository : IDepartmentsRepository
     }
 
     public async Task<Result<Department, Error>> GetByIdAsync(
-        Guid departmentId, CancellationToken cancellationToken = default)
+        DepartmentId departmentId, CancellationToken cancellationToken = default)
     {
-        var department = await _dbContext.Departments.FirstOrDefaultAsync(
-            d => DepartmentId.Create(departmentId) == d.Id, cancellationToken);
+        var department = await _dbContext.Departments
+            .Where(d => d.IsActive == true)
+            .FirstOrDefaultAsync(d => departmentId == d.Id, cancellationToken);
 
         if (department == null)
-            return GeneralErrors.NotFound(departmentId, "department");
+            return GeneralErrors.NotFound(departmentId.Value, "department");
 
         return department;
     }
@@ -63,5 +65,15 @@ public class DepartmentsRepository : IDepartmentsRepository
         return errors.Count != 0
             ? UnitResult.Failure(new Errors(errors))
             : UnitResult.Success<Errors>();
+    }
+
+    public async Task<UnitResult<Error>> DeleteLocationsAsync(
+        DepartmentId departmentId, CancellationToken cancellationToken = default)
+    {
+        await _dbContext.DepartmentLocations
+            .Where(dl => dl.DepartmentId == departmentId)
+            .ExecuteDeleteAsync(cancellationToken);
+
+        return UnitResult.Success<Error>();
     }
 }
