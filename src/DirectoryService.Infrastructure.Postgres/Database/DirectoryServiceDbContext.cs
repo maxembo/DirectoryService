@@ -1,4 +1,5 @@
 using CSharpFunctionalExtensions;
+using DirectoryService.Domain.DepartmentLocations;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Locations;
 using Microsoft.EntityFrameworkCore;
@@ -7,7 +8,7 @@ using Microsoft.Extensions.Logging;
 using Npgsql;
 using Shared;
 
-namespace DirectoryService.Infrastructure.Postgres;
+namespace DirectoryService.Infrastructure.Postgres.Database;
 
 public class DirectoryServiceDbContext(IConfiguration configuration) : DbContext
 {
@@ -16,6 +17,8 @@ public class DirectoryServiceDbContext(IConfiguration configuration) : DbContext
     public DbSet<Department> Departments => Set<Department>();
 
     public DbSet<Location> Locations => Set<Location>();
+
+    public DbSet<DepartmentLocation> DepartmentLocations => Set<DepartmentLocation>();
 
     public async Task<UnitResult<Error>> SaveChangesResultAsync(CancellationToken cancellationToken = default)
     {
