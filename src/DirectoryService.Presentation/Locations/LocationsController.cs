@@ -1,5 +1,5 @@
 using DirectoryService.Application.Abstractions;
-using DirectoryService.Application.Locations.CreateLocation;
+using DirectoryService.Application.Locations.CreateLocations;
 using DirectoryService.Contracts.Locations.CreateLocations;
 using DirectoryService.Presentation.EndpointResults;
 using DirectoryService.Presentation.Response;

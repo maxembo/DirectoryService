@@ -43,13 +43,13 @@ public static class GeneralErrors
         return Error.Validation("value.mismatch.regex", $"{label} имеет недопустимый формат", name);
     }
 
-    public static Error Database(string? code = null)
+    public static Error Database(string? code, string? message = null)
     {
-        return Error.Failure(code, "Произошла ошибка в базе данных.");
+        return Error.Failure(code, message ?? "Произошла ошибка в базе данных.");
     }
 
     public static Error ArrayContainsDuplicates(string? code, string? message = null)
     {
-        return Error.Validation(code, message ?? "Array contains duplicate values.");
+        return Error.Validation(code, message ?? "Массив содержит повторяющиеся значения.");
     }
 }

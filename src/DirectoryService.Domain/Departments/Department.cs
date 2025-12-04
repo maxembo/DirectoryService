@@ -10,7 +10,8 @@ public sealed class Department : Shared.Entity<DepartmentId>
     // ef core
     private Department(DepartmentId id)
         : base(id)
-    { }
+    {
+    }
 
     public Department(
         DepartmentId id,
@@ -28,7 +29,7 @@ public sealed class Department : Shared.Entity<DepartmentId>
         _locations = locations.ToList();
     }
 
-    private readonly List<DepartmentLocation> _locations = [];
+    private List<DepartmentLocation> _locations = [];
 
     private readonly List<Department> _childrens = [];
 
@@ -96,6 +97,18 @@ public sealed class Department : Shared.Entity<DepartmentId>
 
         return new Department(
             departmentId ?? DepartmentId.CreateNew(), name, identifier, path, locationsList, parent.Id);
+    }
+
+    public UnitResult<Error> UpdateLocationIds(IEnumerable<DepartmentLocation> locations)
+    {
+        var locationsList = locations.ToList();
+
+        if (locationsList.Count == 0)
+            return GeneralErrors.Required("locationsIds");
+
+        _locations = locationsList.ToList();
+
+        return UnitResult.Success<Error>();
     }
 
     // public UnitResult<Error> SetPath(Identifier identifier, Path? path = null)
