@@ -1,7 +1,9 @@
 ﻿using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Departments.CreateDepartments;
+using DirectoryService.Application.Departments.MoveDepartments;
 using DirectoryService.Application.Departments.UpdateDepartments;
 using DirectoryService.Contracts.Departments.CreateDepartment;
+using DirectoryService.Contracts.Departments.MoveDepartments;
 using DirectoryService.Contracts.Departments.UpdateDepartment;
 using DirectoryService.Presentation.EndpointResults;
 using DirectoryService.Presentation.Response;
@@ -40,6 +42,18 @@ public class DepartmentsController : ControllerBase
         CancellationToken cancellationToken)
     {
         var command = new UpdateDepartmentLocationIdsCommand(departmentId, request);
+
+        return await handler.Handle(command, cancellationToken);
+    }
+
+    [HttpPatch("{departmentId:guid}/parent")]
+    public async Task<EndpointResult<Guid>> MoveDepartment(
+        Guid departmentId,
+        [FromServices] ICommandHandler<Guid, MoveDepartmentCommand> handler,
+        [FromBody] MoveDepartmentRequest request,
+        CancellationToken cancellationToken)
+    {
+        var command = new MoveDepartmentCommand(departmentId, request);
 
         return await handler.Handle(command, cancellationToken);
     }
