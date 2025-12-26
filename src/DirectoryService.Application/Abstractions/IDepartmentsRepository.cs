@@ -1,6 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Domain.Departments;
 using Shared;
+using Path = DirectoryService.Domain.Departments.Path;
 
 namespace DirectoryService.Application.Abstractions;
 
@@ -15,4 +16,17 @@ public interface IDepartmentsRepository
 
     Task<UnitResult<Error>> DeleteLocationsAsync(
         DepartmentId departmentId, CancellationToken cancellationToken = default);
+
+    Task<Result<Department, Error>> GetByIdWithLock(DepartmentId id, CancellationToken cancellationToken = default);
+
+    Task LockDescendants(Path path, CancellationToken cancellationToken = default);
+
+    Task<UnitResult<Error>> MoveDepartment(
+        DepartmentId parentId,
+        Path parentPath, Path departmentPath, CancellationToken cancellationToken = default);
+
+    Task<UnitResult<Error>> MoveDepartment(Path departmentPath, CancellationToken cancellationToken = default);
+
+    Task<UnitResult<Error>> CheckParentIsChild(
+        Path parentPath, Path departmentPath, CancellationToken cancellationToken = default);
 }

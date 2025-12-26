@@ -21,7 +21,7 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
                 value => DepartmentId.Create(value))
             .HasColumnName("id");
 
-        builder.ComplexProperty(
+        builder.OwnsOne(
             d => d.Name, db =>
             {
                 db.Property(d => d.Value)
@@ -42,10 +42,11 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
                     .IsUnique();
             });
 
-        builder.ComplexProperty(
+        builder.OwnsOne(
             d => d.Path, db =>
             {
                 db.Property(d => d.Value)
+                    .HasColumnType("ltree")
                     .HasMaxLength(Constants.MAX_DEPARTMENT_PATH_LENGTH)
                     .IsRequired()
                     .HasColumnName("path");
@@ -53,6 +54,10 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
                 db.Property(d => d.Depth)
                     .IsRequired()
                     .HasColumnName("depth");
+
+                db.HasIndex(d => d.Value)
+                    .HasMethod("gist")
+                    .HasDatabaseName("idx_department_path");
             });
 
         builder.Property(d => d.IsActive)
