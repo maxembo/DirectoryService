@@ -5,15 +5,18 @@ using DirectoryService.Infrastructure.Postgres.Database;
 using DirectoryService.Infrastructure.Postgres.Departments;
 using DirectoryService.Infrastructure.Postgres.Locations;
 using DirectoryService.Infrastructure.Postgres.Positions;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectoryService.Infrastructure.Postgres;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddInfrastructureDependencies(this IServiceCollection services)
+    public static IServiceCollection AddInfrastructureDependencies(
+        this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddScoped<DirectoryServiceDbContext>();
+        services.AddScoped<DirectoryServiceDbContext>(
+            _ => new DirectoryServiceDbContext(configuration.GetConnectionString("DirectoryServiceDb")!));
 
         services.AddScoped<ILocationsRepository, LocationsRepository>();
         services.AddScoped<IDepartmentsRepository, DepartmentsRepository>();
