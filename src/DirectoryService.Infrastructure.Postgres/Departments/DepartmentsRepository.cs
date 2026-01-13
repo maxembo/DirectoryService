@@ -114,24 +114,40 @@ public class DepartmentsRepository : IDepartmentsRepository
         DepartmentId parentId,
         Path parentPath, Path departmentPath, CancellationToken cancellationToken = default)
     {
-        const string sql = """
-                           UPDATE departments
-                           SET path = @parentPath::ltree || subpath(path, nlevel(@departmentPath::ltree) - 1),
-                           depth = nlevel(@parentPath::ltree || subpath(path, nlevel(@departmentPath::ltree) - 1)) - 1,
-                           parent_id = @parentId
-                           WHERE path <@ @departmentPath::ltree
-                           """;
+        const string sqlSelectMovedId = """
+                                        SELECT id
+                                        FROM departments
+                                        WHERE path = @departmentPath::ltree
+                                        """;
+
+        const string sqlUpdatePathAndDepth = """
+                                             UPDATE departments
+                                             SET path = @parentPath::ltree || subpath(path, nlevel(@departmentPath::ltree) - 1),
+                                             depth = nlevel(@parentPath::ltree || subpath(path, nlevel(@departmentPath::ltree) - 1)) - 1
+                                             WHERE path <@ @departmentPath::ltree
+                                             """;
+
+        const string sqlSetMovedParent = """
+                                         UPDATE departments
+                                         SET parent_id = @parentId
+                                         WHERE id = @movedId
+                                         """;
 
         var dbConnection = _dbContext.Database.GetDbConnection();
 
         try
         {
-            var sqlParams = new
+            var movedId = await dbConnection.QuerySingleAsync<Guid>(
+                sqlSelectMovedId, new { departmentPath = departmentPath.Value });
+
+            var sqlUpdatePathAndDepthParams = new
             {
-                parentPath = parentPath.Value, departmentPath = departmentPath.Value, parentId = parentId.Value,
+                parentPath = parentPath.Value, departmentPath = departmentPath.Value,
             };
 
-            await dbConnection.ExecuteAsync(sql, sqlParams);
+            await dbConnection.ExecuteAsync(sqlUpdatePathAndDepth, sqlUpdatePathAndDepthParams);
+
+            await dbConnection.ExecuteAsync(sqlSetMovedParent, new { parentId = parentId.Value, movedId });
 
             return UnitResult.Success<Error>();
         }
@@ -144,20 +160,35 @@ public class DepartmentsRepository : IDepartmentsRepository
     public async Task<UnitResult<Error>> MoveDepartment(
         Path departmentPath, CancellationToken cancellationToken = default)
     {
-        const string sql = """
-                           UPDATE departments
-                           SET path = subpath(path, nlevel(@departmentPath::ltree) - 1),
-                           depth = nlevel(subpath(path, nlevel(@departmentPath::ltree) - 1)) - 1,
-                           parent_id = null
-                           WHERE path <@ @departmentPath::ltree
-                           """;
+        const string sqlSelectMovedId = """
+                                        SELECT id
+                                        FROM departments
+                                        WHERE path = @departmentPath::ltree
+                                        """;
+
+        const string sqlUpdatePathAndDepth = """
+                                             UPDATE departments
+                                             SET path = subpath(path, nlevel(@departmentPath::ltree) - 1),
+                                             depth = nlevel(subpath(path, nlevel(@departmentPath::ltree) - 1)) - 1
+                                             WHERE path <@ @departmentPath::ltree
+                                             """;
+
+        const string sqlSetMovedParent = """
+                                         UPDATE departments
+                                         SET parent_id = null
+                                         WHERE id = @movedId
+                                         """;
+
         var dbConnection = _dbContext.Database.GetDbConnection();
 
         try
         {
-            var sqlParams = new { departmentPath = departmentPath.Value };
+            var movedId = await dbConnection.QuerySingleAsync<Guid>(
+                sqlSelectMovedId, new { departmentPath = departmentPath.Value });
 
-            await dbConnection.ExecuteAsync(sql, sqlParams);
+            await dbConnection.ExecuteAsync(sqlUpdatePathAndDepth, new { departmentPath = departmentPath.Value, });
+
+            await dbConnection.ExecuteAsync(sqlSetMovedParent, new { movedId });
 
             return UnitResult.Success<Error>();
         }

@@ -10,10 +10,8 @@ using Shared;
 
 namespace DirectoryService.Infrastructure.Postgres.Database;
 
-public class DirectoryServiceDbContext(IConfiguration configuration) : DbContext
+public class DirectoryServiceDbContext(string connectionString) : DbContext
 {
-    private const string DATABASE = "DirectoryServiceDb";
-
     public DbSet<Department> Departments => Set<Department>();
 
     public DbSet<Location> Locations => Set<Location>();
@@ -49,7 +47,7 @@ public class DirectoryServiceDbContext(IConfiguration configuration) : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseNpgsql(configuration.GetConnectionString(DATABASE));
+        optionsBuilder.UseNpgsql(connectionString);
         optionsBuilder.UseLoggerFactory(CreateLoggerFactory());
         optionsBuilder.EnableSensitiveDataLogging();
     }
