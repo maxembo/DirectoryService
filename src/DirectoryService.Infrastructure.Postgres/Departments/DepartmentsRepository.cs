@@ -5,7 +5,6 @@ using DirectoryService.Domain.Departments;
 using DirectoryService.Infrastructure.Postgres.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Npgsql;
 using Shared;
 using Path = DirectoryService.Domain.Departments.Path;
 
@@ -103,6 +102,7 @@ public class DepartmentsRepository : IDepartmentsRepository
                            ORDER BY depth
                            FOR UPDATE
                            """;
+
         var dbConnection = _dbContext.Database.GetDbConnection();
 
         var sqlParams = new { parentPath = path.Value };
@@ -110,16 +110,11 @@ public class DepartmentsRepository : IDepartmentsRepository
         await dbConnection.QueryAsync(sql, sqlParams);
     }
 
-    public async Task<UnitResult<Error>> MoveDepartment(
+    public async Task<UnitResult<Error>> MoveDepartments(
         DepartmentId parentId,
-        Path parentPath, Path departmentPath, CancellationToken cancellationToken = default)
+        Path parentPath, Path departmentPath,
+        CancellationToken cancellationToken = default)
     {
-        const string sqlSelectMovedId = """
-                                        SELECT id
-                                        FROM departments
-                                        WHERE path = @departmentPath::ltree
-                                        """;
-
         const string sqlUpdatePathAndDepth = """
                                              UPDATE departments
                                              SET path = @parentPath::ltree || subpath(path, nlevel(@departmentPath::ltree) - 1),
@@ -127,19 +122,10 @@ public class DepartmentsRepository : IDepartmentsRepository
                                              WHERE path <@ @departmentPath::ltree
                                              """;
 
-        const string sqlSetMovedParent = """
-                                         UPDATE departments
-                                         SET parent_id = @parentId
-                                         WHERE id = @movedId
-                                         """;
-
         var dbConnection = _dbContext.Database.GetDbConnection();
 
         try
         {
-            var movedId = await dbConnection.QuerySingleAsync<Guid>(
-                sqlSelectMovedId, new { departmentPath = departmentPath.Value });
-
             var sqlUpdatePathAndDepthParams = new
             {
                 parentPath = parentPath.Value, departmentPath = departmentPath.Value,
@@ -147,25 +133,20 @@ public class DepartmentsRepository : IDepartmentsRepository
 
             await dbConnection.ExecuteAsync(sqlUpdatePathAndDepth, sqlUpdatePathAndDepthParams);
 
-            await dbConnection.ExecuteAsync(sqlSetMovedParent, new { parentId = parentId.Value, movedId });
-
             return UnitResult.Success<Error>();
         }
         catch (Exception ex)
         {
+            _logger.LogError("Failed to move Department");
+
             return GeneralErrors.Database(null, ex.Message);
         }
     }
 
-    public async Task<UnitResult<Error>> MoveDepartment(
-        Path departmentPath, CancellationToken cancellationToken = default)
+    public async Task<UnitResult<Error>> MoveDepartments(
+        Path departmentPath,
+        CancellationToken cancellationToken = default)
     {
-        const string sqlSelectMovedId = """
-                                        SELECT id
-                                        FROM departments
-                                        WHERE path = @departmentPath::ltree
-                                        """;
-
         const string sqlUpdatePathAndDepth = """
                                              UPDATE departments
                                              SET path = subpath(path, nlevel(@departmentPath::ltree) - 1),
@@ -173,27 +154,18 @@ public class DepartmentsRepository : IDepartmentsRepository
                                              WHERE path <@ @departmentPath::ltree
                                              """;
 
-        const string sqlSetMovedParent = """
-                                         UPDATE departments
-                                         SET parent_id = null
-                                         WHERE id = @movedId
-                                         """;
-
         var dbConnection = _dbContext.Database.GetDbConnection();
 
         try
         {
-            var movedId = await dbConnection.QuerySingleAsync<Guid>(
-                sqlSelectMovedId, new { departmentPath = departmentPath.Value });
-
             await dbConnection.ExecuteAsync(sqlUpdatePathAndDepth, new { departmentPath = departmentPath.Value, });
-
-            await dbConnection.ExecuteAsync(sqlSetMovedParent, new { movedId });
 
             return UnitResult.Success<Error>();
         }
         catch (Exception ex)
         {
+            _logger.LogError("Failed to move Department");
+
             return GeneralErrors.Database(null, ex.Message);
         }
     }
@@ -223,6 +195,8 @@ public class DepartmentsRepository : IDepartmentsRepository
         }
         catch (Exception ex)
         {
+            _logger.LogError("Failed to check Parent IsChild");
+
             return GeneralErrors.Database(null, ex.Message);
         }
     }

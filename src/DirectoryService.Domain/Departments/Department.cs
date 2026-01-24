@@ -99,6 +99,11 @@ public sealed class Department : Shared.Entity<DepartmentId>
             departmentId ?? DepartmentId.CreateNew(), name, identifier, path, locationsList, parent.Id);
     }
 
+    public void UpdateParent(DepartmentId? parentId = null)
+    {
+        ParentId = parentId;
+    }
+
     public UnitResult<Error> UpdateLocationIds(IEnumerable<DepartmentLocation> locations)
     {
         var locationsList = locations.ToList();
