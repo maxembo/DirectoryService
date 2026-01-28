@@ -21,11 +21,13 @@ public interface IDepartmentsRepository
 
     Task LockDescendants(Path path, CancellationToken cancellationToken = default);
 
-    Task<UnitResult<Error>> MoveDepartment(
+    Task<UnitResult<Error>> MoveDepartments(
         DepartmentId parentId,
-        Path parentPath, Path departmentPath, CancellationToken cancellationToken = default);
+        Path parentPath,
+        Path departmentPath,
+        CancellationToken cancellationToken = default);
 
-    Task<UnitResult<Error>> MoveDepartment(Path departmentPath, CancellationToken cancellationToken = default);
+    Task<UnitResult<Error>> MoveDepartments(Path departmentPath, CancellationToken cancellationToken = default);
 
     Task<UnitResult<Error>> CheckParentIsChild(
         Path parentPath, Path departmentPath, CancellationToken cancellationToken = default);

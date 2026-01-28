@@ -12,7 +12,7 @@ public static class DependencyInjection
         => services
             .AddSerilogLogging(configuration)
             .AddWebDependencies()
-            .AddInfrastructureDependencies()
+            .AddInfrastructureDependencies(configuration)
             .AddApplicationDependencies();
 
     private static IServiceCollection AddWebDependencies(this IServiceCollection services)

@@ -81,7 +81,7 @@ public class MoveDepartmentHandler : ICommandHandler<Guid, MoveDepartmentCommand
                 return checkParentIsChildResult.Error.ToErrors();
             }
 
-            var moveDepartmentResult = await _departmentsRepository.MoveDepartment(
+            var moveDepartmentResult = await _departmentsRepository.MoveDepartments(
                 DepartmentId.Create(parentId.Value),
                 parent.Path, department.Path, cancellationToken);
             if (moveDepartmentResult.IsFailure)
@@ -89,17 +89,23 @@ public class MoveDepartmentHandler : ICommandHandler<Guid, MoveDepartmentCommand
                 transaction.Rollback();
                 return moveDepartmentResult.Error.ToErrors();
             }
+
+            department.UpdateParent(DepartmentId.Create(parentId.Value));
         }
         else
         {
             var moveDepartmentResult =
-                await _departmentsRepository.MoveDepartment(department.Path, cancellationToken);
+                await _departmentsRepository.MoveDepartments(department.Path, cancellationToken);
             if (moveDepartmentResult.IsFailure)
             {
                 transaction.Rollback();
                 return moveDepartmentResult.Error.ToErrors();
             }
+
+            department.UpdateParent();
         }
+
+        await _transactionManager.SaveChangeAsync(cancellationToken);
 
         var commitedResult = transaction.Commit();
         if (commitedResult.IsFailure)
