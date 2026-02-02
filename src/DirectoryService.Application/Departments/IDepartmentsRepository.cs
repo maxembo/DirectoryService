@@ -3,7 +3,7 @@ using DirectoryService.Domain.Departments;
 using Shared;
 using Path = DirectoryService.Domain.Departments.Path;
 
-namespace DirectoryService.Application.Abstractions;
+namespace DirectoryService.Application.Departments;
 
 public interface IDepartmentsRepository
 {

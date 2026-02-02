@@ -1,5 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstractions;
+using DirectoryService.Application.Locations;
 using DirectoryService.Application.Validation;
 using DirectoryService.Contracts.Departments.CreateDepartment;
 using DirectoryService.Domain.DepartmentLocations;

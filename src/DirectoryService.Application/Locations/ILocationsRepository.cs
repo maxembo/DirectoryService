@@ -2,7 +2,7 @@ using CSharpFunctionalExtensions;
 using DirectoryService.Domain.Locations;
 using Shared;
 
-namespace DirectoryService.Application.Abstractions;
+namespace DirectoryService.Application.Locations;
 
 public interface ILocationsRepository
 {

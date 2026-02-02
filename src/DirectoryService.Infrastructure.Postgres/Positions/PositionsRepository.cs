@@ -1,5 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstractions;
+using DirectoryService.Application.Positions;
 using DirectoryService.Domain.Positions;
 using DirectoryService.Infrastructure.Postgres.Database;
 using Microsoft.Extensions.Logging;

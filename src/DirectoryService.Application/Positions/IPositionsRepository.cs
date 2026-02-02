@@ -2,7 +2,7 @@
 using DirectoryService.Domain.Positions;
 using Shared;
 
-namespace DirectoryService.Application.Abstractions;
+namespace DirectoryService.Application.Positions;
 
 public interface IPositionsRepository
 {
