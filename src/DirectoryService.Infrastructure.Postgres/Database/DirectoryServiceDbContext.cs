@@ -1,7 +1,9 @@
 using CSharpFunctionalExtensions;
+using DirectoryService.Application.Database;
 using DirectoryService.Domain.DepartmentLocations;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Locations;
+using DirectoryService.Domain.Positions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -10,13 +12,20 @@ using Shared;
 
 namespace DirectoryService.Infrastructure.Postgres.Database;
 
-public class DirectoryServiceDbContext(string connectionString) : DbContext
+public class DirectoryServiceDbContext(string connectionString) : DbContext, IReadDbContext
 {
     public DbSet<Department> Departments => Set<Department>();
 
     public DbSet<Location> Locations => Set<Location>();
 
     public DbSet<DepartmentLocation> DepartmentLocations => Set<DepartmentLocation>();
+
+    public IQueryable<Department> DepartmentsRead => Set<Department>().AsQueryable().AsNoTracking();
+
+    public IQueryable<Location> LocationsRead => Set<Location>().AsQueryable().AsNoTracking();
+
+    public IQueryable<DepartmentLocation> DepartmentLocationsRead =>
+        Set<DepartmentLocation>().AsQueryable().AsNoTracking();
 
     public async Task<UnitResult<Error>> SaveChangesResultAsync(CancellationToken cancellationToken = default)
     {

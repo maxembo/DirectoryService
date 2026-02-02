@@ -1,6 +1,8 @@
 ﻿using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Database;
+using DirectoryService.Application.Departments;
 using DirectoryService.Application.Locations;
+using DirectoryService.Application.Positions;
 using DirectoryService.Infrastructure.Postgres.Database;
 using DirectoryService.Infrastructure.Postgres.Departments;
 using DirectoryService.Infrastructure.Postgres.Locations;
@@ -16,6 +18,9 @@ public static class DependencyInjection
         this IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<DirectoryServiceDbContext>(
+            _ => new DirectoryServiceDbContext(configuration.GetConnectionString("DirectoryServiceDb")!));
+
+        services.AddScoped<IReadDbContext, DirectoryServiceDbContext>(
             _ => new DirectoryServiceDbContext(configuration.GetConnectionString("DirectoryServiceDb")!));
 
         services.AddScoped<ILocationsRepository, LocationsRepository>();
