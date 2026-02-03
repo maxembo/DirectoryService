@@ -1,3 +1,4 @@
+using System.Data.Common;
 using CSharpFunctionalExtensions;
 using DirectoryService.Application.Database;
 using DirectoryService.Domain.DepartmentLocations;
@@ -12,7 +13,7 @@ using Shared;
 
 namespace DirectoryService.Infrastructure.Postgres.Database;
 
-public class DirectoryServiceDbContext(string connectionString) : DbContext, IReadDbContext
+public class DirectoryServiceDbContext(string connectionString) : DbContext, IReadDbContext, IDbConnectionFactory
 {
     public DbSet<Department> Departments => Set<Department>();
 
@@ -69,4 +70,6 @@ public class DirectoryServiceDbContext(string connectionString) : DbContext, IRe
 
     private ILoggerFactory CreateLoggerFactory()
         => LoggerFactory.Create(configure => configure.AddConsole());
+
+    public DbConnection GetDbConnection() => Database.GetDbConnection();
 }

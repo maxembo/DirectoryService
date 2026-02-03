@@ -1,11 +1,9 @@
 using CSharpFunctionalExtensions;
-using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Locations;
 using DirectoryService.Domain.Locations;
 using DirectoryService.Infrastructure.Postgres.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Npgsql;
 using Shared;
 
 namespace DirectoryService.Infrastructure.Postgres.Locations;

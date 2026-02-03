@@ -4,6 +4,7 @@ using DirectoryService.Contracts.Positions.CreatePositions;
 using DirectoryService.Presentation.EndpointResults;
 using DirectoryService.Presentation.Response;
 using Microsoft.AspNetCore.Mvc;
+using Shared.Abstractions;
 
 namespace DirectoryService.Presentation.Positions;
 
