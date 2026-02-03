@@ -1,6 +1,6 @@
 ﻿using System.Data.Common;
 
-namespace DirectoryService.Application.Database;
+namespace Shared.Database;
 
 public interface IDbConnectionFactory
 {

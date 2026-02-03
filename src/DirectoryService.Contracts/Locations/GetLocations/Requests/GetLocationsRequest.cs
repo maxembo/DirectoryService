@@ -1,6 +1,4 @@
-﻿using DirectoryService.Domain.Departments;
-
-namespace DirectoryService.Contracts.Locations.GetLocations;
+﻿namespace DirectoryService.Contracts.Locations.GetLocations.Requests;
 
 public record GetLocationsRequest(
     Guid[]? DepartmentIds,

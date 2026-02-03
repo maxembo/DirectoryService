@@ -1,13 +1,13 @@
-﻿using DirectoryService.Application.Abstractions;
-using DirectoryService.Application.Departments.CreateDepartments;
+﻿using DirectoryService.Application.Departments.CreateDepartments;
 using DirectoryService.Application.Departments.MoveDepartments;
 using DirectoryService.Application.Departments.UpdateDepartments;
 using DirectoryService.Contracts.Departments.CreateDepartment;
 using DirectoryService.Contracts.Departments.MoveDepartments;
 using DirectoryService.Contracts.Departments.UpdateDepartment;
-using DirectoryService.Presentation.EndpointResults;
-using DirectoryService.Presentation.Response;
 using Microsoft.AspNetCore.Mvc;
+using Shared.Abstractions;
+using Shared.EndpointResults;
+using Shared.Response;
 
 namespace DirectoryService.Presentation.Departments;
 

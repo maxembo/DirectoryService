@@ -1,4 +1,3 @@
-using DirectoryService.Application.Abstractions;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.Abstractions;

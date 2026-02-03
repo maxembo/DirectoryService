@@ -1,13 +1,12 @@
 ﻿using System.Reflection;
 using CSharpFunctionalExtensions;
-using DirectoryService.Presentation.Response;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
-using Shared;
+using Shared.Response;
 using IResult = Microsoft.AspNetCore.Http.IResult;
 
-namespace DirectoryService.Presentation.EndpointResults;
+namespace Shared.EndpointResults;
 
 public class EndpointResult<TValue> : IResult, IEndpointMetadataProvider
 {

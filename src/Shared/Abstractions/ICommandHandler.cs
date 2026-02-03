@@ -1,7 +1,6 @@
 using CSharpFunctionalExtensions;
-using Shared;
 
-namespace DirectoryService.Application.Abstractions;
+namespace Shared.Abstractions;
 
 public interface ICommandHandler<TResponse, in TCommand>
     where TCommand : ICommand

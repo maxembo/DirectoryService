@@ -1,7 +1,6 @@
 using CSharpFunctionalExtensions;
-using Shared;
 
-namespace DirectoryService.Application.Database;
+namespace Shared.Database;
 
 public interface ITransactionScope : IDisposable
 {

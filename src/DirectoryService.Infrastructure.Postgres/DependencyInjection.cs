@@ -11,6 +11,7 @@ using DirectoryService.Infrastructure.Postgres.Positions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.Dapper;
+using Shared.Database;
 
 namespace DirectoryService.Infrastructure.Postgres;
 

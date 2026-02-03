@@ -1,8 +1,7 @@
 using System.Text.Json;
 using FluentValidation.Results;
-using Shared;
 
-namespace DirectoryService.Application.Validation;
+namespace Shared.Validation;
 
 public static class ValidationExtensions
 {

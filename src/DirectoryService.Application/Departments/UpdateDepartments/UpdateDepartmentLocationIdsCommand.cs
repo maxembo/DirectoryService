@@ -1,5 +1,5 @@
-﻿using DirectoryService.Application.Abstractions;
-using DirectoryService.Contracts.Departments.UpdateDepartment;
+﻿using DirectoryService.Contracts.Departments.UpdateDepartment;
+using Shared.Abstractions;
 
 namespace DirectoryService.Application.Departments.UpdateDepartments;
 

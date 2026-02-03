@@ -1,8 +1,7 @@
-﻿using DirectoryService.Presentation.Response;
-using Microsoft.AspNetCore.Http;
-using Shared;
+﻿using Microsoft.AspNetCore.Http;
+using Shared.Response;
 
-namespace DirectoryService.Presentation.EndpointResults;
+namespace Shared.EndpointResults;
 
 public class ErrorResult : IResult
 {

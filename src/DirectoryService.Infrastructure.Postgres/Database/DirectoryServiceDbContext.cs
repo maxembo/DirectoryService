@@ -4,12 +4,11 @@ using DirectoryService.Application.Database;
 using DirectoryService.Domain.DepartmentLocations;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Locations;
-using DirectoryService.Domain.Positions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Npgsql;
 using Shared;
+using Shared.Database;
 
 namespace DirectoryService.Infrastructure.Postgres.Database;
 

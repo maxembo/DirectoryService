@@ -1,13 +1,13 @@
 using CSharpFunctionalExtensions;
-using DirectoryService.Application.Abstractions;
-using DirectoryService.Application.Validation;
 using DirectoryService.Contracts.Locations.CreateLocations;
 using DirectoryService.Domain.Locations;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
 using Shared;
+using Shared.Abstractions;
+using Shared.Validation;
 
-namespace DirectoryService.Application.Locations.CreateLocations;
+namespace DirectoryService.Application.Locations.Commands.CreateLocations;
 
 public class CreateLocationHandler : ICommandHandler<Guid, CreateLocationCommand>
 {

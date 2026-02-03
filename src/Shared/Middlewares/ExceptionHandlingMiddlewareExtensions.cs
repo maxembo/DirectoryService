@@ -1,4 +1,6 @@
-﻿namespace DirectoryService.Web.Middlewares;
+﻿using Microsoft.AspNetCore.Builder;
+
+namespace Shared.Middlewares;
 
 public static class ExceptionHandlingMiddlewareExtensions
 {

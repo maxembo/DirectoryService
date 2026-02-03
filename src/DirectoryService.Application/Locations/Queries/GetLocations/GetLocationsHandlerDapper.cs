@@ -1,17 +1,19 @@
 ﻿using System.Data;
-using System.Linq.Expressions;
 using CSharpFunctionalExtensions;
 using Dapper;
 using DirectoryService.Application.Database;
-using DirectoryService.Application.Validation;
 using DirectoryService.Contracts.Locations.GetLocations;
+using DirectoryService.Contracts.Locations.GetLocations.Dtos;
+using DirectoryService.Contracts.Locations.GetLocations.Requests;
 using FluentValidation;
 using Shared;
 using Shared.Abstractions;
+using Shared.Database;
+using Shared.Validation;
 
 namespace DirectoryService.Application.Locations.Queries.GetLocations;
 
-public class GetLocationsHandlerDapper : IQueryHandler<PaginationResponse, GetLocationsQuery>
+public class GetLocationsHandlerDapper : IQueryHandler<PaginationLocationResponse, GetLocationsQuery>
 {
     private readonly IDbConnectionFactory _dbConnectionFactory;
     private readonly IValidator<GetLocationsRequest> _validator;
@@ -24,7 +26,7 @@ public class GetLocationsHandlerDapper : IQueryHandler<PaginationResponse, GetLo
         _validator = validator;
     }
 
-    public async Task<Result<PaginationResponse, Errors>> Handle(
+    public async Task<Result<PaginationLocationResponse, Errors>> Handle(
         GetLocationsQuery query, CancellationToken cancellationToken)
     {
         var validationResult = await _validator.ValidateAsync(query.Request, cancellationToken);
@@ -107,6 +109,6 @@ public class GetLocationsHandlerDapper : IQueryHandler<PaginationResponse, GetLo
                 return location;
             }, param: parameters);
 
-        return new PaginationResponse(locations.ToList(), totalCount ?? 0);
+        return new PaginationLocationResponse(locations.ToList(), totalCount ?? 0);
     }
 }

@@ -1,8 +1,8 @@
 ﻿using System.Net;
-using DirectoryService.Presentation.Response;
 using Microsoft.AspNetCore.Http;
+using Shared.Response;
 
-namespace DirectoryService.Presentation.EndpointResults;
+namespace Shared.EndpointResults;
 
 public class SuccessResult<TValue> : IResult
 {

@@ -1,4 +1,7 @@
-﻿namespace DirectoryService.Web.Middlewares;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+
+namespace Shared.Middlewares;
 
 public class ExceptionHandlingMiddleware
 {
