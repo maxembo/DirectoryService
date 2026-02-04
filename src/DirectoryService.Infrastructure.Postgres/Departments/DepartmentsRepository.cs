@@ -1,6 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using Dapper;
-using DirectoryService.Application.Abstractions;
+using DirectoryService.Application.Departments;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Infrastructure.Postgres.Database;
 using Microsoft.EntityFrameworkCore;

@@ -1,7 +1,7 @@
-﻿using DirectoryService.Application.Validation;
-using DirectoryService.Contracts.Departments.UpdateDepartment;
+﻿using DirectoryService.Contracts.Departments.UpdateDepartment;
 using FluentValidation;
 using Shared;
+using Shared.Validation;
 
 namespace DirectoryService.Application.Departments.UpdateDepartments;
 

@@ -1,7 +1,7 @@
 using System.Globalization;
 using DirectoryService.Web;
-using DirectoryService.Web.Middlewares;
 using Serilog;
+using Shared.Middlewares;
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()

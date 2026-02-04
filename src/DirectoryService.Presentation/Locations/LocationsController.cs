@@ -1,9 +1,12 @@
-using DirectoryService.Application.Abstractions;
-using DirectoryService.Application.Locations.CreateLocations;
+using DirectoryService.Application.Locations.Commands.CreateLocations;
+using DirectoryService.Application.Locations.Queries.GetLocations;
 using DirectoryService.Contracts.Locations.CreateLocations;
-using DirectoryService.Presentation.EndpointResults;
-using DirectoryService.Presentation.Response;
+using DirectoryService.Contracts.Locations.GetLocations.Dtos;
+using DirectoryService.Contracts.Locations.GetLocations.Requests;
 using Microsoft.AspNetCore.Mvc;
+using Shared.Abstractions;
+using Shared.EndpointResults;
+using Shared.Response;
 
 namespace DirectoryService.Presentation.Locations;
 
@@ -21,8 +24,38 @@ public class LocationsController : ControllerBase
         [FromBody] CreateLocationRequest request,
         CancellationToken cancellationToken)
     {
-        var locationCommand = new CreateLocationCommand(request);
+        var command = new CreateLocationCommand(request);
 
-        return await handler.Handle(locationCommand, cancellationToken);
+        return await handler.Handle(command, cancellationToken);
+    }
+
+    [HttpGet]
+    [ProducesResponseType<Envelope<GetLocationsDto>>(200)]
+    [ProducesResponseType<Envelope>(404)]
+    [ProducesResponseType<Envelope>(500)]
+    [ProducesResponseType<Envelope>(401)]
+    public async Task<EndpointResult<PaginationEnvelope<GetLocationsDto>>> GetLocations(
+        [FromServices] IQueryHandler<PaginationEnvelope<GetLocationsDto>, GetLocationsQuery> handler,
+        [FromQuery] GetLocationsRequest request,
+        CancellationToken cancellationToken)
+    {
+        var query = new GetLocationsQuery(request);
+
+        return await handler.Handle(query, cancellationToken);
+    }
+
+    [HttpGet("dapper")]
+    [ProducesResponseType<Envelope<GetLocationsDto>>(200)]
+    [ProducesResponseType<Envelope>(404)]
+    [ProducesResponseType<Envelope>(500)]
+    [ProducesResponseType<Envelope>(401)]
+    public async Task<EndpointResult<PaginationEnvelope<GetLocationsDto>>> GetLocationsDapper(
+        [FromServices] IQueryHandler<PaginationEnvelope<GetLocationsDto>, GetLocationsQuery> handler,
+        [FromQuery] GetLocationsRequest request,
+        CancellationToken cancellationToken)
+    {
+        var query = new GetLocationsQuery(request);
+
+        return await handler.Handle(query, cancellationToken);
     }
 }

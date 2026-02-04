@@ -1,12 +1,12 @@
 ﻿using CSharpFunctionalExtensions;
-using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Database;
-using DirectoryService.Application.Validation;
-using DirectoryService.Contracts.Departments.MoveDepartments;
 using DirectoryService.Domain.Departments;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
 using Shared;
+using Shared.Abstractions;
+using Shared.Database;
+using Shared.Validation;
 
 namespace DirectoryService.Application.Departments.MoveDepartments;
 
