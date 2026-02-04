@@ -1,7 +1,7 @@
 using DirectoryService.Application.Locations.Commands.CreateLocations;
 using DirectoryService.Application.Locations.Queries.GetLocations;
 using DirectoryService.Contracts.Locations.CreateLocations;
-using DirectoryService.Contracts.Locations.GetLocations;
+using DirectoryService.Contracts.Locations.GetLocations.Dtos;
 using DirectoryService.Contracts.Locations.GetLocations.Requests;
 using Microsoft.AspNetCore.Mvc;
 using Shared.Abstractions;
@@ -30,8 +30,12 @@ public class LocationsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<EndpointResult<PaginationLocationResponse>> GetLocations(
-        [FromServices] IQueryHandler<PaginationLocationResponse, GetLocationsQuery> handler,
+    [ProducesResponseType<Envelope<GetLocationsDto>>(200)]
+    [ProducesResponseType<Envelope>(404)]
+    [ProducesResponseType<Envelope>(500)]
+    [ProducesResponseType<Envelope>(401)]
+    public async Task<EndpointResult<PaginationEnvelope<GetLocationsDto>>> GetLocations(
+        [FromServices] IQueryHandler<PaginationEnvelope<GetLocationsDto>, GetLocationsQuery> handler,
         [FromQuery] GetLocationsRequest request,
         CancellationToken cancellationToken)
     {
@@ -41,8 +45,12 @@ public class LocationsController : ControllerBase
     }
 
     [HttpGet("dapper")]
-    public async Task<EndpointResult<PaginationLocationResponse>> GetLocationsDapper(
-        [FromServices] IQueryHandler<PaginationLocationResponse, GetLocationsQuery> handler,
+    [ProducesResponseType<Envelope<GetLocationsDto>>(200)]
+    [ProducesResponseType<Envelope>(404)]
+    [ProducesResponseType<Envelope>(500)]
+    [ProducesResponseType<Envelope>(401)]
+    public async Task<EndpointResult<PaginationEnvelope<GetLocationsDto>>> GetLocationsDapper(
+        [FromServices] IQueryHandler<PaginationEnvelope<GetLocationsDto>, GetLocationsQuery> handler,
         [FromQuery] GetLocationsRequest request,
         CancellationToken cancellationToken)
     {
