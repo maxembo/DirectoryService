@@ -2,8 +2,10 @@ using System.Data.Common;
 using CSharpFunctionalExtensions;
 using DirectoryService.Application.Database;
 using DirectoryService.Domain.DepartmentLocations;
+using DirectoryService.Domain.DepartmentPositions;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Locations;
+using DirectoryService.Domain.Positions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Npgsql;
@@ -26,6 +28,11 @@ public class DirectoryServiceDbContext(string connectionString) : DbContext, IRe
 
     public IQueryable<DepartmentLocation> DepartmentLocationsRead =>
         Set<DepartmentLocation>().AsQueryable().AsNoTracking();
+
+    public IQueryable<Position> PositionsRead => Set<Position>().AsQueryable().AsNoTracking();
+
+    public IQueryable<DepartmentPosition> DepartmentPositionsRead =>
+        Set<DepartmentPosition>().AsQueryable().AsNoTracking();
 
     public async Task<UnitResult<Error>> SaveChangesResultAsync(CancellationToken cancellationToken = default)
     {
