@@ -1,10 +1,14 @@
 ﻿using DirectoryService.Application.Departments.Commands.CreateDepartments;
 using DirectoryService.Application.Departments.Commands.MoveDepartments;
 using DirectoryService.Application.Departments.Commands.UpdateDepartments;
+using DirectoryService.Application.Departments.Queries;
+using DirectoryService.Contracts.Departments;
 using DirectoryService.Contracts.Departments.CreateDepartment;
+using DirectoryService.Contracts.Departments.Dtos;
 using DirectoryService.Contracts.Departments.MoveDepartments;
 using DirectoryService.Contracts.Departments.UpdateDepartment;
 using Microsoft.AspNetCore.Mvc;
+using Shared;
 using Shared.Abstractions;
 using Shared.EndpointResults;
 using Shared.Response;
@@ -56,5 +60,13 @@ public class DepartmentsController : ControllerBase
         var command = new MoveDepartmentCommand(departmentId, request);
 
         return await handler.Handle(command, cancellationToken);
+    }
+
+    [HttpGet("/top-positions")]
+    public async Task<EndpointResult<GetDepartmentDto[]>> GetTopFiveDepartmentsWithMostPositions(
+        [FromServices] IQueryHandler<GetDepartmentDto[]> handler,
+        CancellationToken cancellationToken)
+    {
+        return await handler.Handle(cancellationToken);
     }
 }
