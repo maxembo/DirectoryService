@@ -26,11 +26,18 @@ public class EndpointResult<TValue> : IResult, IEndpointMetadataProvider
             : new ErrorResult(result.Error);
     }
 
+    public EndpointResult(TValue? result)
+    {
+        _result = new SuccessResult<TValue?>(result);
+    }
+
     public Task ExecuteAsync(HttpContext httpContext) => _result.ExecuteAsync(httpContext);
 
     public static implicit operator EndpointResult<TValue>(Result<TValue, Error> result) => new(result);
 
     public static implicit operator EndpointResult<TValue>(Result<TValue, Errors> result) => new(result);
+
+    public static implicit operator EndpointResult<TValue>(TValue? value) => new(value);
 
     public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)
     {
