@@ -28,7 +28,7 @@ public static class DependencyInjection
                 .FromAssemblies(typeof(DependencyInjection).Assembly)
                 .AddClasses(
                     classes =>
-                        classes.AssignableTo(typeof(IQueryHandler<,>)))
+                        classes.AssignableToAny(typeof(IQueryHandler<,>), typeof(IQueryHandler<>)))
                 .AsSelfWithInterfaces()
                 .WithScopedLifetime());
 
