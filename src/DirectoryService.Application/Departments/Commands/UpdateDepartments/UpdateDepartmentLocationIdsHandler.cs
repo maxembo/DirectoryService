@@ -11,7 +11,7 @@ using Shared.Abstractions;
 using Shared.Database;
 using Shared.Validation;
 
-namespace DirectoryService.Application.Departments.UpdateDepartments;
+namespace DirectoryService.Application.Departments.Commands.UpdateDepartments;
 
 public class UpdateDepartmentLocationIdsHandler : ICommandHandler<Guid, UpdateDepartmentLocationIdsCommand>
 {

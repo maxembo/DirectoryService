@@ -1,4 +1,4 @@
-﻿using DirectoryService.Application.Departments.MoveDepartments;
+﻿using DirectoryService.Application.Departments.Commands.MoveDepartments;
 using DirectoryService.Contracts.Departments.MoveDepartments;
 using DirectoryService.IntegrationTests.Infrastructure;
 using Microsoft.EntityFrameworkCore;

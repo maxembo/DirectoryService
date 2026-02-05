@@ -1,6 +1,6 @@
-﻿using DirectoryService.Application.Departments.CreateDepartments;
-using DirectoryService.Application.Departments.MoveDepartments;
-using DirectoryService.Application.Departments.UpdateDepartments;
+﻿using DirectoryService.Application.Departments.Commands.CreateDepartments;
+using DirectoryService.Application.Departments.Commands.MoveDepartments;
+using DirectoryService.Application.Departments.Commands.UpdateDepartments;
 using DirectoryService.Contracts.Departments.CreateDepartment;
 using DirectoryService.Contracts.Departments.MoveDepartments;
 using DirectoryService.Contracts.Departments.UpdateDepartment;
