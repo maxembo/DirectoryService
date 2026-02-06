@@ -22,9 +22,7 @@ public record GetDepartmentDto()
 
     public DateTime UpdatedAt { get; init; }
 
-    public List<Guid> Childrens { get; init; } = [];
-
     public long PositionCount { get; init; }
 
-    public List<DepartmentLocationsDto> Locations { get; init; } = [];
+    public List<Guid> Locations { get; init; } = [];
 }

@@ -1,5 +1,4 @@
 ﻿using DirectoryService.Application.Database;
-using DirectoryService.Contracts.DepartmentLocations.Dtos;
 using DirectoryService.Contracts.Departments.Dtos;
 using Microsoft.EntityFrameworkCore;
 using Shared.Abstractions;
@@ -8,7 +7,7 @@ namespace DirectoryService.Application.Departments.Queries;
 
 public class GetTopFiveDepartmentsWithMostPositionsHandler : IQueryHandler<GetDepartmentDto[]>
 {
-    private const int LIMIT = 5;
+    private const int TOP_DEPARTMENTS_LIMIT = 5;
 
     private readonly IReadDbContext _readDbContext;
 
@@ -34,18 +33,11 @@ public class GetTopFiveDepartmentsWithMostPositionsHandler : IQueryHandler<GetDe
                     Depth = d.Path.Depth,
                     CreatedAt = d.CreatedAt,
                     UpdatedAt = d.UpdatedAt,
-                    Childrens = d.Childrens.Select(c => c.Id.Value).ToList(),
                     PositionCount = d.Positions.Count,
-                    Locations = d.Locations.Select(
-                        dl => new DepartmentLocationsDto
-                        {
-                            Id = dl.Id.Value,
-                            LocationId = dl.LocationId.Value,
-                            DepartmentId = dl.DepartmentId.Value,
-                        }).ToList(),
+                    Locations = d.Locations.Select(l => l.LocationId.Value).ToList(),
                 })
             .OrderByDescending(d => d.PositionCount)
-            .Take(LIMIT)
+            .Take(TOP_DEPARTMENTS_LIMIT)
             .ToListAsync(cancellationToken);
 
         return departments.ToArray();

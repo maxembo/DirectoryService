@@ -1,5 +1,4 @@
 ﻿using Dapper;
-using DirectoryService.Contracts.DepartmentLocations.Dtos;
 using DirectoryService.Contracts.Departments.Dtos;
 using Shared.Abstractions;
 using Shared.Database;
@@ -20,78 +19,34 @@ public class GetTopFiveDepartmentsWithMostPositionsHandlerDapper : IQueryHandler
         var dbConnection = _dbConnectionFactory.GetDbConnection();
 
         const string sql = """
-                           WITH top_depts AS (
-                               SELECT
-                                   d.id            AS Id,
-                                   d.parent_id     AS ParentId,
-                                   d.is_active     AS IsActive,
-                                   d.created_at    AS CreatedAt,
-                                   d.updated_at    AS UpdatedAt,
-                                   d.identifier    AS Identifier,
-                                   d.name          AS Name,
-                                   d.depth         AS Depth,
-                                   d.path          AS Path,
-                                   COUNT(dp.id)    AS PositionCount
-                               FROM departments d
-                                        LEFT JOIN department_positions dp ON dp.department_id = d.id
-                               GROUP BY d.id
-                               ORDER BY PositionCount DESC
-                               LIMIT 5
-                           )
-                           SELECT
-                               td.Id,
-                               td.ParentId,
-                               td.IsActive,
-                               td.CreatedAt,
-                               td.UpdatedAt,
-                               td.Identifier,
-                               td.Name,
-                               td.Depth,
-                               td.Path,
-                               
-                               dl.id                 AS LocationDepartmentId,
-                           
-                                 dl.id               AS Id,
-                                 dl.department_id    AS DepartmentId,
-                                 dl.location_id      AS LocationId,
-                               
-                               COALESCE((SELECT array_agg(ch.id) FROM departments ch WHERE ch.parent_id = td.id), 
-                               ARRAY[]::uuid[]) AS children_ids,
-                               
-                               td.PositionCount
-                           FROM top_depts td
-                                    LEFT JOIN department_locations dl ON dl.department_id = td.Id
-                           ORDER BY td.PositionCount DESC, td.Name;
+                           SELECT d.id,
+                                  d.parent_id,
+                                  d.name,
+                                  d.identifier,
+                                  d.path,
+                                  d.is_active,
+                                  d.created_at,
+                                  d.updated_at,
+                                  t.positions_count,
+                                  array_agg(dl.location_id) AS locations
+                           FROM departments d
+                                    JOIN (SELECT dp.department_id AS id,
+                                                 COUNT(dp.id)     AS positions_count
+                                          FROM department_positions dp
+                                          GROUP BY dp.department_id
+                                          ORDER BY positions_count DESC
+                                          LIMIT 5) t ON t.id = d.id
+                                    LEFT JOIN department_locations dl ON dl.department_id = d.id
+                           GROUP BY d.id, t.positions_count
+                           ORDER BY t.positions_count DESC;
                            """;
 
-        var lookup = new Dictionary<Guid, GetDepartmentDto>();
+        var departments = await dbConnection
+            .QueryAsync<GetDepartmentDto, long, Guid[], GetDepartmentDto>(
+                sql, splitOn: "positions_count, locations", map:
+                (department, count, locations)
+                    => department with { PositionCount = count, Locations = locations.ToList() });
 
-        await dbConnection
-            .QueryAsync<GetDepartmentDto, DepartmentLocationsDto, Guid[], long, GetDepartmentDto>(
-                sql,
-                splitOn: "LocationDepartmentId, children_ids, PositionCount",
-                map: (dept, dl, childrens, count) =>
-                {
-                    if (!lookup.TryGetValue(dept.Id, out var existing))
-                    {
-                        existing = dept with
-                        {
-                            PositionCount = count,
-                            Locations = new List<DepartmentLocationsDto>(),
-                            Childrens = new List<Guid>()
-                        };
-                        lookup.Add(dept.Id, existing);
-                    }
-
-                    existing.Locations.Add(dl);
-                    foreach (var ch in childrens)
-                    {
-                        if (!existing.Childrens.Contains(ch))
-                            existing.Childrens.Add(ch);
-                    }
-
-                    return existing;
-                });
-        return lookup.Values.ToArray();
+        return departments.ToArray();
     }
 }
