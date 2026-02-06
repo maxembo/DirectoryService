@@ -2,7 +2,7 @@
 using Shared;
 using Shared.Validation;
 
-namespace DirectoryService.Application.Departments.MoveDepartments;
+namespace DirectoryService.Application.Departments.Commands.MoveDepartments;
 
 public class MoveDepartmentValidator : AbstractValidator<MoveDepartmentCommand>
 {

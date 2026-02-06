@@ -10,7 +10,7 @@ using Shared;
 using Shared.Abstractions;
 using Shared.Validation;
 
-namespace DirectoryService.Application.Departments.CreateDepartments;
+namespace DirectoryService.Application.Departments.Commands.CreateDepartments;
 
 public class CreateDepartmentHandler : ICommandHandler<Guid, CreateDepartmentCommand>
 {

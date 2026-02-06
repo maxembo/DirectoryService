@@ -1,5 +1,4 @@
 ﻿using CSharpFunctionalExtensions;
-using DirectoryService.Application.Database;
 using DirectoryService.Domain.Departments;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
@@ -8,7 +7,7 @@ using Shared.Abstractions;
 using Shared.Database;
 using Shared.Validation;
 
-namespace DirectoryService.Application.Departments.MoveDepartments;
+namespace DirectoryService.Application.Departments.Commands.MoveDepartments;
 
 public class MoveDepartmentHandler : ICommandHandler<Guid, MoveDepartmentCommand>
 {

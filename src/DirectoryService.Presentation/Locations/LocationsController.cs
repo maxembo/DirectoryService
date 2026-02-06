@@ -50,7 +50,7 @@ public class LocationsController : ControllerBase
     [ProducesResponseType<Envelope>(500)]
     [ProducesResponseType<Envelope>(401)]
     public async Task<EndpointResult<PaginationEnvelope<GetLocationsDto>>> GetLocationsDapper(
-        [FromServices] IQueryHandler<PaginationEnvelope<GetLocationsDto>, GetLocationsQuery> handler,
+        [FromServices] GetLocationsHandlerDapper handler,
         [FromQuery] GetLocationsRequest request,
         CancellationToken cancellationToken)
     {
