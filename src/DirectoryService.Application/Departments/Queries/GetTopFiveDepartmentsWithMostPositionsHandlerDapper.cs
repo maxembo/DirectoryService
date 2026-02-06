@@ -48,10 +48,16 @@ public class GetTopFiveDepartmentsWithMostPositionsHandlerDapper : IQueryHandler
                                td.Name,
                                td.Depth,
                                td.Path,
-                               COALESCE((SELECT array_agg(ch.id) FROM departments ch WHERE ch.parent_id = td.id), ARRAY[]::uuid[]) AS childrens_ids,
-                               dl.id          AS Id,
-                               dl.department_id AS DepartmentId,
-                               dl.location_id   AS LocationId,
+                               
+                               dl.id                 AS LocationDepartmentId,
+                           
+                                 dl.id               AS Id,
+                                 dl.department_id    AS DepartmentId,
+                                 dl.location_id      AS LocationId,
+                               
+                               COALESCE((SELECT array_agg(ch.id) FROM departments ch WHERE ch.parent_id = td.id), 
+                               ARRAY[]::uuid[]) AS children_ids,
+                               
                                td.PositionCount
                            FROM top_depts td
                                     LEFT JOIN department_locations dl ON dl.department_id = td.Id
@@ -61,20 +67,27 @@ public class GetTopFiveDepartmentsWithMostPositionsHandlerDapper : IQueryHandler
         var lookup = new Dictionary<Guid, GetDepartmentDto>();
 
         await dbConnection
-            .QueryAsync<GetDepartmentDto, DepartmentLocationsDto, long, GetDepartmentDto>(
+            .QueryAsync<GetDepartmentDto, DepartmentLocationsDto, Guid[], long, GetDepartmentDto>(
                 sql,
-                splitOn: "Id,PositionCount",
-                map: (dept, loc, count) =>
+                splitOn: "LocationDepartmentId, children_ids, PositionCount",
+                map: (dept, dl, childrens, count) =>
                 {
                     if (!lookup.TryGetValue(dept.Id, out var existing))
                     {
-                        existing = dept with { PositionCount = count, Locations = new List<DepartmentLocationsDto>(), };
+                        existing = dept with
+                        {
+                            PositionCount = count,
+                            Locations = new List<DepartmentLocationsDto>(),
+                            Childrens = new List<Guid>()
+                        };
                         lookup.Add(dept.Id, existing);
                     }
 
-                    if (loc.Id != Guid.Empty)
+                    existing.Locations.Add(dl);
+                    foreach (var ch in childrens)
                     {
-                        existing.Locations.Add(loc);
+                        if (!existing.Childrens.Contains(ch))
+                            existing.Childrens.Add(ch);
                     }
 
                     return existing;
