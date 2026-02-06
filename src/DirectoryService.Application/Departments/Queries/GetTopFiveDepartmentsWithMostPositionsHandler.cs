@@ -8,7 +8,7 @@ namespace DirectoryService.Application.Departments.Queries;
 
 public class GetTopFiveDepartmentsWithMostPositionsHandler : IQueryHandler<GetDepartmentDto[]>
 {
-    private const int LIMIT = 5;
+    private const int LIMIT = 100;
 
     private readonly IReadDbContext _readDbContext;
 

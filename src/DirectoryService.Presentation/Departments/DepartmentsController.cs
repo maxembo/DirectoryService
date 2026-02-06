@@ -64,7 +64,15 @@ public class DepartmentsController : ControllerBase
 
     [HttpGet("/top-positions")]
     public async Task<EndpointResult<GetDepartmentDto[]>> GetTopFiveDepartmentsWithMostPositions(
-        [FromServices] IQueryHandler<GetDepartmentDto[]> handler,
+        [FromServices] GetTopFiveDepartmentsWithMostPositionsHandler handler,
+        CancellationToken cancellationToken)
+    {
+        return await handler.Handle(cancellationToken);
+    }
+
+    [HttpGet("/top-positions/dapper")]
+    public async Task<EndpointResult<GetDepartmentDto[]>> GetTopFiveDepartmentsWithMostPositionsDapper(
+        [FromServices] GetTopFiveDepartmentsWithMostPositionsHandlerDapper handler,
         CancellationToken cancellationToken)
     {
         return await handler.Handle(cancellationToken);

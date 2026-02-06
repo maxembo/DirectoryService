@@ -24,7 +24,7 @@ public record GetDepartmentDto()
 
     public List<Guid> Childrens { get; init; } = [];
 
-    public long PositionCount { get; set; }
+    public long PositionCount { get; init; }
 
     public List<DepartmentLocationsDto> Locations { get; init; } = [];
 }
