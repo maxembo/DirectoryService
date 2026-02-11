@@ -14,11 +14,11 @@ public class GetLocationsValidator : AbstractValidator<GetLocationsRequest>
             .MaximumLength(1000)
             .WithError(GeneralErrors.Invalid("search"));
 
-        RuleFor(g => g.Pagination.Page)
+        RuleFor(g => g.Page)
             .GreaterThanOrEqualTo(1)
             .WithError(GeneralErrors.Invalid("page"));
 
-        RuleFor(g => g.Pagination.PageSize)
+        RuleFor(g => g.PageSize)
             .InclusiveBetween(1, 100)
             .WithError(GeneralErrors.Invalid("pageSize"));
     }

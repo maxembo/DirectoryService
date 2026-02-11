@@ -10,11 +10,11 @@ public class GetRootsDepartmentsValidator : AbstractValidator<GetRootDepartments
 {
     public GetRootsDepartmentsValidator()
     {
-        RuleFor(g => g.Pagination.Page)
+        RuleFor(g => g.Page)
             .GreaterThanOrEqualTo(1)
             .WithError(GeneralErrors.Invalid("page"));
 
-        RuleFor(g => g.Pagination.PageSize)
+        RuleFor(g => g.PageSize)
             .InclusiveBetween(1, 100)
             .WithError(GeneralErrors.Invalid("pageSize"));
 

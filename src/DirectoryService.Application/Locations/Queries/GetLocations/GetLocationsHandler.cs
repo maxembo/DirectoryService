@@ -70,8 +70,8 @@ public class GetLocationsHandler : IQueryHandler<PaginationEnvelope<GetLocations
             : locationQuery.OrderByDescending(sortBy);
 
         locationQuery = locationQuery
-            .Skip((query.Request.Pagination.Page - 1) * query.Request.Pagination.PageSize)
-            .Take(query.Request.Pagination.PageSize);
+            .Skip((query.Request.Page - 1) * query.Request.PageSize)
+            .Take(query.Request.PageSize);
 
         int totalCount = await locationQuery.CountAsync(cancellationToken);
 

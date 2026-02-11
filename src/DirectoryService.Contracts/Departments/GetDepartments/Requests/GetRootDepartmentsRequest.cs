@@ -1,5 +1,3 @@
-﻿using DirectoryService.Contracts.Locations.GetLocations.Requests;
+﻿namespace DirectoryService.Contracts.Departments.GetDepartments.Requests;
 
-namespace DirectoryService.Contracts.Departments.GetDepartments.Requests;
-
-public record GetRootDepartmentsRequest(PaginationRequest Pagination, int Prefetch = 3);
+public record GetRootDepartmentsRequest(int Prefetch = 3) : PaginationRequest;

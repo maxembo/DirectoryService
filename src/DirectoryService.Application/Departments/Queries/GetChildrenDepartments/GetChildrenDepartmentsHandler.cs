@@ -73,8 +73,8 @@ public class
             new
             {
                 ParentId = query.ParentId,
-                ChildSize = query.Request.Pagination.PageSize,
-                ChildPage = (query.Request.Pagination.Page - 1) * query.Request.Pagination.PageSize,
+                ChildSize = query.Request.PageSize,
+                ChildPage = (query.Request.Page - 1) * query.Request.PageSize,
             })).ToList();
 
         return new PaginationEnvelope<GetDepartmentDto>(childrenDepartments, totalCount ?? 0);

@@ -14,11 +14,11 @@ public class GetChildrenDepartmentsValidator : AbstractValidator<GetChildrenDepa
             .Must(parentId => parentId != Guid.Empty)
             .WithError(GeneralErrors.Invalid("parentId"));
 
-        RuleFor(g => g.Request.Pagination.Page)
+        RuleFor(g => g.Request.Page)
             .GreaterThanOrEqualTo(1)
             .WithError(GeneralErrors.Invalid("page"));
 
-        RuleFor(g => g.Request.Pagination.PageSize)
+        RuleFor(g => g.Request.PageSize)
             .InclusiveBetween(1, 100)
             .WithError(GeneralErrors.Invalid("pageSize"));
     }

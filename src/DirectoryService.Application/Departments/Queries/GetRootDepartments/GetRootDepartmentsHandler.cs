@@ -118,8 +118,8 @@ public class
             },
             param: new
             {
-                RootSize = query.Request.Pagination.PageSize,
-                RootPage = (query.Request.Pagination.Page - 1) * query.Request.Pagination.PageSize,
+                RootSize = query.Request.PageSize,
+                RootPage = (query.Request.Page - 1) * query.Request.PageSize,
                 Prefetch = query.Request.Prefetch,
             })).ToList();
 
