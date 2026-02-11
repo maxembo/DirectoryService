@@ -3,7 +3,7 @@ using DirectoryService.Contracts.Departments.Dtos;
 using Shared.Abstractions;
 using Shared.Database;
 
-namespace DirectoryService.Application.Departments.Queries;
+namespace DirectoryService.Application.Departments.Queries.GetTopFiveDepartmentsWithMostPositions;
 
 public class GetTopFiveDepartmentsWithMostPositionsHandlerDapper : IQueryHandler<GetDepartmentDto[]>
 {

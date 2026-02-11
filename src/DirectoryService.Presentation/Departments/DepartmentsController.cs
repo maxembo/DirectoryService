@@ -2,6 +2,7 @@
 using DirectoryService.Application.Departments.Commands.MoveDepartments;
 using DirectoryService.Application.Departments.Commands.UpdateDepartments;
 using DirectoryService.Application.Departments.Queries;
+using DirectoryService.Application.Departments.Queries.GetTopFiveDepartmentsWithMostPositions;
 using DirectoryService.Contracts.Departments;
 using DirectoryService.Contracts.Departments.CreateDepartment;
 using DirectoryService.Contracts.Departments.Dtos;

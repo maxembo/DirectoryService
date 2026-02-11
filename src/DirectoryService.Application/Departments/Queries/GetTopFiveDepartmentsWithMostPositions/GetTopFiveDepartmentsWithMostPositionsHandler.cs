@@ -3,7 +3,7 @@ using DirectoryService.Contracts.Departments.Dtos;
 using Microsoft.EntityFrameworkCore;
 using Shared.Abstractions;
 
-namespace DirectoryService.Application.Departments.Queries;
+namespace DirectoryService.Application.Departments.Queries.GetTopFiveDepartmentsWithMostPositions;
 
 public class GetTopFiveDepartmentsWithMostPositionsHandler : IQueryHandler<GetDepartmentDto[]>
 {
