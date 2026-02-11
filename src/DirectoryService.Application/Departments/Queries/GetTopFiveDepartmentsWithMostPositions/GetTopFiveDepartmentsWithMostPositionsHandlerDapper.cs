@@ -1,5 +1,5 @@
 ﻿using Dapper;
-using DirectoryService.Contracts.Departments.Dtos;
+using DirectoryService.Contracts.Departments.GetTopFiveDepartmentsWithMostPositions.Dtos;
 using Shared.Abstractions;
 using Shared.Database;
 

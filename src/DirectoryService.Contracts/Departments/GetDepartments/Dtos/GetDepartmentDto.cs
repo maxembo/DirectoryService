@@ -1,8 +1,6 @@
-﻿using DirectoryService.Contracts.DepartmentLocations.Dtos;
+﻿namespace DirectoryService.Contracts.Departments.GetDepartments.Dtos;
 
-namespace DirectoryService.Contracts.Departments.Dtos;
-
-public record GetDepartmentDto()
+public record GetDepartmentDto
 {
     public Guid Id { get; init; }
 
@@ -22,7 +20,7 @@ public record GetDepartmentDto()
 
     public DateTime UpdatedAt { get; init; }
 
-    public long PositionCount { get; init; }
+    public bool HasMoreChildren { get; init; }
 
-    public List<Guid> Locations { get; init; } = [];
+    public List<Guid> Childrens { get; init; } = [];
 }

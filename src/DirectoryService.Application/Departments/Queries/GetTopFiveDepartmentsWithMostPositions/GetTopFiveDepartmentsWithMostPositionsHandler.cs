@@ -1,5 +1,5 @@
 ﻿using DirectoryService.Application.Database;
-using DirectoryService.Contracts.Departments.Dtos;
+using DirectoryService.Contracts.Departments.GetTopFiveDepartmentsWithMostPositions.Dtos;
 using Microsoft.EntityFrameworkCore;
 using Shared.Abstractions;
 

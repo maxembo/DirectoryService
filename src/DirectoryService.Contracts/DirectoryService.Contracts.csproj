@@ -10,4 +10,8 @@
       <ProjectReference Include="..\DirectoryService.Domain\DirectoryService.Domain.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Departments\GetTopFiveDepartmentsWithMostPositions\" />
+    </ItemGroup>
+
 </Project>
