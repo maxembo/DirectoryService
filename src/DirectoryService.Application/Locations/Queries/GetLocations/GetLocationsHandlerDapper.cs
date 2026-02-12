@@ -63,8 +63,8 @@ public class GetLocationsHandlerDapper : IQueryHandler<PaginationEnvelope<GetLoc
             conditions.Add("l.is_active = @is_active");
         }
 
-        parameters.Add("page", (query.Request.Pagination.Page - 1) * query.Request.Pagination.PageSize, DbType.Int32);
-        parameters.Add("page_size", query.Request.Pagination.PageSize, DbType.Int32);
+        parameters.Add("page", (query.Request.Page - 1) * query.Request.PageSize, DbType.Int32);
+        parameters.Add("page_size", query.Request.PageSize, DbType.Int32);
 
         string whereClause = conditions.Count > 0 ? "WHERE " + string.Join(" AND ", conditions) : string.Empty;
 

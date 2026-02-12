@@ -1,9 +1,9 @@
 ﻿using DirectoryService.Application.Database;
-using DirectoryService.Contracts.Departments.Dtos;
+using DirectoryService.Contracts.Departments.GetTopFiveDepartmentsWithMostPositions.Dtos;
 using Microsoft.EntityFrameworkCore;
 using Shared.Abstractions;
 
-namespace DirectoryService.Application.Departments.Queries;
+namespace DirectoryService.Application.Departments.Queries.GetTopFiveDepartmentsWithMostPositions;
 
 public class GetTopFiveDepartmentsWithMostPositionsHandler : IQueryHandler<GetDepartmentDto[]>
 {
