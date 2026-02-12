@@ -1,5 +1,4 @@
-﻿using DirectoryService.Contracts.Departments.GetDepartments;
-using DirectoryService.Contracts.Departments.GetDepartments.Requests;
+﻿using DirectoryService.Contracts.Departments.GetDepartments.Requests;
 using FluentValidation;
 using Shared;
 using Shared.Validation;
