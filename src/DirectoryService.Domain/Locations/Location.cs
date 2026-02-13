@@ -1,9 +1,9 @@
 using DirectoryService.Domain.DepartmentLocations;
-using DirectoryService.Domain.Departments;
+using Shared;
 
 namespace DirectoryService.Domain.Locations;
 
-public sealed class Location : Shared.Entity<LocationId>
+public sealed class Location : Shared.Entity<LocationId>, ISoftDeletable
 {
     public Location(LocationId id, LocationName name, Timezone timezone, Address address)
         : base(id)
@@ -33,4 +33,12 @@ public sealed class Location : Shared.Entity<LocationId>
     public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
 
     public DateTime UpdatedAt { get; private set; } = DateTime.UtcNow;
+
+    public DateTime? DeletedAt { get; private set; }
+
+    public void MarkAsDelete()
+    {
+        IsActive = false;
+        DeletedAt = DateTime.UtcNow;
+    }
 }
