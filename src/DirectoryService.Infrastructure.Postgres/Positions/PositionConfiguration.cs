@@ -39,5 +39,11 @@ public class PositionConfiguration : IEntityTypeConfiguration<Position>
                     .HasMaxLength(Constants.MAX_POSITION_DESCRIPTION_LENGTH)
                     .HasColumnName("description");
             });
+
+        builder.Property(p => p.IsActive)
+            .HasColumnName("is_active");
+
+        builder.Property(p => p.DeletedAt)
+            .HasColumnName("deleted_at");
     }
 }
