@@ -1,4 +1,5 @@
 using CSharpFunctionalExtensions;
+using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Locations;
 using Shared;
 
@@ -11,4 +12,7 @@ public interface ILocationsRepository
     Task<Result<Location, Error>> GetByIdAsync(LocationId locationId, CancellationToken cancellationToken = default);
 
     Task<UnitResult<Errors>> CheckExistingAndActiveIdsAsync(Guid[] ids, CancellationToken cancellationToken = default);
+
+    Task<UnitResult<Error>> DeleteUnusedLocationsByDepartmentIdAsync(
+        DepartmentId departmentId, CancellationToken cancellationToken = default);
 }

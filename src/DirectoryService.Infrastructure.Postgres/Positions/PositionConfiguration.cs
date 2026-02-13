@@ -41,6 +41,7 @@ public class PositionConfiguration : IEntityTypeConfiguration<Position>
             });
 
         builder.Property(p => p.IsActive)
+            .IsRequired()
             .HasColumnName("is_active");
 
         builder.Property(p => p.DeletedAt)

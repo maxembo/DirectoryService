@@ -1,4 +1,5 @@
-﻿using CSharpFunctionalExtensions;
+﻿using System.Linq.Expressions;
+using CSharpFunctionalExtensions;
 using DirectoryService.Domain.Departments;
 using Shared;
 using Path = DirectoryService.Domain.Departments.Path;
@@ -31,4 +32,9 @@ public interface IDepartmentsRepository
 
     Task<UnitResult<Error>> CheckParentIsChild(
         Path parentPath, Path departmentPath, CancellationToken cancellationToken = default);
+
+    Task<Result<Department, Error>> GetBy(
+        Expression<Func<Department, bool>> predicate, CancellationToken cancellationToken);
+
+    Task<UnitResult<Error>> UpdatePathsMarkDelete(Path departmentPath, CancellationToken cancellationToken = default);
 }

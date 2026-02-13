@@ -1,5 +1,7 @@
 using CSharpFunctionalExtensions;
+using Dapper;
 using DirectoryService.Application.Locations;
+using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Locations;
 using DirectoryService.Infrastructure.Postgres.Database;
 using Microsoft.EntityFrameworkCore;
@@ -62,5 +64,40 @@ public class LocationsRepository : ILocationsRepository
         return errors.Count != 0
             ? UnitResult.Failure(new Errors(errors))
             : UnitResult.Success<Errors>();
+    }
+
+    public async Task<UnitResult<Error>> DeleteUnusedLocationsByDepartmentIdAsync(
+        DepartmentId departmentId, CancellationToken cancellationToken = default)
+    {
+        const string sql = """
+                           UPDATE locations l
+                           SET is_active  = false,
+                               deleted_at = NOW()
+                           FROM department_locations dl
+                           WHERE dl.location_id = l.id
+                             AND dl.department_id = @departmentId
+                             AND NOT EXISTS(SELECT 1
+                                            FROM department_locations dl2
+                                                     JOIN departments d ON dl2.department_id = d.id
+                                            WHERE dl2.location_id = dl.location_id
+                                              AND d.is_active = true
+                                              AND d.id <> @departmentId)
+                             AND l.is_active = true
+                           """;
+
+        var dbConnection = _dbContext.Database.GetDbConnection();
+
+        try
+        {
+            await dbConnection.ExecuteAsync(sql, param: new { departmentId = departmentId.Value });
+
+            return UnitResult.Success<Error>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Failed to delete locations");
+
+            return GeneralErrors.Database(null, ex.Message);
+        }
     }
 }
