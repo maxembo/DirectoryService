@@ -10,8 +10,7 @@ using Shared.Validation;
 
 namespace DirectoryService.Application.Departments.Queries.GetChildrenDepartments;
 
-public class
-    GetChildrenDepartmentsHandler : IQueryHandler<PaginationEnvelope<GetDepartmentDto>, GetChildrenDepartmentsQuery>
+public class GetChildrenDepartmentsHandler : IQueryHandler<PaginationEnvelope<GetDepartmentDto>, GetChildrenDepartmentsQuery>
 {
     private readonly IDbConnectionFactory _dbConnectionFactory;
     private readonly IValidator<GetChildrenDepartmentsQuery> _validator;

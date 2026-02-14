@@ -1,4 +1,5 @@
-﻿using CSharpFunctionalExtensions;
+﻿using System.Linq.Expressions;
+using CSharpFunctionalExtensions;
 using Dapper;
 using DirectoryService.Application.Departments;
 using DirectoryService.Domain.Departments;
@@ -196,6 +197,52 @@ public class DepartmentsRepository : IDepartmentsRepository
         catch (Exception ex)
         {
             _logger.LogError("Failed to check Parent IsChild");
+
+            return GeneralErrors.Database(null, ex.Message);
+        }
+    }
+
+    public async Task<Result<Department, Error>> GetBy(
+        Expression<Func<Department, bool>> predicate, CancellationToken cancellationToken)
+    {
+        var department = await _dbContext.Departments.FirstOrDefaultAsync(predicate, cancellationToken);
+
+        if (department is null)
+        {
+            return GeneralErrors.NotFound(null, "department");
+        }
+
+        return department;
+    }
+
+    public async Task<UnitResult<Error>> UpdatePathsMarkDelete(
+        Path departmentPath, CancellationToken cancellationToken = default)
+    {
+        const string sql = """
+                           UPDATE departments d
+                           SET path = CASE 
+                               WHEN d.depth > 0 
+                                    THEN 
+                                        (subpath(path, 0, nlevel(@departmentPath::ltree) - 1) 
+                                            || ('delete-' 
+                                            || subpath(path, nlevel(@departmentPath::ltree) - 1)::text))::ltree
+                                    ELSE
+                                        ('delete-' || subpath(path, nlevel(@departmentPath::ltree) - 1)::text)::ltree
+                                END
+                           WHERE path <@ @departmentPath::ltree
+                           """;
+
+        var dbConnection = _dbContext.Database.GetDbConnection();
+
+        try
+        {
+            await dbConnection.ExecuteAsync(sql, param: new { departmentPath = departmentPath.Value });
+
+            return UnitResult.Success<Error>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Failed to update paths mark delete department");
 
             return GeneralErrors.Database(null, ex.Message);
         }

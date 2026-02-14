@@ -1,12 +1,9 @@
-using CSharpFunctionalExtensions;
 using DirectoryService.Domain.DepartmentPositions;
-using DirectoryService.Domain.Departments;
-using DirectoryService.Domain.Shared;
 using Shared;
 
 namespace DirectoryService.Domain.Positions;
 
-public sealed class Position : Shared.Entity<PositionId>
+public sealed class Position : Shared.Entity<PositionId>, ISoftDeletable
 {
     // ef core
     private Position(PositionId id)
@@ -32,4 +29,14 @@ public sealed class Position : Shared.Entity<PositionId>
     public PositionName Name { get; private set; } = null!;
 
     public Description? Description { get; private set; }
+
+    public bool IsActive { get; private set; } = true;
+
+    public DateTime? DeletedAt { get; private set; }
+
+    public void MarkAsDelete()
+    {
+        IsActive = false;
+        DeletedAt = DateTime.UtcNow;
+    }
 }

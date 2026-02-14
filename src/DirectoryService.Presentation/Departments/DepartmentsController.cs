@@ -1,11 +1,11 @@
 ﻿using DirectoryService.Application.Departments.Commands.CreateDepartments;
 using DirectoryService.Application.Departments.Commands.MoveDepartments;
+using DirectoryService.Application.Departments.Commands.SoftDeleteDepartments;
 using DirectoryService.Application.Departments.Commands.UpdateDepartments;
 using DirectoryService.Application.Departments.Queries.GetChildrenDepartments;
 using DirectoryService.Application.Departments.Queries.GetRootDepartments;
 using DirectoryService.Application.Departments.Queries.GetTopFiveDepartmentsWithMostPositions;
 using DirectoryService.Contracts.Departments.CreateDepartment;
-using DirectoryService.Contracts.Departments.GetDepartments;
 using DirectoryService.Contracts.Departments.GetDepartments.Requests;
 using DirectoryService.Contracts.Departments.MoveDepartments;
 using DirectoryService.Contracts.Departments.UpdateDepartment;
@@ -65,7 +65,8 @@ public class DepartmentsController : ControllerBase
     }
 
     [HttpGet("top-positions")]
-    public async Task<EndpointResult<Contracts.Departments.GetTopFiveDepartmentsWithMostPositions.Dtos.GetDepartmentDto[]>>
+    public async Task<EndpointResult<Contracts.Departments.GetTopFiveDepartmentsWithMostPositions.Dtos.GetDepartmentDto
+            []>>
         GetTopFiveDepartmentsWithMostPositions(
             [FromServices] GetTopFiveDepartmentsWithMostPositionsHandler handler,
             CancellationToken cancellationToken)
@@ -74,7 +75,8 @@ public class DepartmentsController : ControllerBase
     }
 
     [HttpGet("top-positions/dapper")]
-    public async Task<EndpointResult<Contracts.Departments.GetTopFiveDepartmentsWithMostPositions.Dtos.GetDepartmentDto[]>>
+    public async Task<EndpointResult<Contracts.Departments.GetTopFiveDepartmentsWithMostPositions.Dtos.GetDepartmentDto
+            []>>
         GetTopFiveDepartmentsWithMostPositionsDapper(
             [FromServices] GetTopFiveDepartmentsWithMostPositionsHandlerDapper handler,
             CancellationToken cancellationToken)
@@ -103,5 +105,16 @@ public class DepartmentsController : ControllerBase
         var query = new GetChildrenDepartmentsQuery(parentId, departmentsRequest);
 
         return await handler.Handle(query, cancellationToken);
+    }
+
+    [HttpDelete("{departmentId:guid}")]
+    public async Task<EndpointResult<Guid>> Delete(
+        Guid departmentId,
+        [FromServices] ICommandHandler<Guid, SoftDeleteDepartmentCommand> handler,
+        CancellationToken cancellationToken)
+    {
+        var command = new SoftDeleteDepartmentCommand(departmentId);
+
+        return await handler.Handle(command, cancellationToken);
     }
 }

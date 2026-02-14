@@ -11,8 +11,7 @@ using Shared.Validation;
 
 namespace DirectoryService.Application.Departments.Queries.GetRootDepartments;
 
-public class
-    GetRootDepartmentsHandler : IQueryHandler<PaginationEnvelope<GetDepartmentDto>, GetRootDepartmentsQuery>
+public class GetRootDepartmentsHandler : IQueryHandler<PaginationEnvelope<GetDepartmentDto>, GetRootDepartmentsQuery>
 {
     private readonly IDbConnectionFactory _dbConnectionFactory;
     private readonly IValidator<GetRootDepartmentsRequest> _validator;

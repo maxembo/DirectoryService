@@ -8,7 +8,7 @@ namespace DirectoryService.Domain.Departments;
 public sealed record Identifier
 {
     private static readonly Regex _identifierRegex =
-        new("^[A-Za-z]+$", RegexOptions.Compiled);
+        new("^[A-Za-z-]+$", RegexOptions.Compiled);
 
     private Identifier(string value) => Value = value;
 

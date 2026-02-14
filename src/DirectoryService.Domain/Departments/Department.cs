@@ -5,7 +5,7 @@ using Shared;
 
 namespace DirectoryService.Domain.Departments;
 
-public sealed class Department : Shared.Entity<DepartmentId>
+public sealed class Department : Shared.Entity<DepartmentId>, ISoftDeletable
 {
     // ef core
     private Department(DepartmentId id)
@@ -54,6 +54,8 @@ public sealed class Department : Shared.Entity<DepartmentId>
     public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
 
     public DateTime UpdatedAt { get; private set; } = DateTime.UtcNow;
+
+    public DateTime? DeletedAt { get; private set; }
 
     public UnitResult<Error> Rename(string name)
     {
@@ -115,28 +117,6 @@ public sealed class Department : Shared.Entity<DepartmentId>
 
         return UnitResult.Success<Error>();
     }
-
-    // public UnitResult<Error> SetPath(Identifier identifier, Path? path = null)
-    // {
-    //     if (path == null)
-    //     {
-    //         var resultPath = Path.Create(identifier.Value);
-    //
-    //         if (resultPath.IsFailure)
-    //             return GeneralErrors.Invalid("department path");
-    //
-    //         Path = resultPath.Value;
-    //     }
-    //
-    //     var resultChildPath = Path.Child(identifier.Value);
-    //
-    //     if (resultChildPath.IsFailure)
-    //         return GeneralErrors.Invalid("department path");
-    //
-    //     Path = resultChildPath.Value;
-    //
-    //     return UnitResult.Success<Error>();
-    // }
 
     public UnitResult<Error> AddLocation(DepartmentLocation location)
     {
@@ -201,5 +181,6 @@ public sealed class Department : Shared.Entity<DepartmentId>
     public void MarkAsDelete()
     {
         IsActive = false;
+        DeletedAt = DateTime.UtcNow;
     }
 }
