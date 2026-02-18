@@ -22,7 +22,7 @@ namespace DirectoryService.Infrastructure.Postgres.Migrations
                 table: "positions",
                 type: "boolean",
                 nullable: false,
-                defaultValue: false);
+                defaultValue: true);
 
             migrationBuilder.AddColumn<DateTime>(
                 name: "deleted_at",
