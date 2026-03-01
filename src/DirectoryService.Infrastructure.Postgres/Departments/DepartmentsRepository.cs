@@ -247,4 +247,119 @@ public class DepartmentsRepository : IDepartmentsRepository
             return GeneralErrors.Database(null, ex.Message);
         }
     }
+
+    public async Task<UnitResult<Error>> DeleteDepartmentsMarkDelete(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await _dbContext.Departments
+                .Where(d => d.IsActive == false && d.DeletedAt < DateTime.UtcNow.AddMonths(-1))
+                .ExecuteDeleteAsync(cancellationToken);
+
+            return UnitResult.Success<Error>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Failed to delete departments mark delete departments");
+
+            return GeneralErrors.Database(null, ex.Message);
+        }
+    }
+
+    public async Task<UnitResult<Error>> DeleteDepartmentLocationsMarkDelete(
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await _dbContext.DepartmentLocations
+                .Where(
+                    dl => _dbContext.Departments
+                        .Where(d => d.IsActive == false && d.DeletedAt < DateTime.UtcNow.AddMonths(-1))
+                        .Select(d => d.Id)
+                        .Contains(dl.DepartmentId))
+                .ExecuteDeleteAsync(cancellationToken);
+
+            return UnitResult.Success<Error>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Failed to delete department locations mark delete departments");
+
+            return GeneralErrors.Database(null, ex.Message);
+        }
+    }
+
+    public async Task<UnitResult<Error>> DeleteDepartmentPositionsMarkDelete(
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await _dbContext.DepartmentPositions
+                .Where(
+                    dl => _dbContext.Departments
+                        .Where(d => d.IsActive == false && d.DeletedAt < DateTime.UtcNow.AddMonths(-1))
+                        .Select(d => d.Id)
+                        .Contains(dl.DepartmentId))
+                .ExecuteDeleteAsync(cancellationToken);
+
+            return UnitResult.Success<Error>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Failed to delete department locations mark delete departments");
+
+            return GeneralErrors.Database(null, ex.Message);
+        }
+    }
+
+    public async Task<UnitResult<Error>> UpdatePathsAfterDelete(CancellationToken cancellationToken = default)
+    {
+        const string sql = """
+                           WITH outdated_departments AS (SELECT *
+                                                         FROM departments d
+                                                         WHERE d.is_active = false
+                                                           AND d.deleted_at < (NOW() - INTERVAL '1 month'))
+
+                           UPDATE departments d
+                           SET path      = CASE
+                                               WHEN d.path = od.path THEN subpath(d.path, 0, nlevel(od.path::ltree) - 1)
+                                               ELSE subpath(d.path, 0, nlevel(od.path::ltree) - 1) || subpath(d.path, nlevel(od.path::ltree))
+                               END,
+                               depth     = CASE
+                                               WHEN d.path = od.path THEN 0
+                                               ELSE d.depth - 1
+                                   END,
+                               parent_id = CASE
+                                               WHEN d.path = od.path THEN NULL
+                                               WHEN d.depth - 1 = 0 THEN NULL
+                                               ELSE (SELECT id
+                                                     FROM departments dp
+                                                     WHERE d.path = subpath(CASE
+                                                                                WHEN od.depth = 0
+                                                                                    THEN subpath(d.path, 0, nlevel(od.path::ltree) - 1)
+                                                                                ELSE subpath(d.path, 0, nlevel(od.path::ltree) - 1) ||
+                                                                                     subpath(d.path, nlevel(od.path::ltree))
+                                                                                END,
+                                                                            0,
+                                                                            -1))
+                                   END
+                           FROM outdated_departments od
+                           WHERE d.path <@ od.path;
+                           """;
+
+        var dbConnection = _dbContext.Database.GetDbConnection();
+
+        try
+        {
+            await dbConnection.ExecuteAsync(sql);
+
+            return UnitResult.Success<Error>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Failed to update paths delete departments");
+
+            return GeneralErrors.Database(null, ex.Message);
+        }
+    }
 }

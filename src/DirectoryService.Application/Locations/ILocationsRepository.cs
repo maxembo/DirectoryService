@@ -15,4 +15,6 @@ public interface ILocationsRepository
 
     Task<UnitResult<Error>> DeleteUnusedLocationsByDepartmentIdAsync(
         DepartmentId departmentId, CancellationToken cancellationToken = default);
+
+    Task<UnitResult<Error>> DeleteLocationsMarkDelete(CancellationToken cancellationToken = default);
 }

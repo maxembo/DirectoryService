@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using Dapper;
+using DirectoryService.Application;
 using DirectoryService.Application.Database;
 using DirectoryService.Application.Departments;
 using DirectoryService.Application.Locations;
@@ -8,6 +9,7 @@ using DirectoryService.Infrastructure.Postgres.Database;
 using DirectoryService.Infrastructure.Postgres.Departments;
 using DirectoryService.Infrastructure.Postgres.Locations;
 using DirectoryService.Infrastructure.Postgres.Positions;
+using DirectoryService.Infrastructure.Postgres.SoftDelete;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.Dapper;
@@ -21,7 +23,8 @@ public static class DependencyInjection
         this IServiceCollection services, IConfiguration configuration)
         => services
             .AddRepositories()
-            .AddDatabase(configuration);
+            .AddDatabase(configuration)
+            .AddSoftDelete(configuration);
 
     private static IServiceCollection AddRepositories(this IServiceCollection services)
     {
@@ -70,6 +73,17 @@ public static class DependencyInjection
                     type, handler as SqlMapper.ITypeHandler ?? throw new InvalidOperationException());
             }
         }
+
+        return services;
+    }
+
+    private static IServiceCollection AddSoftDelete(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddScoped<IDeleteDepartmentsService, DeleteDepartmentsService>();
+
+        services.AddScoped<CleaningInactiveDepartmentsBackgroundService>();
+
+        services.Configure<SoftDeleteSettings>(configuration.GetSection("SoftDeleteSettings"));
 
         return services;
     }

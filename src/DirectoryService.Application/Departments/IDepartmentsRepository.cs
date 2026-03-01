@@ -37,4 +37,12 @@ public interface IDepartmentsRepository
         Expression<Func<Department, bool>> predicate, CancellationToken cancellationToken);
 
     Task<UnitResult<Error>> UpdatePathsMarkDelete(Path departmentPath, CancellationToken cancellationToken = default);
+
+    Task<UnitResult<Error>> DeleteDepartmentsMarkDelete(CancellationToken cancellationToken = default);
+
+    Task<UnitResult<Error>> DeleteDepartmentLocationsMarkDelete(CancellationToken cancellationToken = default);
+
+    Task<UnitResult<Error>> DeleteDepartmentPositionsMarkDelete(CancellationToken cancellationToken = default);
+
+    Task<UnitResult<Error>> UpdatePathsAfterDelete(CancellationToken cancellationToken = default);
 }
