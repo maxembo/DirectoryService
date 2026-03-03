@@ -322,8 +322,10 @@ public class DepartmentsRepository : IDepartmentsRepository
 
                            UPDATE departments d
                            SET path      = CASE
-                                               WHEN d.path = od.path THEN subpath(d.path, 0, nlevel(od.path::ltree) - 1)
-                                               ELSE subpath(d.path, 0, nlevel(od.path::ltree) - 1) || subpath(d.path, nlevel(od.path::ltree))
+                                               WHEN d.path = od.path
+                                                   THEN subpath(d.path, 0, nlevel(od.path::ltree) - 1)
+                                               ELSE subpath(d.path, 0, nlevel(od.path::ltree) - 1)
+                                                   || subpath(d.path, nlevel(od.path::ltree))
                                END,
                                depth     = CASE
                                                WHEN d.path = od.path THEN 0
@@ -334,14 +336,15 @@ public class DepartmentsRepository : IDepartmentsRepository
                                                WHEN d.depth - 1 = 0 THEN NULL
                                                ELSE (SELECT id
                                                      FROM departments dp
-                                                     WHERE d.path = subpath(CASE
-                                                                                WHEN od.depth = 0
-                                                                                    THEN subpath(d.path, 0, nlevel(od.path::ltree) - 1)
-                                                                                ELSE subpath(d.path, 0, nlevel(od.path::ltree) - 1) ||
-                                                                                     subpath(d.path, nlevel(od.path::ltree))
-                                                                                END,
-                                                                            0,
-                                                                            -1))
+                                                     WHERE dp.path = subpath(
+                                                             CASE
+                                                                 WHEN od.depth = 0
+                                                                     THEN subpath(d.path, nlevel(od.path::ltree) - 1)
+                                                                 ELSE subpath(d.path, 0, nlevel(od.path::ltree) - 1)
+                                                                     || subpath(d.path, nlevel(od.path::ltree))
+                                                                 END,
+                                                             0,
+                                                             -1))
                                    END
                            FROM outdated_departments od
                            WHERE d.path <@ od.path;

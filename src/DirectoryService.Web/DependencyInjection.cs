@@ -31,7 +31,7 @@ public static class DependencyInjection
                 .ReadFrom.Services(sp)
                 .Enrich.FromLogContext()
                 .Enrich.WithExceptionDetails()
-                .Enrich.WithProperty("ServiceName", "LocationsService"));
+                .Enrich.WithProperty("Application", "DirectoryService"));
 
         return services;
     }

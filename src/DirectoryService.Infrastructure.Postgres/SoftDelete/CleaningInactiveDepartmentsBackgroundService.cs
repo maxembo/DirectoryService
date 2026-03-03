@@ -1,9 +1,10 @@
-﻿using DirectoryService.Application;
-using DirectoryService.Infrastructure.Postgres.BackgroundServices;
+﻿using CSharpFunctionalExtensions;
+using DirectoryService.Application;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Shared;
 
 namespace DirectoryService.Infrastructure.Postgres.SoftDelete;
 
@@ -11,46 +12,49 @@ public class CleaningInactiveDepartmentsBackgroundService : BackgroundService
 {
     private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly ILogger<CleaningInactiveDepartmentsBackgroundService> _logger;
-    private readonly SoftDeleteSettings _softDeleteSettings;
+    private readonly InactiveDepartmentsCleanupOptions _options;
 
     public CleaningInactiveDepartmentsBackgroundService(
-        IOptions<SoftDeleteSettings> options,
+        IOptions<InactiveDepartmentsCleanupOptions> options,
         IServiceScopeFactory serviceScopeFactory,
         ILogger<CleaningInactiveDepartmentsBackgroundService> logger)
     {
+        _options = options.Value;
         _serviceScopeFactory = serviceScopeFactory;
         _logger = logger;
-        _softDeleteSettings = options.Value;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("DeletedRecordsCleanerBackgroundService is starting.");
+        _logger.LogInformation("CleaningInactiveDepartmentsBackgroundService is starting.");
 
-        while (!stoppingToken.IsCancellationRequested)
+        using var timer = new PeriodicTimer(_options.Interval);
+
+        try
         {
-            int interval = BackgroundServiceHelper.GetIntervalExecute(
-                _softDeleteSettings.Years, _softDeleteSettings.Months,
-                _softDeleteSettings.Days,
-                _softDeleteSettings.Hours,
-                _softDeleteSettings.Minutes,
-                _softDeleteSettings.Seconds);
+            while (await timer.WaitForNextTickAsync(stoppingToken))
+            {
+                var result = await DeleteInactiveDepartmentsAsync(stoppingToken);
 
-            await Task.Delay(interval, stoppingToken);
-
-            await Task.Delay(5000, stoppingToken);
-
-            await using var scope = _serviceScopeFactory.CreateAsyncScope();
-
-            var deletedRecordsCleanerService =
-                scope.ServiceProvider.GetRequiredService<IDeleteDepartmentsService>();
-
-            var result = await deletedRecordsCleanerService.Process(stoppingToken);
-
-            if (result.IsSuccess)
-                _logger.LogInformation("Deleted records have been deleted.");
+                if (result.IsSuccess)
+                    _logger.LogInformation("Deleted records have been deleted.");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "CleaningInactiveDepartmentsBackgroundService failed.");
         }
 
         await Task.CompletedTask;
+    }
+
+    private async Task<UnitResult<Error>> DeleteInactiveDepartmentsAsync(CancellationToken stoppingToken)
+    {
+        await using var scope = _serviceScopeFactory.CreateAsyncScope();
+
+        var deletedRecordsCleanerService =
+            scope.ServiceProvider.GetRequiredService<IDeleteDepartmentsService>();
+
+        return await deletedRecordsCleanerService.Process(stoppingToken);
     }
 }

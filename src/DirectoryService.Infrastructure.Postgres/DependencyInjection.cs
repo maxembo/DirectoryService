@@ -24,7 +24,7 @@ public static class DependencyInjection
         => services
             .AddRepositories()
             .AddDatabase(configuration)
-            .AddSoftDelete(configuration);
+            .AddInactiveDepartmentsCleanup(configuration);
 
     private static IServiceCollection AddRepositories(this IServiceCollection services)
     {
@@ -77,13 +77,14 @@ public static class DependencyInjection
         return services;
     }
 
-    private static IServiceCollection AddSoftDelete(this IServiceCollection services, IConfiguration configuration)
+    private static IServiceCollection AddInactiveDepartmentsCleanup(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<IDeleteDepartmentsService, DeleteDepartmentsService>();
 
-        services.AddScoped<CleaningInactiveDepartmentsBackgroundService>();
+        services.AddHostedService<CleaningInactiveDepartmentsBackgroundService>();
 
-        services.Configure<SoftDeleteSettings>(configuration.GetSection("SoftDeleteSettings"));
+        services.Configure<InactiveDepartmentsCleanupOptions>(
+            configuration.GetSection("InactiveDepartmentsCleanup"));
 
         return services;
     }
