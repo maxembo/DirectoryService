@@ -20,7 +20,11 @@ public class DirectoryServiceDbContext(string connectionString) : DbContext, IRe
 
     public DbSet<Location> Locations => Set<Location>();
 
+    public DbSet<Position> Positions => Set<Position>();
+
     public DbSet<DepartmentLocation> DepartmentLocations => Set<DepartmentLocation>();
+
+    public DbSet<DepartmentPosition> DepartmentPositions => Set<DepartmentPosition>();
 
     public IQueryable<Department> DepartmentsRead => Set<Department>().AsQueryable().AsNoTracking();
 

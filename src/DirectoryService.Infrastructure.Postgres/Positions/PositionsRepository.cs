@@ -66,4 +66,22 @@ public class PositionsRepository : IPositionsRepository
             return GeneralErrors.Database(null, ex.Message);
         }
     }
+
+    public async Task<UnitResult<Error>> DeletePositionsMarkDelete(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await _dbContext.Positions
+                .Where(p => p.IsActive == false && p.DeletedAt < DateTime.UtcNow.AddMonths(-1))
+                .ExecuteDeleteAsync(cancellationToken);
+
+            return UnitResult.Success<Error>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Failed to delete positions");
+
+            return GeneralErrors.Database(null, ex.Message);
+        }
+    }
 }

@@ -100,4 +100,22 @@ public class LocationsRepository : ILocationsRepository
             return GeneralErrors.Database(null, ex.Message);
         }
     }
+
+    public async Task<UnitResult<Error>> DeleteLocationsMarkDelete(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await _dbContext.Locations
+                .Where(l => l.IsActive == false && l.DeletedAt < DateTime.UtcNow.AddMonths(-1))
+                .ExecuteDeleteAsync(cancellationToken);
+
+            return UnitResult.Success<Error>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Failed to delete locations");
+
+            return GeneralErrors.Database(null, ex.Message);
+        }
+    }
 }
