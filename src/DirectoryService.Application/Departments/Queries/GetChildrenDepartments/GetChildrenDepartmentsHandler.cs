@@ -2,11 +2,11 @@
 using Dapper;
 using DirectoryService.Contracts.Departments.GetDepartments.Dtos;
 using FluentValidation;
-using Shared;
-using Shared.Abstractions;
-using Shared.Database;
-using Shared.Response;
-using Shared.Validation;
+using Shared.Core.Abstractions;
+using Shared.Core.Database;
+using Shared.Core.Validation;
+using Shared.SharedKernel;
+using Shared.SharedKernel.Response;
 
 namespace DirectoryService.Application.Departments.Queries.GetChildrenDepartments;
 

@@ -2,6 +2,7 @@
 using CSharpFunctionalExtensions;
 using DirectoryService.Domain.Departments;
 using Shared;
+using Shared.SharedKernel;
 using Path = DirectoryService.Domain.Departments.Path;
 
 namespace DirectoryService.Application.Departments;

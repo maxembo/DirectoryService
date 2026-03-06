@@ -6,9 +6,9 @@ using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Positions;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
-using Shared;
-using Shared.Abstractions;
-using Shared.Validation;
+using Shared.Core.Abstractions;
+using Shared.Core.Validation;
+using Shared.SharedKernel;
 
 namespace DirectoryService.Application.Positions.CreatePositions;
 

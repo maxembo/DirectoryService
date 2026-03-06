@@ -7,10 +7,10 @@ using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Locations;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
-using Shared;
-using Shared.Abstractions;
-using Shared.Response;
-using Shared.Validation;
+using Shared.Core.Abstractions;
+using Shared.Core.Validation;
+using Shared.SharedKernel;
+using Shared.SharedKernel.Response;
 
 namespace DirectoryService.Application.Locations.Queries.GetLocations;
 

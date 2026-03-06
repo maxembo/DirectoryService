@@ -1,4 +1,4 @@
-﻿using Shared.Abstractions;
+﻿using Shared.Core.Abstractions;
 
 namespace DirectoryService.Application.Departments.Commands.SoftDeleteDepartments;
 

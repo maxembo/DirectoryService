@@ -1,5 +1,5 @@
 ﻿using DirectoryService.Contracts.Departments.GetDepartments.Requests;
-using Shared.Abstractions;
+using Shared.Core.Abstractions;
 
 namespace DirectoryService.Application.Departments.Queries.GetRootDepartments;
 

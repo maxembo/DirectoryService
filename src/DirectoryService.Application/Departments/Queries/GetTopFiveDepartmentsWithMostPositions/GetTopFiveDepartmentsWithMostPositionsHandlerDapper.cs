@@ -1,7 +1,7 @@
 ﻿using Dapper;
 using DirectoryService.Contracts.Departments.GetTopFiveDepartmentsWithMostPositions.Dtos;
-using Shared.Abstractions;
-using Shared.Database;
+using Shared.Core.Abstractions;
+using Shared.Core.Database;
 
 namespace DirectoryService.Application.Departments.Queries.GetTopFiveDepartmentsWithMostPositions;
 
