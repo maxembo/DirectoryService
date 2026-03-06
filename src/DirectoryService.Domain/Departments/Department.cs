@@ -1,17 +1,17 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Domain.DepartmentLocations;
 using DirectoryService.Domain.DepartmentPositions;
-using Shared;
+using Shared.Core;
+using Shared.SharedKernel;
 
 namespace DirectoryService.Domain.Departments;
 
-public sealed class Department : Shared.Entity<DepartmentId>, ISoftDeletable
+public sealed class Department : BaseEntity<DepartmentId>, ISoftDeletable
 {
     // ef core
     private Department(DepartmentId id)
         : base(id)
-    {
-    }
+    { }
 
     public Department(
         DepartmentId id,
@@ -50,10 +50,6 @@ public sealed class Department : Shared.Entity<DepartmentId>, ISoftDeletable
     public Path Path { get; private set; } = null!;
 
     public bool IsActive { get; private set; } = true;
-
-    public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
-
-    public DateTime UpdatedAt { get; private set; } = DateTime.UtcNow;
 
     public DateTime? DeletedAt { get; private set; }
 

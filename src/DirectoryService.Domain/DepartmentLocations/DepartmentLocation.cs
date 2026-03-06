@@ -1,9 +1,10 @@
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Locations;
+using Shared.Core;
 
 namespace DirectoryService.Domain.DepartmentLocations;
 
-public sealed class DepartmentLocation : Shared.Entity<DepartmentLocationId>
+public sealed class DepartmentLocation : BaseEntity<DepartmentLocationId>
 {
     // ef core
     private DepartmentLocation(DepartmentLocationId id)

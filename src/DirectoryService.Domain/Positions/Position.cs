@@ -1,9 +1,10 @@
 using DirectoryService.Domain.DepartmentPositions;
-using Shared;
+using Shared.Core;
+using Shared.SharedKernel;
 
 namespace DirectoryService.Domain.Positions;
 
-public sealed class Position : Shared.Entity<PositionId>, ISoftDeletable
+public sealed class Position : BaseEntity<PositionId>, ISoftDeletable
 {
     // ef core
     private Position(PositionId id)
