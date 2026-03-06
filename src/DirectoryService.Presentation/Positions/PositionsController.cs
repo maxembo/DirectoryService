@@ -1,9 +1,9 @@
 ﻿using DirectoryService.Application.Positions.CreatePositions;
 using DirectoryService.Contracts.Positions.CreatePositions;
+using Framework.EndpointResults;
 using Microsoft.AspNetCore.Mvc;
-using Shared.Abstractions;
-using Shared.EndpointResults;
-using Shared.Response;
+using Shared.Core.Abstractions;
+using Shared.SharedKernel.Response;
 
 namespace DirectoryService.Presentation.Positions;
 

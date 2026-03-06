@@ -6,7 +6,7 @@ using DirectoryService.Domain.Departments;
 using DirectoryService.Infrastructure.Postgres.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Shared;
+using Shared.SharedKernel;
 using Path = DirectoryService.Domain.Departments.Path;
 
 namespace DirectoryService.Infrastructure.Postgres.Departments;
