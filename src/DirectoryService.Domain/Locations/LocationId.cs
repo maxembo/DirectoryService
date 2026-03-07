@@ -1,5 +1,3 @@
-using DirectoryService.Domain.DepartmentLocations;
-
 namespace DirectoryService.Domain.Locations;
 
 public sealed record LocationId

@@ -12,13 +12,16 @@ using DirectoryService.Infrastructure.Postgres.Positions;
 using DirectoryService.Infrastructure.Postgres.SoftDelete;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Shared.Dapper;
-using Shared.Database;
+using Shared.Core.Dapper;
+using Shared.Core.Database;
 
 namespace DirectoryService.Infrastructure.Postgres;
 
 public static class DependencyInjection
 {
+    private const string DATABASE = "DirectoryServiceDb";
+    private const string INACTIVE_DEPARTMENTS_CLEANUP_SECTION = "InactiveDepartmentsCleanup";
+
     public static IServiceCollection AddInfrastructureDependencies(
         this IServiceCollection services, IConfiguration configuration)
         => services
@@ -40,10 +43,10 @@ public static class DependencyInjection
     private static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<DirectoryServiceDbContext>(
-            _ => new DirectoryServiceDbContext(configuration.GetConnectionString("DirectoryServiceDb")!));
+            _ => new DirectoryServiceDbContext(configuration.GetConnectionString(DATABASE)!));
 
         services.AddScoped<IReadDbContext, DirectoryServiceDbContext>(
-            _ => new DirectoryServiceDbContext(configuration.GetConnectionString("DirectoryServiceDb")!));
+            _ => new DirectoryServiceDbContext(configuration.GetConnectionString(DATABASE)!));
 
         services.AddDapper(configuration);
 
@@ -77,14 +80,16 @@ public static class DependencyInjection
         return services;
     }
 
-    private static IServiceCollection AddInactiveDepartmentsCleanup(this IServiceCollection services, IConfiguration configuration)
+    private static IServiceCollection AddInactiveDepartmentsCleanup(
+        this IServiceCollection services,
+        IConfiguration configuration)
     {
         services.AddScoped<IDeleteDepartmentsService, DeleteDepartmentsService>();
 
         services.AddHostedService<CleaningInactiveDepartmentsBackgroundService>();
 
         services.Configure<InactiveDepartmentsCleanupOptions>(
-            configuration.GetSection("InactiveDepartmentsCleanup"));
+            configuration.GetSection(INACTIVE_DEPARTMENTS_CLEANUP_SECTION));
 
         return services;
     }

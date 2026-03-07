@@ -1,9 +1,10 @@
 using DirectoryService.Domain.DepartmentLocations;
-using Shared;
+using Shared.Core;
+using Shared.SharedKernel;
 
 namespace DirectoryService.Domain.Locations;
 
-public sealed class Location : Shared.Entity<LocationId>, ISoftDeletable
+public sealed class Location : BaseEntity<LocationId>, ISoftDeletable
 {
     public Location(LocationId id, LocationName name, Timezone timezone, Address address)
         : base(id)
@@ -29,10 +30,6 @@ public sealed class Location : Shared.Entity<LocationId>, ISoftDeletable
     public bool IsActive { get; private set; } = true;
 
     public Address Address { get; private set; } = null!;
-
-    public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
-
-    public DateTime UpdatedAt { get; private set; } = DateTime.UtcNow;
 
     public DateTime? DeletedAt { get; private set; }
 

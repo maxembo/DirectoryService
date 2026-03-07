@@ -9,8 +9,8 @@ using DirectoryService.Domain.Positions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Npgsql;
-using Shared;
-using Shared.Database;
+using Shared.Core.Database;
+using Shared.SharedKernel;
 
 namespace DirectoryService.Infrastructure.Postgres.Database;
 

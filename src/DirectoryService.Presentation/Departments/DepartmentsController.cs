@@ -9,10 +9,10 @@ using DirectoryService.Contracts.Departments.CreateDepartment;
 using DirectoryService.Contracts.Departments.GetDepartments.Requests;
 using DirectoryService.Contracts.Departments.MoveDepartments;
 using DirectoryService.Contracts.Departments.UpdateDepartment;
+using Framework.EndpointResults;
 using Microsoft.AspNetCore.Mvc;
-using Shared.Abstractions;
-using Shared.EndpointResults;
-using Shared.Response;
+using Shared.Core.Abstractions;
+using Shared.SharedKernel.Response;
 using GetDepartmentDto = DirectoryService.Contracts.Departments.GetDepartments.Dtos.GetDepartmentDto;
 
 namespace DirectoryService.Presentation.Departments;

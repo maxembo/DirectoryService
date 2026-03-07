@@ -3,8 +3,8 @@ using DirectoryService.Application;
 using DirectoryService.Application.Departments;
 using DirectoryService.Application.Locations;
 using DirectoryService.Application.Positions;
-using Shared;
-using Shared.Database;
+using Shared.Core.Database;
+using Shared.SharedKernel;
 
 namespace DirectoryService.Infrastructure.Postgres.SoftDelete;
 

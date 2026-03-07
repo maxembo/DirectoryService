@@ -1,8 +1,8 @@
 ﻿using DirectoryService.Contracts.Positions.CreatePositions;
 using DirectoryService.Domain.Positions;
 using FluentValidation;
-using Shared;
-using Shared.Validation;
+using Shared.Core.Validation;
+using Shared.SharedKernel;
 
 namespace DirectoryService.Application.Positions.CreatePositions;
 
