@@ -14,4 +14,8 @@
       <Folder Include="Departments\GetTopFiveDepartmentsWithMostPositions\" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="SachkoTech.Core" Version="0.0.1" />
+    </ItemGroup>
+
 </Project>

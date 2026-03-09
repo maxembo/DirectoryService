@@ -1,6 +1,6 @@
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Locations;
-using Shared.Core;
+using Shared.SharedKernel;
 
 namespace DirectoryService.Domain.DepartmentLocations;
 
