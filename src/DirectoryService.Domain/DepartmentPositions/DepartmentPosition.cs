@@ -1,22 +1,22 @@
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Positions;
-using Shared.SharedKernel;
 
 namespace DirectoryService.Domain.DepartmentPositions;
 
-public sealed class DepartmentPosition : BaseEntity<DepartmentPositionId>
+public sealed class DepartmentPosition
 {
-    // ef core
-    private DepartmentPosition(DepartmentPositionId id)
-        : base(id)
-    { }
-
     public DepartmentPosition(DepartmentPositionId id, DepartmentId departmentId, PositionId positionId)
-        : base(id)
     {
+        Id = id;
         DepartmentId = departmentId;
         PositionId = positionId;
     }
+
+    // ef core
+    private DepartmentPosition()
+    { }
+
+    public DepartmentPositionId Id { get; private set; } = null!;
 
     public DepartmentId DepartmentId { get; private set; } = null!;
 
