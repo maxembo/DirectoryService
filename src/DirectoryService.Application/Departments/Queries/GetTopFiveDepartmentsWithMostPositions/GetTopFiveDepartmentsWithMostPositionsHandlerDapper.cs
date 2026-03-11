@@ -1,5 +1,7 @@
 ﻿using Dapper;
+using DirectoryService.Application.Constants;
 using DirectoryService.Contracts.Departments.GetTopFiveDepartmentsWithMostPositions.Dtos;
+using Microsoft.Extensions.Caching.Hybrid;
 using Shared.Core.Abstractions;
 using Shared.Core.Database;
 
@@ -8,13 +10,32 @@ namespace DirectoryService.Application.Departments.Queries.GetTopFiveDepartments
 public class GetTopFiveDepartmentsWithMostPositionsHandlerDapper : IQueryHandler<GetDepartmentDto[]>
 {
     private readonly IDbConnectionFactory _dbConnectionFactory;
+    private readonly HybridCache _cache;
 
-    public GetTopFiveDepartmentsWithMostPositionsHandlerDapper(IDbConnectionFactory dbConnectionFactory)
+    public GetTopFiveDepartmentsWithMostPositionsHandlerDapper(
+        IDbConnectionFactory dbConnectionFactory, HybridCache cache)
     {
         _dbConnectionFactory = dbConnectionFactory;
+        _cache = cache;
     }
 
     public async Task<GetDepartmentDto[]> Handle(CancellationToken cancellationToken)
+    {
+        return await GetPresignedTopFiveDepartmentsWithPositionsFromCache(cancellationToken);
+    }
+
+    private async Task<GetDepartmentDto[]> GetPresignedTopFiveDepartmentsWithPositionsFromCache(
+        CancellationToken cancellationToken)
+    {
+        string key = CacheKeys.CreateDepartmentsKey("top_5");
+
+        return await _cache.GetOrCreateAsync(
+            key,
+            factory: async ct => await GetTopFiveDepartmentsWithPositions(ct),
+            cancellationToken: cancellationToken);
+    }
+
+    private async Task<GetDepartmentDto[]> GetTopFiveDepartmentsWithPositions(CancellationToken cancellationToken)
     {
         var dbConnection = _dbConnectionFactory.GetDbConnection();
 

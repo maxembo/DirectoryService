@@ -1,6 +1,8 @@
 ﻿using CSharpFunctionalExtensions;
+using DirectoryService.Application.Constants;
 using DirectoryService.Domain.Departments;
 using FluentValidation;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
 using Shared.Core.Abstractions;
 using Shared.Core.Database;
@@ -15,17 +17,19 @@ public class MoveDepartmentHandler : ICommandHandler<Guid, MoveDepartmentCommand
     private readonly IValidator<MoveDepartmentCommand> _validator;
     private readonly ITransactionManager _transactionManager;
     private readonly ILogger<MoveDepartmentHandler> _logger;
+    private readonly HybridCache _cache;
 
     public MoveDepartmentHandler(
         IDepartmentsRepository departmentsRepository,
         IValidator<MoveDepartmentCommand> validator,
         ITransactionManager transactionManager,
-        ILogger<MoveDepartmentHandler> logger)
+        ILogger<MoveDepartmentHandler> logger, HybridCache cache)
     {
         _departmentsRepository = departmentsRepository;
         _validator = validator;
         _transactionManager = transactionManager;
         _logger = logger;
+        _cache = cache;
     }
 
     public async Task<Result<Guid, Errors>> Handle(
@@ -113,7 +117,10 @@ public class MoveDepartmentHandler : ICommandHandler<Guid, MoveDepartmentCommand
             return commitedResult.Error.ToErrors();
         }
 
+        await _cache.RemoveByTagAsync(CacheKeys.DEPARTMENT_KEY, cancellationToken);
+
         _logger.LogInformation("Move department {DepartmentId.Value} completed successfully.", departmentId.Value);
+
         return departmentId.Value;
     }
 }

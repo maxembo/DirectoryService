@@ -1,10 +1,12 @@
 ﻿using CSharpFunctionalExtensions;
+using DirectoryService.Application.Constants;
 using DirectoryService.Application.Locations;
 using DirectoryService.Contracts.Departments.CreateDepartment;
 using DirectoryService.Domain.DepartmentLocations;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Locations;
 using FluentValidation;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
 using Shared.Core.Abstractions;
 using Shared.Core.Validation;
@@ -18,17 +20,19 @@ public class CreateDepartmentHandler : ICommandHandler<Guid, CreateDepartmentCom
     private readonly IDepartmentsRepository _departmentsRepository;
     private readonly IValidator<CreateDepartmentRequest> _validator;
     private readonly ILogger<CreateDepartmentHandler> _logger;
+    private readonly HybridCache _cache;
 
     public CreateDepartmentHandler(
         ILocationsRepository locationsRepository,
         IDepartmentsRepository departmentsRepository,
         IValidator<CreateDepartmentRequest> validator,
-        ILogger<CreateDepartmentHandler> logger)
+        ILogger<CreateDepartmentHandler> logger, HybridCache cache)
     {
         _validator = validator;
         _locationsRepository = locationsRepository;
         _departmentsRepository = departmentsRepository;
         _logger = logger;
+        _cache = cache;
     }
 
     public async Task<Result<Guid, Errors>> Handle(
@@ -91,6 +95,8 @@ public class CreateDepartmentHandler : ICommandHandler<Guid, CreateDepartmentCom
             return Error.Failure(null, repositoryResult.Error.Message)
                 .ToErrors();
         }
+
+        await _cache.RemoveByTagAsync(CacheKeys.DEPARTMENT_KEY, cancellationToken);
 
         _logger.LogInformation("Department {DepartmentId.Value} has been created.", departmentId.Value);
 

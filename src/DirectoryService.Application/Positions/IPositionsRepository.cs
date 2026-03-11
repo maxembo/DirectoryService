@@ -11,6 +11,6 @@ public interface IPositionsRepository
 
     Task<UnitResult<Error>> DeleteUnusedPositionsByDepartmentIdAsync(
         DepartmentId departmentId, CancellationToken cancellationToken = default);
-    
+
     Task<UnitResult<Error>> DeletePositionsMarkDelete(CancellationToken cancellationToken = default);
 }

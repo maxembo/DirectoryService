@@ -1,8 +1,11 @@
 ﻿using CSharpFunctionalExtensions;
+using DirectoryService.Application.Constants;
 using DirectoryService.Application.Locations;
 using DirectoryService.Application.Positions;
 using DirectoryService.Domain.Departments;
 using FluentValidation;
+using Microsoft.Extensions.Caching.Hybrid;
+using Microsoft.Extensions.Logging;
 using Shared.Core.Abstractions;
 using Shared.Core.Database;
 using Shared.Core.Validation;
@@ -17,19 +20,25 @@ public class SoftDeleteDepartmentHandler : ICommandHandler<Guid, SoftDeleteDepar
     private readonly ILocationsRepository _locationsRepository;
     private readonly IPositionsRepository _positionsRepository;
     private readonly IValidator<SoftDeleteDepartmentCommand> _validator;
+    private readonly HybridCache _cache;
+    private ILogger<SoftDeleteDepartmentHandler> _logger;
 
     public SoftDeleteDepartmentHandler(
         IDepartmentsRepository departmentsRepository,
         ITransactionManager transactionManager,
         ILocationsRepository locationsRepository,
         IPositionsRepository positionsRepository,
-        IValidator<SoftDeleteDepartmentCommand> validator)
+        IValidator<SoftDeleteDepartmentCommand> validator,
+        HybridCache cache,
+        ILogger<SoftDeleteDepartmentHandler> logger)
     {
         _departmentsRepository = departmentsRepository;
         _transactionManager = transactionManager;
         _locationsRepository = locationsRepository;
         _positionsRepository = positionsRepository;
         _validator = validator;
+        _cache = cache;
+        _logger = logger;
     }
 
     public async Task<Result<Guid, Errors>> Handle(
@@ -95,6 +104,10 @@ public class SoftDeleteDepartmentHandler : ICommandHandler<Guid, SoftDeleteDepar
             transaction.Rollback();
             return commitedResult.Error.ToErrors();
         }
+
+        await _cache.RemoveByTagAsync(CacheKeys.DEPARTMENT_KEY, cancellationToken);
+
+        _logger.LogInformation("Department {DepartmentId} soft deleted successfully.", department.Id.Value);
 
         return departmentId.Value;
     }

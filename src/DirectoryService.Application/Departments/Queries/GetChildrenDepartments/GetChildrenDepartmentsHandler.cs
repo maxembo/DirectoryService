@@ -1,7 +1,9 @@
 ﻿using CSharpFunctionalExtensions;
 using Dapper;
+using DirectoryService.Application.Constants;
 using DirectoryService.Contracts.Departments.GetDepartments.Dtos;
 using FluentValidation;
+using Microsoft.Extensions.Caching.Hybrid;
 using Shared.Core.Abstractions;
 using Shared.Core.Database;
 using Shared.Core.Validation;
@@ -10,16 +12,21 @@ using Shared.SharedKernel.Response;
 
 namespace DirectoryService.Application.Departments.Queries.GetChildrenDepartments;
 
-public class GetChildrenDepartmentsHandler : IQueryHandler<PaginationEnvelope<GetDepartmentDto>, GetChildrenDepartmentsQuery>
+public class GetChildrenDepartmentsHandler
+    : IQueryHandler<PaginationEnvelope<GetDepartmentDto>, GetChildrenDepartmentsQuery>
 {
     private readonly IDbConnectionFactory _dbConnectionFactory;
     private readonly IValidator<GetChildrenDepartmentsQuery> _validator;
+    private readonly HybridCache _cache;
 
     public GetChildrenDepartmentsHandler(
-        IDbConnectionFactory dbConnectionFactory, IValidator<GetChildrenDepartmentsQuery> validator)
+        IDbConnectionFactory dbConnectionFactory,
+        IValidator<GetChildrenDepartmentsQuery> validator,
+        HybridCache cache)
     {
         _dbConnectionFactory = dbConnectionFactory;
         _validator = validator;
+        _cache = cache;
     }
 
     public async Task<Result<PaginationEnvelope<GetDepartmentDto>, Errors>> Handle(
@@ -31,6 +38,34 @@ public class GetChildrenDepartmentsHandler : IQueryHandler<PaginationEnvelope<Ge
             return validationResult.ToErrors();
         }
 
+        return await GetPresignedChildrenDepartmentsFromCache(query, cancellationToken);
+    }
+
+    private async Task<PaginationEnvelope<GetDepartmentDto>> GetPresignedChildrenDepartmentsFromCache(
+        GetChildrenDepartmentsQuery query, CancellationToken cancellationToken)
+    {
+        string key = CacheKeys.CreateDepartmentsKey(
+            "parentId", query.ParentId.ToString(),
+            "page", query.Request.Page.ToString(),
+            "pageSize", query.Request.PageSize.ToString());
+
+        return await _cache.GetOrCreateAsync(
+            key,
+            factory: async _ =>
+            {
+                var result = await GetChildrenDepartments(query);
+
+                return result.IsFailure
+                    ? new PaginationEnvelope<GetDepartmentDto>([], 0)
+                    : result.Value;
+            },
+            tags: [CacheKeys.DEPARTMENT_KEY],
+            cancellationToken: cancellationToken);
+    }
+
+    private async Task<Result<PaginationEnvelope<GetDepartmentDto>>> GetChildrenDepartments(
+        GetChildrenDepartmentsQuery query)
+    {
         const string sql = """
                            SELECT d.id,
                                   d.parent_id,
