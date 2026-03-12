@@ -40,6 +40,10 @@ public class CleaningInactiveDepartmentsBackgroundService : BackgroundService
                     _logger.LogInformation("Deleted records have been deleted.");
             }
         }
+        catch (OperationCanceledException)
+        {
+            _logger.LogInformation("CleaningInactiveDepartmentsBackgroundService is canceled.");
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "CleaningInactiveDepartmentsBackgroundService failed.");

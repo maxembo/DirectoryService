@@ -1,6 +1,8 @@
-﻿using DirectoryService.Application.Database;
+﻿using DirectoryService.Application.Constants;
+using DirectoryService.Application.Database;
 using DirectoryService.Contracts.Departments.GetTopFiveDepartmentsWithMostPositions.Dtos;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Hybrid;
 using Shared.Core.Abstractions;
 
 namespace DirectoryService.Application.Departments.Queries.GetTopFiveDepartmentsWithMostPositions;
@@ -10,13 +12,32 @@ public class GetTopFiveDepartmentsWithMostPositionsHandler : IQueryHandler<GetDe
     private const int TOP_DEPARTMENTS_LIMIT = 5;
 
     private readonly IReadDbContext _readDbContext;
+    private readonly HybridCache _cache;
 
-    public GetTopFiveDepartmentsWithMostPositionsHandler(IReadDbContext readDbContext)
+    public GetTopFiveDepartmentsWithMostPositionsHandler(IReadDbContext readDbContext, HybridCache cache)
     {
         _readDbContext = readDbContext;
+        _cache = cache;
     }
 
     public async Task<GetDepartmentDto[]> Handle(CancellationToken cancellationToken)
+    {
+        return await GetPresignedTopFiveDepartmentsWithPositionsFromCache(cancellationToken);
+    }
+
+    private async Task<GetDepartmentDto[]> GetPresignedTopFiveDepartmentsWithPositionsFromCache(
+        CancellationToken cancellationToken)
+    {
+        string key = CacheKeys.CreateDepartmentsKey("top", TOP_DEPARTMENTS_LIMIT.ToString());
+
+        return await _cache.GetOrCreateAsync(
+            key,
+            factory: async ct => await GetTopFiveDepartmentsWithPositions(ct),
+            tags: [CacheKeys.DEPARTMENT_KEY],
+            cancellationToken: cancellationToken);
+    }
+
+    private async Task<GetDepartmentDto[]> GetTopFiveDepartmentsWithPositions(CancellationToken cancellationToken)
     {
         var departmentsQuery = _readDbContext.DepartmentsRead;
 

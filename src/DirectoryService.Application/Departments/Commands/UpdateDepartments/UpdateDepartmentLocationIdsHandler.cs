@@ -1,10 +1,12 @@
 ﻿using CSharpFunctionalExtensions;
+using DirectoryService.Application.Constants;
 using DirectoryService.Application.Locations;
 using DirectoryService.Contracts.Departments.UpdateDepartment;
 using DirectoryService.Domain.DepartmentLocations;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Locations;
 using FluentValidation;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
 using Shared.Core.Abstractions;
 using Shared.Core.Database;
@@ -20,19 +22,21 @@ public class UpdateDepartmentLocationIdsHandler : ICommandHandler<Guid, UpdateDe
     private readonly IValidator<UpdateDepartmentLocationIdsRequest> _validator;
     private readonly ITransactionManager _transactionManager;
     private readonly ILogger<UpdateDepartmentLocationIdsHandler> _logger;
+    private readonly HybridCache _cache;
 
     public UpdateDepartmentLocationIdsHandler(
         IDepartmentsRepository departmentsRepository,
         ILocationsRepository locationsRepository,
         IValidator<UpdateDepartmentLocationIdsRequest> validator,
         ITransactionManager transactionManager,
-        ILogger<UpdateDepartmentLocationIdsHandler> logger)
+        ILogger<UpdateDepartmentLocationIdsHandler> logger, HybridCache cache)
     {
         _departmentsRepository = departmentsRepository;
         _locationsRepository = locationsRepository;
         _validator = validator;
         _transactionManager = transactionManager;
         _logger = logger;
+        _cache = cache;
     }
 
     public async Task<Result<Guid, Errors>> Handle(
@@ -82,7 +86,9 @@ public class UpdateDepartmentLocationIdsHandler : ICommandHandler<Guid, UpdateDe
         if (commitedResult.IsFailure)
             return commitedResult.Error.ToErrors();
 
-        _logger.LogInformation("Department {Department.Id} location ids updated.", department.Id);
+        await _cache.RemoveByTagAsync(CacheKeys.DEPARTMENT_KEY, cancellationToken);
+
+        _logger.LogInformation("Department {Department.Id} location ids updated.", department.Id.Value);
 
         return department.Id.Value;
     }

@@ -1,5 +1,4 @@
 using DirectoryService.Domain.DepartmentLocations;
-using Shared.Core;
 using Shared.SharedKernel;
 
 namespace DirectoryService.Domain.Locations;

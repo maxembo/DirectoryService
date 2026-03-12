@@ -1,22 +1,22 @@
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Locations;
-using Shared.Core;
 
 namespace DirectoryService.Domain.DepartmentLocations;
 
-public sealed class DepartmentLocation : BaseEntity<DepartmentLocationId>
+public sealed class DepartmentLocation
 {
-    // ef core
-    private DepartmentLocation(DepartmentLocationId id)
-        : base(id)
-    { }
-
     public DepartmentLocation(DepartmentLocationId id, DepartmentId departmentId, LocationId locationId)
-        : base(id)
     {
+        Id = id;
         DepartmentId = departmentId;
         LocationId = locationId;
     }
+
+    // ef core
+    private DepartmentLocation()
+    { }
+
+    public DepartmentLocationId Id { get; private set; } = null!;
 
     public DepartmentId DepartmentId { get; private set; } = null!;
 

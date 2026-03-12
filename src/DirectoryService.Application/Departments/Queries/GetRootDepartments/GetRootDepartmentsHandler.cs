@@ -1,8 +1,10 @@
 ﻿using CSharpFunctionalExtensions;
 using Dapper;
+using DirectoryService.Application.Constants;
 using DirectoryService.Contracts.Departments.GetDepartments.Dtos;
 using DirectoryService.Contracts.Departments.GetDepartments.Requests;
 using FluentValidation;
+using Microsoft.Extensions.Caching.Hybrid;
 using Shared.Core.Abstractions;
 using Shared.Core.Database;
 using Shared.Core.Validation;
@@ -15,12 +17,16 @@ public class GetRootDepartmentsHandler : IQueryHandler<PaginationEnvelope<GetDep
 {
     private readonly IDbConnectionFactory _dbConnectionFactory;
     private readonly IValidator<GetRootDepartmentsRequest> _validator;
+    private readonly HybridCache _cache;
 
     public GetRootDepartmentsHandler(
-        IDbConnectionFactory dbConnectionFactory, IValidator<GetRootDepartmentsRequest> validator)
+        IDbConnectionFactory dbConnectionFactory,
+        IValidator<GetRootDepartmentsRequest> validator,
+        HybridCache cache)
     {
         _dbConnectionFactory = dbConnectionFactory;
         _validator = validator;
+        _cache = cache;
     }
 
     public async Task<Result<PaginationEnvelope<GetDepartmentDto>, Errors>> Handle(
@@ -32,6 +38,33 @@ public class GetRootDepartmentsHandler : IQueryHandler<PaginationEnvelope<GetDep
             return validationResult.ToErrors();
         }
 
+        return await GetPresignedRootDepartmentsFromCache(query, cancellationToken);
+    }
+
+    private async Task<PaginationEnvelope<GetDepartmentDto>> GetPresignedRootDepartmentsFromCache(
+        GetRootDepartmentsQuery query, CancellationToken cancellationToken)
+    {
+        string key = CacheKeys.CreateDepartmentsKey(
+            "prefetch", query.Request.Prefetch.ToString(),
+            "page", query.Request.Page.ToString(),
+            "pageSize", query.Request.PageSize.ToString());
+
+        return await _cache.GetOrCreateAsync(
+            key,
+            factory: async _ =>
+            {
+                var result = await GetRootDepartments(query);
+                return result.IsFailure
+                    ? new PaginationEnvelope<GetDepartmentDto>([], 0)
+                    : result.Value;
+            },
+            tags: [CacheKeys.DEPARTMENT_KEY],
+            cancellationToken: cancellationToken);
+    }
+
+    private async Task<Result<PaginationEnvelope<GetDepartmentDto>, Errors>> GetRootDepartments(
+        GetRootDepartmentsQuery query)
+    {
         const string sql = """
                            WITH roots AS (SELECT d.id,
                                                  d.parent_id,

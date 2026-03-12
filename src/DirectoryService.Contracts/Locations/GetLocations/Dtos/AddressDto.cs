@@ -1,4 +1,4 @@
-﻿using Shared.Core.Dapper;
+﻿using Shared.Core.Database;
 
 namespace DirectoryService.Contracts.Locations.GetLocations.Dtos;
 
