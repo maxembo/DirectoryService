@@ -1,8 +1,7 @@
 ﻿using System.Linq.Expressions;
 using CSharpFunctionalExtensions;
 using DirectoryService.Domain.Departments;
-using Shared;
-using Shared.SharedKernel;
+using SharedService.SharedKernel;
 using Path = DirectoryService.Domain.Departments.Path;
 
 namespace DirectoryService.Application.Departments;

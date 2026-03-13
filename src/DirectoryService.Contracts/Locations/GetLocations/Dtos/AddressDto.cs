@@ -1,4 +1,4 @@
-﻿using Shared.Core.Database;
+﻿using SharedService.Core.Database;
 
 namespace DirectoryService.Contracts.Locations.GetLocations.Dtos;
 

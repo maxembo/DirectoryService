@@ -3,10 +3,10 @@ using DirectoryService.Application.Locations.Queries.GetLocations;
 using DirectoryService.Contracts.Locations.CreateLocations;
 using DirectoryService.Contracts.Locations.GetLocations.Dtos;
 using DirectoryService.Contracts.Locations.GetLocations.Requests;
-using Framework.EndpointResults;
 using Microsoft.AspNetCore.Mvc;
-using Shared.Core.Abstractions;
-using Shared.SharedKernel.Response;
+using SharedService.Core.Abstractions;
+using SharedService.Framework.EndpointResults;
+using SharedService.SharedKernel.Response;
 
 namespace DirectoryService.Presentation.Locations;
 

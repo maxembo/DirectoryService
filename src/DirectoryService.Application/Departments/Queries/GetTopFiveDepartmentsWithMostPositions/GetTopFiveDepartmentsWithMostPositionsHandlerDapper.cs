@@ -2,8 +2,8 @@
 using DirectoryService.Application.Constants;
 using DirectoryService.Contracts.Departments.GetTopFiveDepartmentsWithMostPositions.Dtos;
 using Microsoft.Extensions.Caching.Hybrid;
-using Shared.Core.Abstractions;
-using Shared.Core.Database;
+using SharedService.Core.Abstractions;
+using SharedService.Core.Database;
 
 namespace DirectoryService.Application.Departments.Queries.GetTopFiveDepartmentsWithMostPositions;
 

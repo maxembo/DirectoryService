@@ -3,9 +3,9 @@ using DirectoryService.Contracts.Locations.CreateLocations;
 using DirectoryService.Domain.Locations;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
-using Shared.Core.Abstractions;
-using Shared.Core.Validation;
-using Shared.SharedKernel;
+using SharedService.Core.Abstractions;
+using SharedService.Core.Validation;
+using SharedService.SharedKernel;
 
 namespace DirectoryService.Application.Locations.Commands.CreateLocations;
 

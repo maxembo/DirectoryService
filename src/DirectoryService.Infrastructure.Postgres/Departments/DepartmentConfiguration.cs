@@ -1,4 +1,3 @@
-using System.Runtime.Intrinsics.Arm;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Shared;
 using Microsoft.EntityFrameworkCore;

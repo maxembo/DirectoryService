@@ -1,6 +1,6 @@
 ﻿namespace DirectoryService.Infrastructure.Postgres.SoftDelete;
 
-public class InactiveDepartmentsCleanupOptions
+public record InactiveDepartmentsCleanupOptions
 {
     public TimeSpan Interval { get; init; }
 }

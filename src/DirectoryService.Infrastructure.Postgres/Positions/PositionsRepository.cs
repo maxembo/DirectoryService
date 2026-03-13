@@ -6,7 +6,7 @@ using DirectoryService.Domain.Positions;
 using DirectoryService.Infrastructure.Postgres.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Shared.SharedKernel;
+using SharedService.SharedKernel;
 
 namespace DirectoryService.Infrastructure.Postgres.Positions;
 

@@ -3,7 +3,7 @@ using DirectoryService.Application.Database;
 using DirectoryService.Contracts.Departments.GetTopFiveDepartmentsWithMostPositions.Dtos;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;
-using Shared.Core.Abstractions;
+using SharedService.Core.Abstractions;
 
 namespace DirectoryService.Application.Departments.Queries.GetTopFiveDepartmentsWithMostPositions;
 

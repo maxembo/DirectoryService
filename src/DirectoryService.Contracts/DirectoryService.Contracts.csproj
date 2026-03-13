@@ -15,7 +15,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="SachkoTech.Core" Version="0.0.1" />
+      <PackageReference Include="SharedService.Core" Version="0.0.2" />
     </ItemGroup>
+
+
 
 </Project>
