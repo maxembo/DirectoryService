@@ -1,7 +1,7 @@
 ﻿using DirectoryService.Contracts.Locations.GetLocations.Requests;
 using FluentValidation;
-using Shared.Core.Validation;
-using Shared.SharedKernel;
+using SharedService.Core.Validation;
+using SharedService.SharedKernel;
 
 namespace DirectoryService.Application.Locations.Queries.GetLocations;
 

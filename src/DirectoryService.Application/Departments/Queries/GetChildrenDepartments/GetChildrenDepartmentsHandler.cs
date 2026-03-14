@@ -4,11 +4,11 @@ using DirectoryService.Application.Constants;
 using DirectoryService.Contracts.Departments.GetDepartments.Dtos;
 using FluentValidation;
 using Microsoft.Extensions.Caching.Hybrid;
-using Shared.Core.Abstractions;
-using Shared.Core.Database;
-using Shared.Core.Validation;
-using Shared.SharedKernel;
-using Shared.SharedKernel.Response;
+using SharedService.Core.Abstractions;
+using SharedService.Core.Database;
+using SharedService.Core.Validation;
+using SharedService.SharedKernel;
+using SharedService.SharedKernel.Response;
 
 namespace DirectoryService.Application.Departments.Queries.GetChildrenDepartments;
 

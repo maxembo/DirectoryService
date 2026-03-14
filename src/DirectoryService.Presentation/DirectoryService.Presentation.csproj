@@ -14,7 +14,7 @@
 
     <ItemGroup>
       <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.0" />
-      <PackageReference Include="SachkoTech.Framework" Version="0.0.1" />
+      <PackageReference Include="SharedService.Framework" Version="0.0.2" />
     </ItemGroup>
 
 </Project>

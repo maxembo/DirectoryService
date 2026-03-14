@@ -12,7 +12,7 @@ using DirectoryService.Infrastructure.Postgres.Positions;
 using DirectoryService.Infrastructure.Postgres.SoftDelete;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Shared.Core.Database;
+using SharedService.Core.Database;
 
 namespace DirectoryService.Infrastructure.Postgres;
 

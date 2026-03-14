@@ -1,7 +1,7 @@
 ﻿using DirectoryService.Contracts.Departments.GetDepartments.Requests;
 using FluentValidation;
-using Shared.Core.Validation;
-using Shared.SharedKernel;
+using SharedService.Core.Validation;
+using SharedService.SharedKernel;
 
 namespace DirectoryService.Application.Departments.Queries.GetRootDepartments;
 

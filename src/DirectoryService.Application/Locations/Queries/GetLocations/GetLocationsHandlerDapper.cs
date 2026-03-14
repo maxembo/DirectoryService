@@ -4,11 +4,11 @@ using Dapper;
 using DirectoryService.Contracts.Locations.GetLocations.Dtos;
 using DirectoryService.Contracts.Locations.GetLocations.Requests;
 using FluentValidation;
-using Shared.Core.Abstractions;
-using Shared.Core.Database;
-using Shared.Core.Validation;
-using Shared.SharedKernel;
-using Shared.SharedKernel.Response;
+using SharedService.Core.Abstractions;
+using SharedService.Core.Database;
+using SharedService.Core.Validation;
+using SharedService.SharedKernel;
+using SharedService.SharedKernel.Response;
 
 namespace DirectoryService.Application.Locations.Queries.GetLocations;
 

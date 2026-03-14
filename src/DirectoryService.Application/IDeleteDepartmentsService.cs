@@ -1,5 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
-using Shared.SharedKernel;
+using SharedService.SharedKernel;
 
 namespace DirectoryService.Application;
 
