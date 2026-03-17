@@ -7,17 +7,24 @@
       - "6379:6379"
     volumes:
       - redis_data:/data
-    
+  
   directory_service:
     container_name: directory_service
+    image: directory_service:latest
     restart: always
     build:
-      context: .
-      dockerfile: src/DirectoryService.Web/Dockerfile
+      context: ./backend
+      dockerfile: DirectoryService/Dockerfile
+      args:
+        NUGET_USERNAME: ${NUGET_USERNAME}
+        NUGET_PASSWORD: ${NUGET_PASSWORD}
     ports:
-      - "8000:8000"
+      - "5052:5051"
+    env_file:
+      - .env
     environment:
-      - ASPNETCORE_ENVIRONMENT= Docker
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ASPNETCORE_URLS=http://+:5051
 
   postgres:
     container_name: ds_postgres

@@ -2,6 +2,7 @@ using System.Globalization;
 using DirectoryService.Web;
 using Serilog;
 using SharedService.Framework.Middlewares;
+using Environments = SharedService.Framework.Environments;
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
@@ -19,7 +20,7 @@ try
 
     app.UseSerilogRequestLogging();
 
-    if (app.Environment.IsDevelopment())
+    if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment(Environments.DOCKER))
     {
         app.MapOpenApi();
         app.UseSwaggerUI(options => options.SwaggerEndpoint("/openapi/v1.json", "DirectoryService"));
