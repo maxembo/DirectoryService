@@ -1,9 +1,13 @@
-import { cn } from "@/lib/utils";
+import { Header } from "@/features/header/header";
+import { AppSidebar } from "@/features/sidebar/app.sidebar";
+import { SidebarProvider } from "@/shared/components/ui/sidebar";
+import { TooltipProvider } from "@/shared/components/ui/tooltip";
+import { cn } from "@/shared/lib/utils";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
-import "./globals.css";
+import "./styles/globals.css";
 
-const inter = Inter({subsets:['latin'],variable:'--font-sans'});
+const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,10 +32,19 @@ export default function RootLayout({
   return (
     <html lang="en" className={cn("font-sans dark", inter.variable)}>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <SidebarProvider>
+          <TooltipProvider>
+            <div className="flex h-screen w-full">
+              <AppSidebar />
+              <div className="flex-1 flex flex-col min-w-0">
+                <Header />
+                <main className="flex-1 overflow-auto p-10">{children}</main>
+              </div>
+            </div>
+          </TooltipProvider>
+        </SidebarProvider>
       </body>
-    </html>
+    </html >
   );
 }
