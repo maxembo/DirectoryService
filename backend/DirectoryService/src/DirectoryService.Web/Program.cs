@@ -18,17 +18,7 @@ try
 
     var app = builder.Build();
 
-    app.UseSerilogRequestLogging();
-
-    if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment(Environments.DOCKER))
-    {
-        app.MapOpenApi();
-        app.UseSwaggerUI(options => options.SwaggerEndpoint("/openapi/v1.json", "DirectoryService"));
-    }
-
-    app.UseExceptionMiddleware();
-
-    app.MapControllers();
+    app.Configure();
 
     app.Run();
 }

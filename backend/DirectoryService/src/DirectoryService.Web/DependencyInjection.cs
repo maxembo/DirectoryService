@@ -10,6 +10,7 @@ public static class DependencyInjection
     public static IServiceCollection AddProgramDependencies(
         this IServiceCollection services, IConfiguration configuration)
         => services
+            .AddCors()
             .AddSerilogLogging(configuration)
             .AddWebDependencies()
             .AddInfrastructureDependencies(configuration)
@@ -25,8 +26,7 @@ public static class DependencyInjection
 
     private static IServiceCollection AddSerilogLogging(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddSerilog(
-            (sp, ls) => ls
+        services.AddSerilog((sp, ls) => ls
                 .ReadFrom.Configuration(configuration)
                 .ReadFrom.Services(sp)
                 .Enrich.FromLogContext()
