@@ -88,6 +88,7 @@ public class GetLocationsHandler : IQueryHandler<PaginationEnvelope<GetLocations
                 })
             .ToListAsync(cancellationToken);
 
-        return new PaginationEnvelope<GetLocationsDto>(locations.ToList(), totalCount);
+        return new PaginationEnvelope<GetLocationsDto>(
+            locations.ToList(), totalCount, query.Request.Page, query.Request.PageSize);
     }
 }
