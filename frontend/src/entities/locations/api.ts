@@ -1,10 +1,24 @@
 import { apiClient } from "@/shared/api/api-instance";
-import { Location } from "./types";
+import { PaginationEnvelope } from "@/shared/types";
+import { AddressDto, Location } from "./types";
 
-export type GetLocationsRequest = {
+export interface GetLocationsRequest extends PaginationRequest {
+	departmentIds?: string[];
 	search?: string;
-	page: number;
-	pageSize: number;
+	isActive?: boolean;
+	sortBy?: string;
+	sortDirection?: string;
+}
+
+export interface PaginationRequest {
+	page?: number;
+	pageSize?: number;
+}
+
+export type CreateLocationRequest = {
+	name: string;
+	address: AddressDto;
+	timezone: string;
 };
 
 export type Envelope<T = unknown> = {
@@ -28,14 +42,22 @@ export type ErrorMessage = {
 export type ErrorType = "validation" | "not_found" | "failure" | "conflict";
 
 export const locationsApi = {
-	getLocations: async (request: GetLocationsRequest): Promise<Location[]> => {
-		const response = await apiClient.get<Envelope<{ items: Location[] }>>(
+	getLocations: async (request: GetLocationsRequest) => {
+		const response = await apiClient.get<
+			Envelope<PaginationEnvelope<Location>>
+		>("/locations", {
+			params: request,
+		});
+
+		return response.data.result;
+	},
+
+	createLocation: async (request: CreateLocationRequest) => {
+		const response = await apiClient.post<Envelope<Location>>(
 			"/locations",
-			{
-				params: request,
-			},
+			request,
 		);
 
-		return response.data.result?.items || [];
+		return response.data.result;
 	},
 };
