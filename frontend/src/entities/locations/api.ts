@@ -1,11 +1,8 @@
 import { apiClient } from "@/shared/api/api-instance";
+import { SortByFilter, SortDirectionFilter } from "@/shared/api/filters";
 import { PaginationRequest } from "@/shared/api/pagination-request";
 import { PaginationEnvelope } from "@/shared/types";
 import { queryOptions } from "@tanstack/react-query";
-import {
-	SortByFilter,
-	SortDirectionFilter,
-} from "./hooks/use-location-filters";
 import { AddressDto, Location } from "./types";
 
 export interface GetLocationsRequest extends PaginationRequest {
