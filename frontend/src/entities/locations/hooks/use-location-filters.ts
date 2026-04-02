@@ -1,11 +1,12 @@
+import {
+	ActiveFilter,
+	SortByFilter,
+	SortDirectionFilter,
+} from "@/shared/api/filters";
 import { PAGE_SIZE } from "@/shared/api/pagination-request";
 import { useState } from "react";
 
-export type ActiveFilter = "active" | "inactive" | "all";
-export type SortByFilter = "name" | "created";
-export type SortDirectionFilter = "asc" | "desc";
-
-export type LocationListState = {
+type LocationListState = {
 	departmentIds: string[];
 	search: string;
 	isActive: ActiveFilter;

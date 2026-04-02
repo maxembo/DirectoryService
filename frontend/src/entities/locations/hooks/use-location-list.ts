@@ -1,6 +1,6 @@
 import { locationsApi } from "@/entities/locations/api";
+import { SortByFilter, SortDirectionFilter } from "@/shared/api/filters";
 import { useQuery } from "@tanstack/react-query";
-import { SortByFilter, SortDirectionFilter } from "./use-location-filters";
 
 export type GetLocationsParams = {
 	search?: string;
@@ -13,7 +13,7 @@ export type GetLocationsParams = {
 };
 
 export function useLocationList(params: GetLocationsParams) {
-	const { data, isLoading, isFetching, error } = useQuery({
+	const { data, isPending, error } = useQuery({
 		...locationsApi.getLocationsQueryOptions({
 			page: params.page,
 			search: params.search,
@@ -28,8 +28,7 @@ export function useLocationList(params: GetLocationsParams) {
 	return {
 		locations: data?.result?.items || [],
 		totalPages: data?.result?.totalPages || 0,
-		isLoading,
-		isFetching,
+		isPending,
 		error,
 	};
 }

@@ -1,5 +1,5 @@
 import {
-	Pagination,
+	Pagination as PaginationComponent,
 	PaginationContent,
 	PaginationEllipsis,
 	PaginationItem,
@@ -8,111 +8,88 @@ import {
 	PaginationPrevious,
 } from "@/shared/components/ui/pagination";
 
-type PaginationIconsOnlyProps = {
+type PaginationProps = {
 	currentPage: number;
 	totalPages: number;
 	onPageChange: (page: number) => void;
+	maxVisiblePages?: number;
 };
 
 type PageToken = number | "ellipsis";
 
-function buildPaginationItems(
+function getVisiblePages(
 	currentPage: number,
 	totalPages: number,
+	maxVisible = 7,
 ): PageToken[] {
-	if (totalPages <= 7) {
+	if (totalPages <= maxVisible)
 		return Array.from({ length: totalPages }, (_, i) => i + 1);
-	}
 
 	const items: PageToken[] = [1];
 	const left = Math.max(currentPage - 1, 2);
 	const right = Math.min(currentPage + 1, totalPages - 1);
 
-	if (left > 2) {
-		items.push("ellipsis");
-	}
-
-	for (let page = left; page <= right; page++) {
-		items.push(page);
-	}
-
-	if (right < totalPages - 1) {
-		items.push("ellipsis");
-	}
+	if (left > 2) items.push("ellipsis");
+	for (let i = left; i <= right; i++) items.push(i);
+	if (right < totalPages - 1) items.push("ellipsis");
 
 	items.push(totalPages);
-
 	return items;
 }
 
-export function PaginationIconsOnly({
+export function Pagination({
 	currentPage,
 	totalPages,
 	onPageChange,
-}: PaginationIconsOnlyProps) {
+	maxVisiblePages,
+}: PaginationProps) {
 	if (totalPages <= 1) return null;
 
-	const pages = buildPaginationItems(currentPage, totalPages);
+	const pages = getVisiblePages(currentPage, totalPages, maxVisiblePages);
 
-	const goToPage = (page: number) => {
+	const handlePageChange = (page: number) => {
 		if (page < 1 || page > totalPages || page === currentPage) return;
 		onPageChange(page);
 	};
 
 	return (
-		<Pagination>
+		<PaginationComponent>
 			<PaginationContent>
 				<PaginationItem>
 					<PaginationPrevious
-						href="#"
 						className={
 							currentPage === 1 ? "pointer-events-none opacity-50" : ""
 						}
-						onClick={(e) => {
-							e.preventDefault();
-							goToPage(currentPage - 1);
-						}}
+						onClick={() => handlePageChange(currentPage - 1)}
 					/>
 				</PaginationItem>
 
-				{pages.map((item, index) => {
-					if (item === "ellipsis") {
-						return (
-							<PaginationItem key={`ellipsis-${index}`}>
-								<PaginationEllipsis />
-							</PaginationItem>
-						);
-					}
-
-					return (
+				{pages.map((item, index) =>
+					item === "ellipsis" ? (
+						<PaginationItem key={`ellipsis-${index}`}>
+							<PaginationEllipsis />
+						</PaginationItem>
+					) : (
 						<PaginationItem key={item}>
 							<PaginationLink
-								href="#"
 								isActive={item === currentPage}
-								onClick={(e) => {
-									e.preventDefault();
-									goToPage(item);
-								}}
+								onClick={() => handlePageChange(item)}
 							>
 								{item}
 							</PaginationLink>
 						</PaginationItem>
-					);
-				})}
+					),
+				)}
 
 				<PaginationItem>
 					<PaginationNext
-						href="#"
 						className={
 							currentPage === totalPages ? "pointer-events-none opacity-50" : ""
 						}
-						onClick={(e) => {
-							e.preventDefault();
-							goToPage(currentPage + 1);
-						}}
+						onClick={() => handlePageChange(currentPage + 1)}
 					/>
 				</PaginationItem>
 			</PaginationContent>
-		</Pagination>
+		</PaginationComponent>
 	);
 }
