@@ -1,18 +1,19 @@
 import { apiClient } from "@/shared/api/api-instance";
+import { PaginationRequest } from "@/shared/api/pagination-request";
 import { PaginationEnvelope } from "@/shared/types";
+import { queryOptions } from "@tanstack/react-query";
+import {
+	SortByFilter,
+	SortDirectionFilter,
+} from "./hooks/use-location-filters";
 import { AddressDto, Location } from "./types";
 
 export interface GetLocationsRequest extends PaginationRequest {
 	departmentIds?: string[];
 	search?: string;
 	isActive?: boolean;
-	sortBy?: string;
-	sortDirection?: string;
-}
-
-export interface PaginationRequest {
-	page?: number;
-	pageSize?: number;
+	sortBy?: SortByFilter;
+	sortDirection?: SortDirectionFilter;
 }
 
 export type CreateLocationRequest = {
@@ -42,15 +43,21 @@ export type ErrorMessage = {
 export type ErrorType = "validation" | "not_found" | "failure" | "conflict";
 
 export const locationsApi = {
-	getLocations: async (request: GetLocationsRequest) => {
-		const response = await apiClient.get<
-			Envelope<PaginationEnvelope<Location>>
-		>("/locations", {
-			params: request,
-		});
+	baseKey: "locations",
 
-		return response.data.result;
-	},
+	getLocationsQueryOptions: (request: GetLocationsRequest) =>
+		queryOptions({
+			queryKey: [locationsApi.baseKey, request],
+			queryFn: async ({ signal }) => {
+				const response = await apiClient.get<
+					Envelope<PaginationEnvelope<Location>>
+				>("/locations", {
+					params: request,
+					signal,
+				});
+				return response.data;
+			},
+		}),
 
 	createLocation: async (request: CreateLocationRequest) => {
 		const response = await apiClient.post<Envelope<Location>>(

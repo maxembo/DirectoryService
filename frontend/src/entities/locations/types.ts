@@ -4,6 +4,7 @@ export type Location = {
 	timezone: string;
 	isActive: boolean;
 	address: AddressDto;
+	createdAt: string;
 	updatedAt: string;
 };
 
@@ -13,3 +14,9 @@ export type AddressDto = {
 	street: string;
 	house: string;
 };
+
+export type ActiveFilter = "active" | "inactive" | "all";
+
+export type SortByFilter = "name" | "created";
+
+export type SortDirectionFilter = "asc" | "desc";
