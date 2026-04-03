@@ -107,6 +107,7 @@ public class GetLocationsHandlerDapper : IQueryHandler<PaginationEnvelope<GetLoc
                 return location;
             }, param: parameters);
 
-        return new PaginationEnvelope<GetLocationsDto>(locations.ToList(), totalCount ?? 0);
+        return new PaginationEnvelope<GetLocationsDto>(
+            locations.ToList(), totalCount ?? 0, query.Request.Page, query.Request.PageSize);
     }
 }

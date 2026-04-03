@@ -17,9 +17,21 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const menuItems = [
-	{ href: routes.locations.href, label: routes.locations.title, icon: Building2 },
-	{ href: routes.departments.href, label: routes.departments.title, icon: FolderTree },
-	{ href: routes.positions.href, label: routes.positions.title, icon: Briefcase },
+	{
+		href: routes.locations.href,
+		label: routes.locations.title,
+		icon: Building2,
+	},
+	{
+		href: routes.departments.href,
+		label: routes.departments.title,
+		icon: FolderTree,
+	},
+	{
+		href: routes.positions.href,
+		label: routes.positions.title,
+		icon: Briefcase,
+	},
 ];
 
 export function AppSidebar() {

@@ -4,6 +4,7 @@ export type Location = {
 	timezone: string;
 	isActive: boolean;
 	address: AddressDto;
+	createdAt: string;
 	updatedAt: string;
 };
 

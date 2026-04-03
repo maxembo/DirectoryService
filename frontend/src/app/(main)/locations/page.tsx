@@ -1,10 +1,9 @@
-import { LocationsList } from "@/entities/locations/ui/locations";
-
+import { LocationsList } from "@/entities/locations/ui/locations-list";
 
 export default function LocationsPage() {
-  return (
-    <div>
-      <LocationsList />
-    </div>
-  );
+	return (
+		<div>
+			<LocationsList />
+		</div>
+	);
 }

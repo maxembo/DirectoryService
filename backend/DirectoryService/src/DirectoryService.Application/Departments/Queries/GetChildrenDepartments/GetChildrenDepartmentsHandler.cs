@@ -56,7 +56,7 @@ public class GetChildrenDepartmentsHandler
                 var result = await GetChildrenDepartments(query);
 
                 return result.IsFailure
-                    ? new PaginationEnvelope<GetDepartmentDto>([], 0)
+                    ? new PaginationEnvelope<GetDepartmentDto>([], 0, 0, 0)
                     : result.Value;
             },
             tags: [CacheKeys.DEPARTMENT_KEY],
@@ -111,6 +111,7 @@ public class GetChildrenDepartmentsHandler
                 ChildPage = (query.Request.Page - 1) * query.Request.PageSize,
             })).ToList();
 
-        return new PaginationEnvelope<GetDepartmentDto>(childrenDepartments, totalCount ?? 0);
+        return new PaginationEnvelope<GetDepartmentDto>(
+            childrenDepartments, totalCount ?? 0, query.Request.Page, query.Request.PageSize);
     }
 }

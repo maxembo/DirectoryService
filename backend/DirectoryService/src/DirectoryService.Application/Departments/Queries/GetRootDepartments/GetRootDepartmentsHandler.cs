@@ -55,7 +55,7 @@ public class GetRootDepartmentsHandler : IQueryHandler<PaginationEnvelope<GetDep
             {
                 var result = await GetRootDepartments(query);
                 return result.IsFailure
-                    ? new PaginationEnvelope<GetDepartmentDto>([], 0)
+                    ? new PaginationEnvelope<GetDepartmentDto>([], 0, 0, 0)
                     : result.Value;
             },
             tags: [CacheKeys.DEPARTMENT_KEY],
@@ -171,6 +171,7 @@ public class GetRootDepartmentsHandler : IQueryHandler<PaginationEnvelope<GetDep
             }
         }
 
-        return new PaginationEnvelope<GetDepartmentDto>(roots, totalCount ?? 0);
+        return new PaginationEnvelope<GetDepartmentDto>(
+            roots, totalCount ?? 0, query.Request.Page, query.Request.PageSize);
     }
 }
