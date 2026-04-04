@@ -1,18 +1,19 @@
 "use client";
 
-import { useCreateLocation } from "@/entities/locations/hooks/use-create-location";
-import { useLocationList } from "@/entities/locations/hooks/use-location-list";
-import { Pagination } from "@/features/pagination/pagination";
-import { Button } from "@/shared/components/ui/button";
+import { useLocationList } from "@/entities/locations/models/use-location-list";
+import { LocationsPagination } from "@/features/locations/locations-pagination";
 import { Spinner } from "@/shared/components/ui/spinner";
 import { useDebounce } from "@/shared/hooks/use-debounce";
-import { useLocationFilters } from "../hooks/use-location-filters";
-import { LocationCard } from "./location-card";
-import { LocationFiltersPanel } from "./location-filters-panel";
-import { LocationsListEmpty } from "./location-list-empty";
-import { LocationsListError } from "./location-list-error";
+import { useState } from "react";
+import { LocationCard } from "../../../features/locations/location-card";
+import { LocationCreateDialog } from "../../../features/locations/location-create-dialog";
+import { LocationFiltersPanel } from "../../../features/locations/location-filters-panel";
+import { LocationsListEmpty } from "../../../features/locations/location-list-empty";
+import { LocationsListError } from "../../../features/locations/location-list-error";
+import { useLocationFilters } from "../models/use-location-filters";
 
 export function LocationsList() {
+	const [open, setOpen] = useState<boolean>(false);
 	const {
 		state,
 		setPage,
@@ -35,16 +36,6 @@ export function LocationsList() {
 		departmentIds: state.departmentIds,
 	});
 
-	const {
-		createLocation,
-		isPending: isCreatePenging,
-		createError,
-	} = useCreateLocation({
-		name: "Test Location frontend 22",
-		address: { country: "frontend 22", city: "dkd", street: "dk", house: "4" },
-		timezone: "UTC",
-	});
-
 	return (
 		<div className="space-y-4">
 			<LocationFiltersPanel
@@ -60,14 +51,7 @@ export function LocationsList() {
 
 			<div className="space-y-2">
 				<h1 className="text-2xl font-bold tracking-tight">Локации</h1>
-				<Button onClick={() => createLocation()} disabled={isCreatePenging}>
-					Создать локацию
-				</Button>
-				{createError && (
-					<p className="text-sm text-destructive">
-						Ошибка при создании: {createError.message}
-					</p>
-				)}
+				<LocationCreateDialog open={open} setOpen={setOpen} />
 			</div>
 
 			{isPending ? (
@@ -86,7 +70,7 @@ export function LocationsList() {
 						))}
 					</div>
 
-					<Pagination
+					<LocationsPagination
 						currentPage={state.page}
 						totalPages={totalPages}
 						onPageChange={setPage}
