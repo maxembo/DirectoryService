@@ -38,7 +38,7 @@ export function LocationCreateDialog({ open, setOpen: setOpenChange }: Props) {
 		house: "",
 		timezone: "",
 	};
-	const { createLocation, isPending, error } = useCreateLocation();
+	const { createLocation, isPending, isError, error } = useCreateLocation();
 
 	const [form, setForm] = useState(initialData);
 
@@ -68,6 +68,14 @@ export function LocationCreateDialog({ open, setOpen: setOpenChange }: Props) {
 		);
 	};
 
+	const getErrorMessage = (): string => {
+		if (isError) {
+			return error ? error.allMessages : "Неизвестная ошибка";
+		}
+
+		return "";
+	};
+
 	return (
 		<Dialog open={open} onOpenChange={setOpenChange}>
 			<DialogTrigger asChild>
@@ -84,7 +92,7 @@ export function LocationCreateDialog({ open, setOpen: setOpenChange }: Props) {
 					</DialogHeader>
 					{error && (
 						<p className="text-sm font-medium text-destructive">
-							Ошибка: {error.message}
+							Ошибка: {getErrorMessage()}
 						</p>
 					)}
 

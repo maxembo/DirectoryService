@@ -25,7 +25,7 @@ export function LocationsList() {
 
 	const debouncedSearch = useDebounce(state.search, 400);
 
-	const { locations, totalPages, isPending, error } = useLocationList({
+	const { locations, totalPages, isPending, isError, error } = useLocationList({
 		page: state.page,
 		search: debouncedSearch,
 		isActive:
@@ -58,8 +58,10 @@ export function LocationsList() {
 				<div className="flex min-h-60 items-center justify-center">
 					<Spinner />
 				</div>
-			) : error ? (
-				<LocationsListError message={error.message} />
+			) : isError ? (
+				<LocationsListError
+					message={error ? error.message : "Неизвестная ошибка"}
+				/>
 			) : locations?.length === 0 ? (
 				<LocationsListEmpty />
 			) : (
