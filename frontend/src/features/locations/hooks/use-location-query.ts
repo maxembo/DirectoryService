@@ -13,10 +13,8 @@ type GetLocationsParams = {
 	pageSize: number;
 };
 
-export function useLocationList(params: GetLocationsParams) {
-	const query = useQuery({
-		...locationsApi.getLocationsQueryOptions(params),
-	});
+export function useLocationQuery(params: GetLocationsParams) {
+	const query = useQuery(locationsApi.getLocationsQueryOptions(params));
 
 	return {
 		locations: query.data?.result?.items || [],

@@ -4,21 +4,9 @@ import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { queryClient } from "../../../shared/api/query-client";
 
-export type CreateLocationParams = {
-	name: string;
-	address: {
-		country: string;
-		city: string;
-		street: string;
-		house: string;
-	};
-	timezone: string;
-};
-
 export function useCreateLocation() {
 	const mutation = useMutation({
-		mutationFn: (params: CreateLocationParams) =>
-			locationsApi.createLocation(params),
+		mutationFn: locationsApi.createLocation,
 		onSettled: () => {
 			queryClient.invalidateQueries({ queryKey: [locationsApi.baseKey] });
 		},

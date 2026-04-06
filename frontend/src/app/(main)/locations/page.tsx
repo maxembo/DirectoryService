@@ -1,4 +1,4 @@
-import { LocationsList } from "@/entities/locations/ui/locations-list";
+import { LocationsList } from "@/features/locations/ui/locations-list";
 
 export default function LocationsPage() {
 	return (

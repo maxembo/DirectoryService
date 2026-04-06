@@ -5,6 +5,9 @@ import { PaginationRequest } from "@/shared/api/pagination-request";
 import { queryOptions } from "@tanstack/react-query";
 import { AddressDto, Location } from "./types";
 
+const LOCATIONS_KEY = "locations";
+const LOCATIONS_ENDPOINT = "/locations";
+
 export interface GetLocationsRequest extends PaginationRequest {
 	departmentIds?: string[];
 	search?: string;
@@ -20,7 +23,7 @@ export type CreateLocationRequest = {
 };
 
 export const locationsApi = {
-	baseKey: "locations",
+	baseKey: LOCATIONS_KEY,
 
 	getLocationsQueryOptions: (request: GetLocationsRequest) =>
 		queryOptions({
@@ -28,7 +31,7 @@ export const locationsApi = {
 			queryFn: async ({ signal }) => {
 				const response = await apiClient.get<
 					Envelope<PaginationEnvelope<Location>>
-				>("/locations", {
+				>(LOCATIONS_ENDPOINT, {
 					params: request,
 					signal,
 				});
@@ -38,7 +41,7 @@ export const locationsApi = {
 
 	createLocation: async (request: CreateLocationRequest) => {
 		const response = await apiClient.post<Envelope<Location>>(
-			"/locations",
+			LOCATIONS_ENDPOINT,
 			request,
 		);
 		return response.data;

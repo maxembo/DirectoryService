@@ -13,7 +13,7 @@ import { Field, FieldGroup } from "@/shared/components/ui/field";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { useState } from "react";
-import { useCreateLocation } from "../../entities/locations/models/use-create-location";
+import { useCreateLocation } from "../hooks/use-create-location";
 
 type Props = {
 	open: boolean;

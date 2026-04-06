@@ -1,16 +1,18 @@
 "use client";
 
-import { useLocationList } from "@/entities/locations/models/use-location-list";
-import { LocationsPagination } from "@/features/locations/locations-pagination";
+import { useLocationFilters } from "@/features/locations/hooks/use-location-filters";
+import { useLocationQuery } from "@/features/locations/hooks/use-location-query";
+import { LocationsPagination } from "@/features/locations/ui/locations-pagination";
 import { Spinner } from "@/shared/components/ui/spinner";
-import { useDebounce } from "@/shared/hooks/use-debounce";
 import { useState } from "react";
-import { LocationCard } from "../../../features/locations/location-card";
-import { LocationCreateDialog } from "../../../features/locations/location-create-dialog";
-import { LocationFiltersPanel } from "../../../features/locations/location-filters-panel";
-import { LocationsListEmpty } from "../../../features/locations/location-list-empty";
-import { LocationsListError } from "../../../features/locations/location-list-error";
-import { useLocationFilters } from "../models/use-location-filters";
+import { useDebounce } from "use-debounce";
+import { LocationCard } from "./location-card";
+import { LocationCreateDialog } from "./location-create-dialog";
+import { LocationFiltersPanel } from "./location-filters-panel";
+import { LocationsListEmpty } from "./location-list-empty";
+import { LocationsListError } from "./location-list-error";
+
+const DEBOUNCE_DELAY = 600;
 
 export function LocationsList() {
 	const [open, setOpen] = useState<boolean>(false);
@@ -23,18 +25,20 @@ export function LocationsList() {
 		setSortDirection,
 	} = useLocationFilters();
 
-	const debouncedSearch = useDebounce(state.search, 400);
+	const [debouncedSearch] = useDebounce(state.search, DEBOUNCE_DELAY);
 
-	const { locations, totalPages, isPending, isError, error } = useLocationList({
-		page: state.page,
-		search: debouncedSearch,
-		isActive:
-			state.isActive === "all" ? undefined : state.isActive === "active",
-		sortBy: state.sortBy,
-		sortDirection: state.sortDirection,
-		pageSize: state.pageSize,
-		departmentIds: state.departmentIds,
-	});
+	const { locations, totalPages, isPending, isError, error } = useLocationQuery(
+		{
+			search: debouncedSearch,
+			isActive:
+				state.isActive === "all" ? undefined : state.isActive === "active",
+			sortBy: state.sortBy,
+			sortDirection: state.sortDirection,
+			departmentIds: state.departmentIds,
+			page: state.page,
+			pageSize: state.pageSize,
+		},
+	);
 
 	return (
 		<div className="space-y-4">
