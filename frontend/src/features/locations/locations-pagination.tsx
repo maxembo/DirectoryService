@@ -1,5 +1,5 @@
 import {
-	Pagination as PaginationComponent,
+	Pagination,
 	PaginationContent,
 	PaginationEllipsis,
 	PaginationItem,
@@ -8,7 +8,7 @@ import {
 	PaginationPrevious,
 } from "@/shared/components/ui/pagination";
 
-type PaginationProps = {
+type Props = {
 	currentPage: number;
 	totalPages: number;
 	onPageChange: (page: number) => void;
@@ -37,12 +37,12 @@ function getVisiblePages(
 	return items;
 }
 
-export function Pagination({
+export function LocationsPagination({
 	currentPage,
 	totalPages,
 	onPageChange,
 	maxVisiblePages,
-}: PaginationProps) {
+}: Props) {
 	if (totalPages <= 1) return null;
 
 	const pages = getVisiblePages(currentPage, totalPages, maxVisiblePages);
@@ -53,7 +53,7 @@ export function Pagination({
 	};
 
 	return (
-		<PaginationComponent>
+		<Pagination>
 			<PaginationContent>
 				<PaginationItem>
 					<PaginationPrevious
@@ -90,6 +90,6 @@ export function Pagination({
 					/>
 				</PaginationItem>
 			</PaginationContent>
-		</PaginationComponent>
+		</Pagination>
 	);
 }

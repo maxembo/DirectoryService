@@ -49,8 +49,7 @@ public class CreateLocationHandler : ICommandHandler<Guid, CreateLocationCommand
         var repositoryResult = await _locationsRepository.AddAsync(location, cancellationToken);
         if (repositoryResult.IsFailure)
         {
-            return Error.Failure(null, repositoryResult.Error.Message)
-                .ToErrors();
+            return repositoryResult.Error.ToErrors();
         }
 
         _logger.LogInformation("Location {Location.Id} has been created.", location.Id);

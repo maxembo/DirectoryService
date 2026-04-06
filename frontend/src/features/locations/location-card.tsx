@@ -7,7 +7,7 @@ import {
 } from "@/shared/components/ui/card";
 import { Separator } from "@/shared/components/ui/separator";
 import { CircleCheckBig, CircleX, Clock3, Globe2, MapPin } from "lucide-react";
-import { Location } from "../types";
+import { Location } from "../../entities/locations/types";
 
 type Props = {
 	location: Location;

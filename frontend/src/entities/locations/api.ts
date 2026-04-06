@@ -1,7 +1,7 @@
-import { apiClient } from "@/shared/api/api-instance";
+import { apiClient } from "@/shared/api/axios-instance";
+import { Envelope, PaginationEnvelope } from "@/shared/api/envelops";
 import { SortByFilter, SortDirectionFilter } from "@/shared/api/filters";
 import { PaginationRequest } from "@/shared/api/pagination-request";
-import { PaginationEnvelope } from "@/shared/types";
 import { queryOptions } from "@tanstack/react-query";
 import { AddressDto, Location } from "./types";
 
@@ -18,26 +18,6 @@ export type CreateLocationRequest = {
 	address: AddressDto;
 	timezone: string;
 };
-
-export type Envelope<T = unknown> = {
-	result: T | null;
-	error: ApiError | null;
-	isError: boolean;
-	timeGenerated: string;
-};
-
-export type ApiError = {
-	messages: ErrorMessage[];
-	type: ErrorType;
-};
-
-export type ErrorMessage = {
-	code: string;
-	message: string;
-	invalidField?: string | null;
-};
-
-export type ErrorType = "validation" | "not_found" | "failure" | "conflict";
 
 export const locationsApi = {
 	baseKey: "locations",
@@ -61,7 +41,6 @@ export const locationsApi = {
 			"/locations",
 			request,
 		);
-
-		return response.data.result;
+		return response.data;
 	},
 };
