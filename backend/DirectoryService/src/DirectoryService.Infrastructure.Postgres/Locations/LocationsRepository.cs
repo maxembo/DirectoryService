@@ -35,7 +35,9 @@ public class LocationsRepository : ILocationsRepository
     public async Task<Result<Location, Error>> GetByIdAsync(
         LocationId locationId, CancellationToken cancellationToken = default)
     {
-        var location = await _dbContext.Locations.FirstOrDefaultAsync(l => l.Id == locationId, cancellationToken);
+        var location = await _dbContext.Locations
+            .Where(l => l.IsActive == true)
+            .FirstOrDefaultAsync(l => l.Id == locationId, cancellationToken);
 
         if (location == null)
             return GeneralErrors.NotFound(locationId.Value, "location");

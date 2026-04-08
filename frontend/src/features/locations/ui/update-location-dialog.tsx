@@ -1,3 +1,4 @@
+import { Location } from "@/entities/locations/model/types";
 import { Button } from "@/shared/components/ui/button";
 import {
 	Dialog,
@@ -13,56 +14,34 @@ import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import {
-	CreateLocationFormData,
-	createLocationSchema,
-} from "../model/location-form";
-import { useCreateLocation } from "../model/use-create-location";
+import { locationSchema, UpdateLocationFormData } from "../model/location-form";
+import { useUpdateLocation } from "../model/use-update-location";
 
 type Props = {
+	location: Location;
 	open: boolean;
 	setOpen: (open: boolean) => void;
 };
 
-const initialData: CreateLocationFormData = {
-	name: "",
-	address: {
-		country: "",
-		city: "",
-		street: "",
-		house: "",
-	},
-	timezone: "",
-};
-
-export function CreateLocationDialog({ open, setOpen }: Props) {
+export function UpdateLocationDialog({ location, open, setOpen }: Props) {
 	const {
 		register,
 		handleSubmit,
 		formState: { errors },
-		reset,
-	} = useForm<CreateLocationFormData>({
-		defaultValues: initialData,
-		resolver: zodResolver(createLocationSchema),
+	} = useForm<UpdateLocationFormData>({
+		defaultValues: location,
+		resolver: zodResolver(locationSchema),
 	});
 
-	const {
-		createLocation,
-		isPending,
-		isError,
-		error,
-		reset: resetCreateLocation,
-	} = useCreateLocation();
+	const { updateLocation, isPending, isError, error } = useUpdateLocation();
 
 	const handleClose = () => {
-		reset();
-		resetCreateLocation();
 		setOpen(false);
 	};
 
-	const onSubmit = async (data: CreateLocationFormData) => {
+	const onSubmit = async (data: UpdateLocationFormData) => {
 		try {
-			await createLocation(data);
+			await updateLocation({ locationId: location.id, ...data });
 			handleClose();
 		} catch {}
 	};
@@ -81,9 +60,9 @@ export function CreateLocationDialog({ open, setOpen }: Props) {
 			<DialogContent className="sm:max-w-md">
 				<form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
 					<DialogHeader>
-						<DialogTitle>Создание локации</DialogTitle>
+						<DialogTitle>Редактирование локации</DialogTitle>
 						<DialogDescription>
-							Заполните данные локации и нажмите сохранить.
+							Измените данные локации и нажмите сохранить.
 						</DialogDescription>
 					</DialogHeader>
 					{isError && (
@@ -193,7 +172,7 @@ export function CreateLocationDialog({ open, setOpen }: Props) {
 							</Button>
 						</DialogClose>
 						<Button type="submit" disabled={isPending}>
-							{isPending ? "Создание..." : "Создать"}
+							{isPending ? "Изменение..." : "Изменить"}
 						</Button>
 					</DialogFooter>
 				</form>

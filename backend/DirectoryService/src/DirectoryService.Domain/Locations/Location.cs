@@ -16,7 +16,8 @@ public sealed class Location : BaseEntity<LocationId>, ISoftDeletable
     // ef core
     private Location(LocationId id)
         : base(id)
-    { }
+    {
+    }
 
     private readonly List<DepartmentLocation> _departments = [];
 
@@ -36,5 +37,14 @@ public sealed class Location : BaseEntity<LocationId>, ISoftDeletable
     {
         IsActive = false;
         DeletedAt = DateTime.UtcNow;
+    }
+
+    public void Update(LocationName name, Timezone timezone, Address address)
+    {
+        Name = name;
+        Address = address;
+        Timezone = timezone;
+
+        UpdatedAt = DateTime.UtcNow;
     }
 }

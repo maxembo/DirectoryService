@@ -17,3 +17,9 @@ export type CreateLocationRequest = {
 	address: AddressDto;
 	timezone: string;
 };
+
+export type UpdateLocationRequest = {
+	name: string;
+	address: AddressDto;
+	timezone: string;
+};

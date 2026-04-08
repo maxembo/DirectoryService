@@ -41,7 +41,7 @@ const addressSchema = z.object({
 		),
 });
 
-export const createLocationSchema = z.object({
+export const locationSchema = z.object({
 	name: z
 		.string()
 		.trim()
@@ -65,4 +65,6 @@ export const createLocationSchema = z.object({
 		),
 });
 
-export type CreateLocationFormData = z.infer<typeof createLocationSchema>;
+export type CreateLocationFormData = z.infer<typeof locationSchema>;
+
+export type UpdateLocationFormData = z.infer<typeof locationSchema>;

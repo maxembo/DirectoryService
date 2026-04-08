@@ -1,7 +1,9 @@
 "use client";
 
+import { Location } from "@/entities/locations/model/types";
 import { useLocationsQuery } from "@/entities/locations/model/use-locations-query";
-import { LocationCreateDialog } from "@/features/create-location/ui/location-create-dialog";
+import { CreateLocationDialog } from "@/features/locations/ui/create-location-dialog";
+import { UpdateLocationDialog } from "@/features/locations/ui/update-location-dialog";
 import { Button } from "@/shared/components/ui/button";
 import { Spinner } from "@/shared/components/ui/spinner";
 import { LocationCard } from "@/widgets/locations-list/ui/location-card";
@@ -16,7 +18,14 @@ import { useDebounce } from "use-debounce";
 const DEBOUNCE_DELAY = 600;
 
 export function LocationsList() {
-	const [open, setOpen] = useState(false);
+	const [createOpen, setCreateOpen] = useState(false);
+	const [updateOpen, setUpdateOpen] = useState(false);
+	const [isDelete, setIsDelete] = useState(false);
+
+	const [selectedLocation, setSelectedLocation] = useState<Location>(
+		{} as Location,
+	);
+
 	const {
 		filters,
 		setPage,
@@ -55,11 +64,23 @@ export function LocationsList() {
 			<div className="space-y-2">
 				<h1 className="text-2xl font-bold tracking-tight">Локации</h1>
 
-				<Button type="button" onClick={() => setOpen(true)} className="ml-auto">
+				<Button
+					type="button"
+					onClick={() => setCreateOpen(true)}
+					className="ml-auto"
+				>
 					Создать локацию
 				</Button>
 
-				<LocationCreateDialog open={open} setOpen={setOpen} />
+				<CreateLocationDialog open={createOpen} setOpen={setCreateOpen} />
+				{selectedLocation && (
+					<UpdateLocationDialog
+						key={selectedLocation.id}
+						location={selectedLocation}
+						open={selectedLocation !== undefined && updateOpen}
+						setOpen={setUpdateOpen}
+					/>
+				)}
 			</div>
 
 			{isPending ? (
@@ -74,7 +95,15 @@ export function LocationsList() {
 				<>
 					<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
 						{locations.map((location) => (
-							<LocationCard key={location.id} location={location} />
+							<LocationCard
+								key={location.id}
+								location={location}
+								onEdit={() => {
+									setSelectedLocation(location);
+									setUpdateOpen(true);
+								}}
+								onDelete={() => setIsDelete(true)}
+							/>
 						))}
 					</div>
 
