@@ -1,4 +1,4 @@
-import { LocationsList } from "@/features/locations/ui/locations-list";
+import { LocationsList } from "@/widgets/locations-list/ui/locations-list";
 
 export default function LocationsPage() {
 	return (

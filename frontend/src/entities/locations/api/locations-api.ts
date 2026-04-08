@@ -1,26 +1,11 @@
 import { apiClient } from "@/shared/api/axios-instance";
 import { Envelope, PaginationEnvelope } from "@/shared/api/envelops";
-import { SortByFilter, SortDirectionFilter } from "@/shared/api/filters";
-import { PaginationRequest } from "@/shared/api/pagination-request";
 import { queryOptions } from "@tanstack/react-query";
-import { AddressDto, Location } from "./types";
+import { Location } from "../model/types";
+import { CreateLocationRequest, GetLocationsRequest } from "./types";
 
 const LOCATIONS_KEY = "locations";
 const LOCATIONS_ENDPOINT = "/locations";
-
-export interface GetLocationsRequest extends PaginationRequest {
-	departmentIds?: string[];
-	search?: string;
-	isActive?: boolean;
-	sortBy?: SortByFilter;
-	sortDirection?: SortDirectionFilter;
-}
-
-export type CreateLocationRequest = {
-	name: string;
-	address: AddressDto;
-	timezone: string;
-};
 
 export const locationsApi = {
 	baseKey: LOCATIONS_KEY,

@@ -1,10 +1,10 @@
 import {
-	ActiveFilter,
 	SortByFilter,
 	SortDirectionFilter,
-} from "@/shared/api/filters";
+} from "@/entities/locations/api/types";
 import { Input } from "@/shared/components/ui/input";
 import { NativeSelect } from "@/shared/components/ui/native-select";
+import { ActiveFilter } from "@/widgets/model/types";
 
 type Props = {
 	search: string;

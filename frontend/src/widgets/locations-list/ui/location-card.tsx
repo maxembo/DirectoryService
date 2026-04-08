@@ -1,3 +1,4 @@
+import { Location } from "@/entities/locations/model/types";
 import { Badge } from "@/shared/components/ui/badge";
 import {
 	Card,
@@ -7,7 +8,6 @@ import {
 } from "@/shared/components/ui/card";
 import { Separator } from "@/shared/components/ui/separator";
 import { CircleCheckBig, CircleX, Clock3, Globe2, MapPin } from "lucide-react";
-import { Location } from "../../../entities/locations/types";
 
 type Props = {
 	location: Location;
