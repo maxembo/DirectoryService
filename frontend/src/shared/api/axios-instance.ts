@@ -2,9 +2,12 @@ import axios from "axios";
 import { Envelope } from "./envelops";
 import { EnvelopeError } from "./errors";
 
+const API_BASE_URL = "http://localhost:5051/api";
+const HEADERS = { "Content-Type": "application/json" };
+
 export const apiClient = axios.create({
-	baseURL: "http://localhost:5051/api",
-	headers: { "Content-Type": "application/json" },
+	baseURL: API_BASE_URL,
+	headers: HEADERS,
 });
 
 apiClient.interceptors.response.use(

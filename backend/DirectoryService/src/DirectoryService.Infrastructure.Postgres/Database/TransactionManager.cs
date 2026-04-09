@@ -43,15 +43,12 @@ public class TransactionManager : ITransactionManager
 
     public async Task<UnitResult<Error>> SaveChangeAsync(CancellationToken cancellationToken = default)
     {
-        try
+        var saveChangesResultAsync = await _dbContext.SaveChangesResultAsync(cancellationToken);
+        if (saveChangesResultAsync.IsFailure)
         {
-            await _dbContext.SaveChangesAsync(cancellationToken);
-            return UnitResult.Success<Error>();
+            return saveChangesResultAsync.Error;
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, ex.Message);
-            return GeneralErrors.Database("database", "Failed to save change.");
-        }
+
+        return UnitResult.Success<Error>();
     }
 }

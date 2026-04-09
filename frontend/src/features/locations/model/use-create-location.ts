@@ -1,28 +1,14 @@
-import { locationsApi } from "@/entities/locations/api";
+import { locationsApi } from "@/entities/locations/api/locations-api";
 import { EnvelopeError } from "@/shared/api/errors";
+import { queryClient } from "@/shared/api/query-client";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { queryClient } from "../../../shared/api/query-client";
-
-export type CreateLocationParams = {
-	name: string;
-	address: {
-		country: string;
-		city: string;
-		street: string;
-		house: string;
-	};
-	timezone: string;
-};
 
 export function useCreateLocation() {
 	const mutation = useMutation({
-		mutationFn: (params: CreateLocationParams) =>
-			locationsApi.createLocation(params),
-		onSettled: () => {
-			queryClient.invalidateQueries({ queryKey: [locationsApi.baseKey] });
-		},
+		mutationFn: locationsApi.createLocation,
 		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: [locationsApi.baseKey] });
 			toast.success("Локация успешно создана");
 		},
 		onError: (error) => {
@@ -36,9 +22,10 @@ export function useCreateLocation() {
 	});
 
 	return {
-		createLocation: mutation.mutate,
+		createLocation: mutation.mutateAsync,
 		isPending: mutation.isPending,
 		isError: mutation.isError,
 		error: mutation.error instanceof EnvelopeError ? mutation.error : undefined,
+		reset: mutation.reset,
 	};
 }
