@@ -65,6 +65,8 @@ public class DirectoryServiceDbContext(string connectionString) : DbContext, IRe
         return UnitResult.Success<Error>();
     }
 
+    public DbConnection GetDbConnection() => Database.GetDbConnection();
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseNpgsql(connectionString);
@@ -75,11 +77,11 @@ public class DirectoryServiceDbContext(string connectionString) : DbContext, IRe
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasPostgresExtension("ltree");
+        modelBuilder.HasPostgresExtension("citext");
+
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(DirectoryServiceDbContext).Assembly);
     }
 
     private ILoggerFactory CreateLoggerFactory()
         => LoggerFactory.Create(configure => configure.AddConsole());
-
-    public DbConnection GetDbConnection() => Database.GetDbConnection();
 }

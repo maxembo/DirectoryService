@@ -12,17 +12,19 @@ public sealed record LocationName
 
     public static Result<LocationName, Error> Create(string value)
     {
-        if (string.IsNullOrWhiteSpace(value))
+        string valueTrim = value.Trim();
+
+        if (string.IsNullOrWhiteSpace(valueTrim))
         {
-            return GeneralErrors.Required("location name");
+            return GeneralErrors.Required("location.name");
         }
 
-        if (value.Length is > Constants.MAX_LOCATION_NAME_LENGTH or < Constants.MIN_TEXT_LENGTH)
+        if (valueTrim.Length is > Constants.MAX_LOCATION_NAME_LENGTH or < Constants.MIN_TEXT_LENGTH)
         {
             return GeneralErrors.LengthOutOfRange(
-                "location name", Constants.MAX_LOCATION_NAME_LENGTH, Constants.MIN_TEXT_LENGTH);
+                "location.name", Constants.MIN_TEXT_LENGTH, Constants.MAX_LOCATION_NAME_LENGTH);
         }
 
-        return new LocationName(value);
+        return new LocationName(valueTrim);
     }
 }

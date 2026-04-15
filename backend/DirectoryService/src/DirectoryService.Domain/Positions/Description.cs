@@ -14,7 +14,7 @@ public record Description
     {
         if (value is { Length: > Constants.MAX_POSITION_DESCRIPTION_LENGTH })
         {
-            return GeneralErrors.LengthOutOfRange("description", Constants.MAX_POSITION_DESCRIPTION_LENGTH);
+            return GeneralErrors.LengthOutOfRange("description", 0, Constants.MAX_POSITION_DESCRIPTION_LENGTH);
         }
 
         return new Description(value);
