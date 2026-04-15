@@ -24,6 +24,7 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
             l => l.Name, lb =>
             {
                 lb.Property(l => l.Value)
+                    .HasColumnType("citext")
                     .HasMaxLength(Constants.MAX_LOCATION_NAME_LENGTH)
                     .IsRequired()
                     .HasColumnName("name");
