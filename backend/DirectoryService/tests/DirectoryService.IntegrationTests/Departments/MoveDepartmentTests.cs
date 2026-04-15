@@ -1,8 +1,9 @@
-﻿using DirectoryService.Application.Departments.Commands.MoveDepartments;
+﻿using CSharpFunctionalExtensions;
+using DirectoryService.Application.Departments.Commands.MoveDepartments;
 using DirectoryService.Contracts.Departments.MoveDepartments;
 using DirectoryService.IntegrationTests.Infrastructure;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
+using SharedService.SharedKernel;
 
 namespace DirectoryService.IntegrationTests.Departments;
 
@@ -20,16 +21,9 @@ public class MoveDepartmentTests : DirectoryBaseTests
 
         var company = await CreateParentDepartment("компания it", "company", [locationId]);
 
-        var cancellationToken = CancellationToken.None;
-
         // act
-        var result = await ExecuteMoveDepartmentHandler(
-            sut =>
-            {
-                var command = new MoveDepartmentCommand(company.Id.Value, new MoveDepartmentRequest(company.Id.Value));
-
-                return sut.Handle(command, cancellationToken);
-            });
+        var result = await Execute(
+            new MoveDepartmentCommand(company.Id.Value, new MoveDepartmentRequest(company.Id.Value)));
 
         // assert
         Assert.NotEmpty(result.Error);
@@ -46,16 +40,9 @@ public class MoveDepartmentTests : DirectoryBaseTests
 
         var dev = await CreateChildDepartment("разработка", "dev", company, [locationId]);
 
-        var cancellationToken = CancellationToken.None;
-
         // act
-        var result = await ExecuteMoveDepartmentHandler(
-            sut =>
-            {
-                var command = new MoveDepartmentCommand(company.Id.Value, new MoveDepartmentRequest(dev.Id.Value));
-
-                return sut.Handle(command, cancellationToken);
-            });
+        var result = await Execute(
+            new MoveDepartmentCommand(company.Id.Value, new MoveDepartmentRequest(dev.Id.Value)));
 
         // assert
         Assert.NotEmpty(result.Error);
@@ -66,18 +53,10 @@ public class MoveDepartmentTests : DirectoryBaseTests
     public async Task MoveDepartmentNotFoundShouldFailed()
     {
         // arrange
-        var cancellationToken = CancellationToken.None;
-
         var nonExistingId = Guid.NewGuid();
 
         // act
-        var result = await ExecuteMoveDepartmentHandler(
-            sut =>
-            {
-                var command = new MoveDepartmentCommand(nonExistingId, new MoveDepartmentRequest(null));
-
-                return sut.Handle(command, cancellationToken);
-            });
+        var result = await Execute(new MoveDepartmentCommand(nonExistingId, new MoveDepartmentRequest(null)));
 
         // assert
         Assert.NotEmpty(result.Error);
@@ -96,16 +75,9 @@ public class MoveDepartmentTests : DirectoryBaseTests
 
         var nonExistingParentId = Guid.NewGuid();
 
-        var cancellationToken = CancellationToken.None;
-
         // act
-        var result = await ExecuteMoveDepartmentHandler(
-            sut =>
-            {
-                var command = new MoveDepartmentCommand(dev.Id.Value, new MoveDepartmentRequest(nonExistingParentId));
-
-                return sut.Handle(command, cancellationToken);
-            });
+        var result = await Execute(
+            new MoveDepartmentCommand(dev.Id.Value, new MoveDepartmentRequest(nonExistingParentId)));
 
         // assert
         Assert.NotEmpty(result.Error);
@@ -127,13 +99,7 @@ public class MoveDepartmentTests : DirectoryBaseTests
         var cancellationToken = CancellationToken.None;
 
         // act
-        var result = await ExecuteMoveDepartmentHandler(
-            sut =>
-            {
-                var command = new MoveDepartmentCommand(dev.Id.Value, new MoveDepartmentRequest(null));
-
-                return sut.Handle(command, cancellationToken);
-            });
+        var result = await Execute(new MoveDepartmentCommand(dev.Id.Value, new MoveDepartmentRequest(null)));
 
         // assert
         await ExecuteInDb(
@@ -178,13 +144,8 @@ public class MoveDepartmentTests : DirectoryBaseTests
         var cancellationToken = CancellationToken.None;
 
         // act
-        var result = await ExecuteMoveDepartmentHandler(
-            sut =>
-            {
-                var command = new MoveDepartmentCommand(fronted.Id.Value, new MoveDepartmentRequest(company.Id.Value));
-
-                return sut.Handle(command, cancellationToken);
-            });
+        var result = await Execute(
+            new MoveDepartmentCommand(fronted.Id.Value, new MoveDepartmentRequest(company.Id.Value)));
 
         // assert
         await ExecuteInDb(
@@ -210,12 +171,7 @@ public class MoveDepartmentTests : DirectoryBaseTests
         Assert.NotEqual(Guid.Empty, result.Value);
     }
 
-    private async Task<T> ExecuteMoveDepartmentHandler<T>(Func<MoveDepartmentHandler, Task<T>> action)
-    {
-        await using var scope = Services.CreateAsyncScope();
-
-        var sut = scope.ServiceProvider.GetRequiredService<MoveDepartmentHandler>();
-
-        return await action(sut);
-    }
+    private Task<Result<Guid, Errors>> Execute(MoveDepartmentCommand command)
+        => Execute<Result<Guid, Errors>, MoveDepartmentHandler>(
+            handler => handler.Handle(command, CancellationToken.None));
 }
