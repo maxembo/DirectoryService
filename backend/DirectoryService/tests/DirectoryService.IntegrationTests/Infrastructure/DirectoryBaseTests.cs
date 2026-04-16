@@ -2,6 +2,7 @@
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Locations;
 using DirectoryService.Infrastructure.Postgres.Database;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectoryService.IntegrationTests.Infrastructure;
@@ -70,6 +71,22 @@ public class DirectoryBaseTests : IClassFixture<DirectoryTestWebFactory>, IAsync
                     Address.Create(city, country, street, house).Value);
 
                 dbContext.Locations.Add(location);
+                await dbContext.SaveChangesAsync();
+
+                return location.Id;
+            });
+    }
+
+    protected async Task MarkLocationAsDeleted(LocationId locationId)
+    {
+        await ExecuteInDb(
+            async dbContext =>
+            {
+                var location = await dbContext.Locations
+                    .SingleAsync(l => l.Id == locationId, CancellationToken.None);
+
+                location.MarkAsDelete();
+
                 await dbContext.SaveChangesAsync();
 
                 return location.Id;
