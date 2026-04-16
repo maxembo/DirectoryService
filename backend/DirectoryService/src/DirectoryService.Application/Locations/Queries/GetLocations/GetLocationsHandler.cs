@@ -49,8 +49,8 @@ public class GetLocationsHandler : IQueryHandler<PaginationEnvelope<GetLocations
         {
             locationQuery = locationQuery.Where(
                 l => EF.Functions.Like(
-                    l.Name.Value.ToLower(),
-                    $"%{query.Request.Search.ToLower()}%"));
+                    l.Name.Value,
+                    $"%{query.Request.Search.Trim().ToLower()}%"));
         }
 
         if (query.Request.IsActive.HasValue)

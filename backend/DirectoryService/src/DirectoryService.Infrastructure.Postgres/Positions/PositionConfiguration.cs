@@ -46,5 +46,11 @@ public class PositionConfiguration : IEntityTypeConfiguration<Position>
 
         builder.Property(p => p.DeletedAt)
             .HasColumnName("deleted_at");
+
+        builder.Property(d => d.CreatedAt)
+            .HasColumnName("created_at");
+
+        builder.Property(d => d.UpdatedAt)
+            .HasColumnName("updated_at");
     }
 }

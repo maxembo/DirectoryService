@@ -1,9 +1,10 @@
-﻿using DirectoryService.Application.Departments.Commands.UpdateDepartments;
+﻿using CSharpFunctionalExtensions;
+using DirectoryService.Application.Departments.Commands.UpdateDepartments;
 using DirectoryService.Contracts.Departments.UpdateDepartment;
 using DirectoryService.Domain.Departments;
 using DirectoryService.IntegrationTests.Infrastructure;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
+using SharedService.SharedKernel;
 
 namespace DirectoryService.IntegrationTests.Departments;
 
@@ -11,7 +12,8 @@ public class UpdateDepartmentLocationIdsTests : DirectoryBaseTests
 {
     public UpdateDepartmentLocationIdsTests(DirectoryTestWebFactory factory)
         : base(factory)
-    { }
+    {
+    }
 
     [Fact]
     public async Task UpdateDepartmentLocationsWithValidShouldSucceed()
@@ -24,14 +26,9 @@ public class UpdateDepartmentLocationIdsTests : DirectoryBaseTests
         var parent = await CreateParentDepartment("подразделение", "company", [locationId]);
 
         // act
-        var result = await ExecuteUpdateDepartmentLocationIdsHandler(
-            sut =>
-            {
-                var command = new UpdateDepartmentLocationIdsCommand(
-                    parent.Id.Value, new UpdateDepartmentLocationIdsRequest([locationId.Value]));
-
-                return sut.Handle(command, cancellationToken);
-            });
+        var result = await Execute(
+            new UpdateDepartmentLocationIdsCommand(
+                parent.Id.Value, new UpdateDepartmentLocationIdsRequest([locationId.Value])));
 
         // assert
         await ExecuteInDb(
@@ -58,29 +55,16 @@ public class UpdateDepartmentLocationIdsTests : DirectoryBaseTests
         // arrange
         var departmentId = DepartmentId.CreateNew();
 
-        var cancellationToken = CancellationToken.None;
-
         // act
-        var result = await ExecuteUpdateDepartmentLocationIdsHandler(
-            sut =>
-            {
-                var command = new UpdateDepartmentLocationIdsCommand(
-                    departmentId.Value, new UpdateDepartmentLocationIdsRequest([]));
-
-                return sut.Handle(command, cancellationToken);
-            });
+        var result = await Execute(
+            new UpdateDepartmentLocationIdsCommand(departmentId.Value, new UpdateDepartmentLocationIdsRequest([])));
 
         // assert
         Assert.NotEmpty(result.Error);
         Assert.True(result.IsFailure);
     }
 
-    private async Task<T> ExecuteUpdateDepartmentLocationIdsHandler<T>(Func<UpdateDepartmentLocationIdsHandler, Task<T>> action)
-    {
-        await using var scope = Services.CreateAsyncScope();
-
-        var sut = scope.ServiceProvider.GetRequiredService<UpdateDepartmentLocationIdsHandler>();
-
-        return await action(sut);
-    }
+    private Task<Result<Guid, Errors>> Execute(UpdateDepartmentLocationIdsCommand command)
+        => Execute<Result<Guid, Errors>, UpdateDepartmentLocationIdsHandler>(
+            handler => handler.Handle(command, CancellationToken.None));
 }

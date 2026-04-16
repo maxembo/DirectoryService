@@ -1,10 +1,11 @@
-﻿using DirectoryService.Application.Departments.Commands.CreateDepartments;
+﻿using CSharpFunctionalExtensions;
+using DirectoryService.Application.Departments.Commands.CreateDepartments;
 using DirectoryService.Contracts.Departments.CreateDepartment;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Locations;
 using DirectoryService.IntegrationTests.Infrastructure;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
+using SharedService.SharedKernel;
 
 namespace DirectoryService.IntegrationTests.Departments;
 
@@ -21,14 +22,8 @@ public class CreateDepartmentTests : DirectoryBaseTests
         var cancellationToken = CancellationToken.None;
 
         // act
-        var result = await ExecuteCreateDepartmentHandler(
-            sut =>
-            {
-                var command =
-                    new CreateDepartmentCommand(new CreateDepartmentRequest("подразделение", "company", null, []));
-
-                return sut.Handle(command, cancellationToken);
-            });
+        var result = await Execute(
+            new CreateDepartmentCommand(new CreateDepartmentRequest("подразделение", "company", null, [])));
 
         // assert
         Assert.NotEmpty(result.Error);
@@ -46,14 +41,9 @@ public class CreateDepartmentTests : DirectoryBaseTests
         await CreateParentDepartment("подразделение", "company", [locationId]);
 
         // act
-        var result = await ExecuteCreateDepartmentHandler(
-            sut =>
-            {
-                var command = new CreateDepartmentCommand(
-                    new CreateDepartmentRequest("подразделение", "company", null, [locationId.Value]));
-
-                return sut.Handle(command, cancellationToken);
-            });
+        var result = await Execute(
+            new CreateDepartmentCommand(
+                new CreateDepartmentRequest("подразделение", "company", null, [locationId.Value])));
 
         // assert
         Assert.NotEmpty(result.Error);
@@ -69,15 +59,10 @@ public class CreateDepartmentTests : DirectoryBaseTests
         var cancellationToken = CancellationToken.None;
 
         // act
-        var result = await ExecuteCreateDepartmentHandler(
-            sut =>
-            {
-                var command = new CreateDepartmentCommand(
-                    new CreateDepartmentRequest("", "company", null, [locationId.Value]));
+        var result = await Execute(
+            new CreateDepartmentCommand(new CreateDepartmentRequest(string.Empty, "company", null, [locationId.Value])));
 
-                return sut.Handle(command, cancellationToken);
-            });
-
+        // assert
         Assert.NotEmpty(result.Error);
         Assert.True(result.IsFailure);
     }
@@ -93,14 +78,9 @@ public class CreateDepartmentTests : DirectoryBaseTests
         var parent = await CreateParentDepartment("подразделение", "company", [locationId]);
 
         // act
-        var result = await ExecuteCreateDepartmentHandler(
-            sut =>
-            {
-                var command = new CreateDepartmentCommand(
-                    new CreateDepartmentRequest("подразделение 1", "sales", parent.Id.Value, [locationId.Value]));
-
-                return sut.Handle(command, cancellationToken);
-            });
+        var result = await Execute(
+            new CreateDepartmentCommand(
+                new CreateDepartmentRequest("подразделение 1", "sales", parent.Id.Value, [locationId.Value])));
 
         // assert
         await ExecuteInDb(
@@ -126,14 +106,9 @@ public class CreateDepartmentTests : DirectoryBaseTests
         var cancellationToken = CancellationToken.None;
 
         // act
-        var result = await ExecuteCreateDepartmentHandler(
-            sut =>
-            {
-                var command = new CreateDepartmentCommand(
-                    new CreateDepartmentRequest("подразделение", "company", null, [locationId.Value]));
-
-                return sut.Handle(command, cancellationToken);
-            });
+        var result = await Execute(
+            new CreateDepartmentCommand(
+                new CreateDepartmentRequest("подразделение", "company", null, [locationId.Value])));
 
         // assert
         await ExecuteInDb(
@@ -150,12 +125,7 @@ public class CreateDepartmentTests : DirectoryBaseTests
         Assert.NotEqual(Guid.Empty, result.Value);
     }
 
-    private async Task<T> ExecuteCreateDepartmentHandler<T>(Func<CreateDepartmentHandler, Task<T>> action)
-    {
-        await using var scope = Services.CreateAsyncScope();
-
-        var sut = scope.ServiceProvider.GetRequiredService<CreateDepartmentHandler>();
-
-        return await action(sut);
-    }
+    private Task<Result<Guid, Errors>> Execute(CreateDepartmentCommand command)
+        => Execute<Result<Guid, Errors>, CreateDepartmentHandler>(
+            handler => handler.Handle(command, CancellationToken.None));
 }

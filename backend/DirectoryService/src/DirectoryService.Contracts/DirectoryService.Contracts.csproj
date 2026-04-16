@@ -1,23 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\DirectoryService.Domain\DirectoryService.Domain.csproj" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DirectoryService.Domain\DirectoryService.Domain.csproj"/>
+  </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Departments\GetTopFiveDepartmentsWithMostPositions\" />
-    </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Departments\GetTopFiveDepartmentsWithMostPositions\"/>
+  </ItemGroup>
 
-    <ItemGroup>
-      <PackageReference Include="SharedService.Core" Version="0.0.2" />
-    </ItemGroup>
-
-
+  <ItemGroup>
+    <PackageReference Include="SharedService.Core" Version="0.0.2"/>
+  </ItemGroup>
 
 </Project>

@@ -15,21 +15,23 @@ public sealed record Timezone
 
     public static Result<Timezone, Error> Create(string value)
     {
-        if (string.IsNullOrWhiteSpace(value))
+        string trimmed = value.Trim();
+
+        if (string.IsNullOrWhiteSpace(trimmed))
         {
-            return GeneralErrors.Required("timezone");
+            return GeneralErrors.Required("location.timezone");
         }
 
-        if (value.Length > Constants.MAX_LOCATION_TIMEZONE_LENGTH)
+        if (trimmed.Length > Constants.MAX_LOCATION_TIMEZONE_LENGTH)
         {
-            return GeneralErrors.LengthOutOfRange("timezone", Constants.MAX_LOCATION_TIMEZONE_LENGTH);
+            return GeneralErrors.LengthOutOfRange("location.timezone", 0, Constants.MAX_LOCATION_TIMEZONE_LENGTH);
         }
 
-        if (!TimeZoneInfo.TryFindSystemTimeZoneById(value, out _))
+        if (!TimeZoneInfo.TryFindSystemTimeZoneById(trimmed, out _))
         {
-            return GeneralErrors.Invalid("timezone");
+            return GeneralErrors.Invalid("location.timezone");
         }
 
-        return new Timezone(value);
+        return new Timezone(trimmed);
     }
 }

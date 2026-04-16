@@ -1,13 +1,16 @@
 ﻿using System.Data.Common;
+using DirectoryService.Application.Database;
 using DirectoryService.Infrastructure.Postgres.Database;
 using DirectoryService.Web;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Npgsql;
 using Respawn;
+using SharedService.Core.Database;
 using Testcontainers.PostgreSql;
 
 namespace DirectoryService.IntegrationTests.Infrastructure;
@@ -25,18 +28,6 @@ public class DirectoryTestWebFactory : WebApplicationFactory<Program>, IAsyncLif
 
     private DbConnection _dbConnection = null!;
 
-    protected override void ConfigureWebHost(IWebHostBuilder builder)
-    {
-        builder.ConfigureTestServices(
-            services =>
-            {
-                services.RemoveAll<DirectoryServiceDbContext>();
-
-                services.AddScoped<DirectoryServiceDbContext>(
-                    _ => new DirectoryServiceDbContext(_dbContainer.GetConnectionString()));
-            });
-    }
-
     public async Task InitializeAsync()
     {
         await _dbContainer.StartAsync();
@@ -45,12 +36,12 @@ public class DirectoryTestWebFactory : WebApplicationFactory<Program>, IAsyncLif
         var dbContext = scope.ServiceProvider.GetRequiredService<DirectoryServiceDbContext>();
 
         await dbContext.Database.EnsureDeletedAsync();
-        await dbContext.Database.EnsureCreatedAsync();
+        await dbContext.Database.MigrateAsync();
 
         _dbConnection = new NpgsqlConnection(_dbContainer.GetConnectionString());
         await _dbConnection.OpenAsync();
 
-        await InitializeRespawner();
+        await InitializeRespawnerAsync();
     }
 
     public new async Task DisposeAsync()
@@ -67,7 +58,27 @@ public class DirectoryTestWebFactory : WebApplicationFactory<Program>, IAsyncLif
         await _respawner.ResetAsync(_dbConnection);
     }
 
-    private async Task InitializeRespawner()
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    {
+        builder.ConfigureTestServices(
+            services =>
+            {
+                services.RemoveAll<DirectoryServiceDbContext>();
+                services.RemoveAll<IReadDbContext>();
+                services.RemoveAll<IDbConnectionFactory>();
+
+                services.AddScoped<DirectoryServiceDbContext>(
+                    _ => new DirectoryServiceDbContext(_dbContainer.GetConnectionString()));
+
+                services.AddScoped<IReadDbContext, DirectoryServiceDbContext>(
+                    _ => new DirectoryServiceDbContext(_dbContainer.GetConnectionString()));
+
+                services.AddScoped<IDbConnectionFactory, DirectoryServiceDbContext>(
+                    _ => new DirectoryServiceDbContext(_dbContainer.GetConnectionString()));
+            });
+    }
+
+    private async Task InitializeRespawnerAsync()
     {
         _respawner = await Respawner.CreateAsync(
             _dbConnection,

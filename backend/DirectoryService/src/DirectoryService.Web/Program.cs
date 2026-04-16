@@ -1,13 +1,11 @@
 using System.Globalization;
 using DirectoryService.Web;
 using Serilog;
-using SharedService.Framework.Middlewares;
-using Environments = SharedService.Framework.Environments;
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
     .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
-    .CreateBootstrapLogger();
+    .CreateLogger();
 try
 {
     Log.Information("Starting DirectoryService.Web");

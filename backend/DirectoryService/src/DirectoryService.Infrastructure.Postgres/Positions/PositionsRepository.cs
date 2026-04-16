@@ -63,7 +63,7 @@ public class PositionsRepository : IPositionsRepository
         {
             _logger.LogError("Failed to delete positions");
 
-            return GeneralErrors.Database(null, ex.Message);
+            return GeneralErrors.Database(ex.Message);
         }
     }
 
@@ -81,7 +81,7 @@ public class PositionsRepository : IPositionsRepository
         {
             _logger.LogError("Failed to delete positions");
 
-            return GeneralErrors.Database(null, ex.Message);
+            return GeneralErrors.Database(ex.Message);
         }
     }
 }

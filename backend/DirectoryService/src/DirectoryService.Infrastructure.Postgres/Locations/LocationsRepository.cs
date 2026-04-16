@@ -40,7 +40,7 @@ public class LocationsRepository : ILocationsRepository
             .FirstOrDefaultAsync(l => l.Id == locationId, cancellationToken);
 
         if (location == null)
-            return GeneralErrors.NotFound(locationId.Value, "location");
+            return GeneralErrors.NotFound("location", locationId.Value);
 
         return location;
     }
@@ -60,7 +60,7 @@ public class LocationsRepository : ILocationsRepository
             .ToList();
 
         var errors = missingIds
-            .Select(missingId => GeneralErrors.NotFound(missingId, "location"))
+            .Select(missingId => GeneralErrors.NotFound("location", missingId))
             .ToList();
 
         return errors.Count != 0
@@ -99,7 +99,7 @@ public class LocationsRepository : ILocationsRepository
         {
             _logger.LogError("Failed to delete locations");
 
-            return GeneralErrors.Database(null, ex.Message);
+            return GeneralErrors.Database(ex.Message);
         }
     }
 
@@ -117,7 +117,7 @@ public class LocationsRepository : ILocationsRepository
         {
             _logger.LogError("Failed to delete locations");
 
-            return GeneralErrors.Database(null, ex.Message);
+            return GeneralErrors.Database(ex.Message);
         }
     }
 }

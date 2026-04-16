@@ -42,7 +42,7 @@ public class DepartmentsRepository : IDepartmentsRepository
             .FirstOrDefaultAsync(d => departmentId == d.Id, cancellationToken);
 
         if (department == null)
-            return GeneralErrors.NotFound(departmentId.Value, "department");
+            return GeneralErrors.NotFound("department", departmentId.Value);
 
         return department;
     }
@@ -61,7 +61,7 @@ public class DepartmentsRepository : IDepartmentsRepository
             .ToList();
 
         var errors = missingIds
-            .Select(missingId => GeneralErrors.NotFound(missingId, "department"))
+            .Select(missingId => GeneralErrors.NotFound("department", missingId))
             .ToList();
 
         return errors.Count != 0
@@ -88,7 +88,7 @@ public class DepartmentsRepository : IDepartmentsRepository
 
         if (department is null)
         {
-            return GeneralErrors.NotFound(id.Value, "departmentId");
+            return GeneralErrors.NotFound("departmentId", id.Value);
         }
 
         return department;
@@ -140,7 +140,7 @@ public class DepartmentsRepository : IDepartmentsRepository
         {
             _logger.LogError("Failed to move Department");
 
-            return GeneralErrors.Database(null, ex.Message);
+            return GeneralErrors.Database(message: ex.Message);
         }
     }
 
@@ -167,7 +167,7 @@ public class DepartmentsRepository : IDepartmentsRepository
         {
             _logger.LogError("Failed to move Department");
 
-            return GeneralErrors.Database(null, ex.Message);
+            return GeneralErrors.Database(message: ex.Message);
         }
     }
 
@@ -198,7 +198,7 @@ public class DepartmentsRepository : IDepartmentsRepository
         {
             _logger.LogError("Failed to check Parent IsChild");
 
-            return GeneralErrors.Database(null, ex.Message);
+            return GeneralErrors.Database(message: ex.Message);
         }
     }
 
@@ -209,7 +209,7 @@ public class DepartmentsRepository : IDepartmentsRepository
 
         if (department is null)
         {
-            return GeneralErrors.NotFound(null, "department");
+            return GeneralErrors.NotFound("department");
         }
 
         return department;
@@ -244,7 +244,7 @@ public class DepartmentsRepository : IDepartmentsRepository
         {
             _logger.LogError("Failed to update paths mark delete department");
 
-            return GeneralErrors.Database(null, ex.Message);
+            return GeneralErrors.Database(message: ex.Message);
         }
     }
 
@@ -262,7 +262,7 @@ public class DepartmentsRepository : IDepartmentsRepository
         {
             _logger.LogError("Failed to delete departments mark delete departments");
 
-            return GeneralErrors.Database(null, ex.Message);
+            return GeneralErrors.Database(message: ex.Message);
         }
     }
 
@@ -285,7 +285,7 @@ public class DepartmentsRepository : IDepartmentsRepository
         {
             _logger.LogError("Failed to delete department locations mark delete departments");
 
-            return GeneralErrors.Database(null, ex.Message);
+            return GeneralErrors.Database(message: ex.Message);
         }
     }
 
@@ -308,7 +308,7 @@ public class DepartmentsRepository : IDepartmentsRepository
         {
             _logger.LogError("Failed to delete department locations mark delete departments");
 
-            return GeneralErrors.Database(null, ex.Message);
+            return GeneralErrors.Database(message: ex.Message);
         }
     }
 
@@ -362,7 +362,7 @@ public class DepartmentsRepository : IDepartmentsRepository
         {
             _logger.LogError("Failed to update paths delete departments");
 
-            return GeneralErrors.Database(null, ex.Message);
+            return GeneralErrors.Database(message: ex.Message);
         }
     }
 }
