@@ -52,7 +52,7 @@ public class GetLocationsHandlerDapper : IQueryHandler<PaginationEnvelope<GetLoc
 
         if (!string.IsNullOrWhiteSpace(query.Request.Search))
         {
-            parameters.Add("search", query.Request.Search, DbType.String);
+            parameters.Add("search", query.Request.Search.Trim(), DbType.String);
             conditions.Add("l.name ILIKE '%' || @search || '%'");
         }
 
