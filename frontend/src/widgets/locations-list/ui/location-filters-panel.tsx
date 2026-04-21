@@ -3,30 +3,74 @@ import {
 	SortDirectionFilter,
 } from "@/entities/locations/api/types";
 import { Input } from "@/shared/components/ui/input";
-import { NativeSelect } from "@/shared/components/ui/native-select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import { ActiveFilter } from "@/widgets/model/types";
 
 type Props = {
-	search: string;
-	setSearch: (search: string) => void;
-	isActive: ActiveFilter;
-	setIsActive: (isActive: ActiveFilter) => void;
-	sortBy: SortByFilter;
-	setSortBy: (sortBy: SortByFilter) => void;
-	sortDirection: SortDirectionFilter;
-	setSortDirection: (sortDirection: SortDirectionFilter) => void;
+	filters: {
+		search: string;
+		isActive: ActiveFilter;
+		sortBy: SortByFilter;
+		sortDirection: SortDirectionFilter;
+	};
+	actions: {
+		setSearch: (search: string) => void;
+		setIsActive: (isActive: ActiveFilter) => void;
+		setSortBy: (sortBy: SortByFilter) => void;
+		setSortDirection: (sortDirection: SortDirectionFilter) => void;
+	};
 };
 
+type FilterSelectProps<T extends string> = {
+	value: T;
+	onValueChange: (value: T) => void;
+	placeholder: string;
+	items: Array<{
+		value: T;
+		label: string;
+	}>;
+};
+
+function FilterSelect<T extends string>({ value, onValueChange, placeholder, items }: FilterSelectProps<T>) {
+	return (
+		<Select value={value} onValueChange={(value) => onValueChange(value as T)}>
+			<SelectTrigger>
+				<SelectValue placeholder={placeholder} />
+			</SelectTrigger>
+			<SelectContent position="popper" side="bottom" sideOffset={4}>
+				{items.map((item) => (
+					<SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>
+				))}
+			</SelectContent>
+
+		</Select>
+	)
+}
+
+const activeItems: Array<{ value: ActiveFilter, label: string }> = [
+	{ value: "all", label: "Все" },
+	{ value: "active", label: "Активные" },
+	{ value: "inactive", label: "Неактивные" },
+];
+
+const sortByItems: Array<{ value: SortByFilter, label: string }> = [
+	{ value: "name", label: "По имени" },
+	{ value: "created", label: "По дате создания" },
+];
+
+
+const sortDirectionItems: Array<{ value: SortDirectionFilter, label: string }> = [
+	{ value: "asc", label: "По возрастанию" },
+	{ value: "desc", label: "По убыванию" },
+];
+
 export function LocationFiltersPanel({
-	search,
-	setSearch,
-	isActive,
-	setIsActive,
-	sortBy,
-	setSortBy,
-	sortDirection,
-	setSortDirection,
+	filters, actions
 }: Props) {
+
+	const { search, isActive, sortBy, sortDirection } = filters;
+	const { setSearch, setIsActive, setSortBy, setSortDirection } = actions;
+
 	return (
 		<div className="space-y-4">
 			<Input
@@ -35,32 +79,26 @@ export function LocationFiltersPanel({
 				onChange={(e) => setSearch(e.target.value)}
 			/>
 			<div className="flex items-center gap-4">
-				<NativeSelect
+				<FilterSelect
 					value={isActive}
-					onChange={(e) => setIsActive(e.target.value as ActiveFilter)}
-				>
-					<option value="all">Все</option>
-					<option value="active">Активные</option>
-					<option value="inactive">Неактивные</option>
-				</NativeSelect>
+					onValueChange={setIsActive}
+					items={activeItems}
+					placeholder="Статус"
+				/>
 
-				<NativeSelect
+				<FilterSelect
 					value={sortBy}
-					onChange={(e) => setSortBy(e.target.value as SortByFilter)}
-				>
-					<option value="name">По имени</option>
-					<option value="created">По дате создания</option>
-				</NativeSelect>
+					onValueChange={setSortBy}
+					items={sortByItems}
+					placeholder="Сортировка"
+				/>
 
-				<NativeSelect
+				<FilterSelect
 					value={sortDirection}
-					onChange={(e) =>
-						setSortDirection(e.target.value as SortDirectionFilter)
-					}
-				>
-					<option value="asc">По возрастанию</option>
-					<option value="desc">По убыванию</option>
-				</NativeSelect>
+					onValueChange={setSortDirection}
+					items={sortDirectionItems}
+					placeholder="Направление"
+				/>
 			</div>
 		</div>
 	);
