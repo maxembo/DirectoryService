@@ -20,7 +20,7 @@ const DEBOUNCE_DELAY = 600;
 export function LocationsList() {
 	const [createOpen, setCreateOpen] = useState(false);
 	const [updateOpen, setUpdateOpen] = useState(false);
-	const [isDelete, setIsDelete] = useState(false);
+	const [, setIsDelete] = useState(false);
 
 	const [selectedLocation, setSelectedLocation] = useState<Location>(
 		{} as Location,
@@ -28,11 +28,7 @@ export function LocationsList() {
 
 	const {
 		filters,
-		setPage,
-		setSearch,
-		setIsActive,
-		setSortBy,
-		setSortDirection,
+		actions: { setSearch, setIsActive, setSortBy, setSortDirection, setPage },
 	} = useLocationFilters();
 
 	const [debouncedSearch] = useDebounce(filters.search, DEBOUNCE_DELAY);
@@ -51,16 +47,14 @@ export function LocationsList() {
 	return (
 		<div className="space-y-4">
 			<LocationFiltersPanel
-				search={filters.search}
-				setSearch={setSearch}
-				isActive={filters.isActive}
-				setIsActive={setIsActive}
-				sortBy={filters.sortBy}
-				setSortBy={setSortBy}
-				sortDirection={filters.sortDirection}
-				setSortDirection={setSortDirection}
+				filters={filters}
+				actions={{
+					setSearch,
+					setIsActive,
+					setSortBy,
+					setSortDirection,
+				}}
 			/>
-
 			<div className="space-y-2">
 				<h1 className="text-2xl font-bold tracking-tight">Локации</h1>
 
