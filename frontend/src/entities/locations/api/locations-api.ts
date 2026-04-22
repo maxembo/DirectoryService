@@ -1,6 +1,6 @@
 import { apiClient } from "@/shared/api/axios-instance";
 import { Envelope, PaginationEnvelope } from "@/shared/api/envelops";
-import { queryOptions } from "@tanstack/react-query";
+import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 import { Location } from "../model/types";
 import {
 	CreateLocationRequest,
@@ -14,20 +14,45 @@ const LOCATIONS_ENDPOINT = "/locations";
 export const locationsApi = {
 	baseKey: LOCATIONS_KEY,
 
+	getLocations: async (request: GetLocationsRequest) => {
+		const response = await apiClient.get<
+			Envelope<PaginationEnvelope<Location>>
+		>(LOCATIONS_ENDPOINT, { params: request });
+
+		return response.data.result;
+	},
+
 	getLocationsQueryOptions: (request: GetLocationsRequest) =>
 		queryOptions({
 			queryKey: [locationsApi.baseKey, request],
-			queryFn: async ({ signal }) => {
-				const response = await apiClient.get<
-					Envelope<PaginationEnvelope<Location>>
-				>(LOCATIONS_ENDPOINT, {
-					params: request,
-					signal,
-				});
-
-				return response.data;
+			queryFn: () => {
+				return locationsApi.getLocations(request);
 			},
 		}),
+
+	getLocationsInfinityOptions: (request: GetLocationsRequest) => {
+		return infiniteQueryOptions({
+			queryKey: [locationsApi.baseKey, request],
+			queryFn: ({ pageParam }) => {
+				return locationsApi.getLocations({ ...request, page: pageParam });
+			},
+			initialPageParam: 1,
+			getNextPageParam: (response) => {
+				if (!response || response.page >= response.totalPages) {
+					return undefined;
+				}
+
+				return response.page + 1;
+			},
+			select: (data): PaginationEnvelope<Location> => ({
+				items: data.pages.flatMap((page) => page?.items ?? []),
+				totalCount: data.pages[0]?.totalCount ?? 0,
+				page: data.pages[0]?.page ?? 1,
+				pageSize: data.pages[0]?.pageSize ?? 0,
+				totalPages: data.pages[0]?.totalPages ?? 0,
+			}),
+		});
+	},
 
 	createLocation: async (request: CreateLocationRequest) => {
 		const response = await apiClient.post<Envelope<Location>>(

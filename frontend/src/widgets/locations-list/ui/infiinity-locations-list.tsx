@@ -1,7 +1,7 @@
 "use client";
 
 import { Location } from "@/entities/locations/model/types";
-import { useLocationsList } from "@/entities/locations/model/use-locations-list";
+import { useInfinityLocationsList } from "@/entities/locations/model/use-infinity-locations-list";
 import { CreateLocationDialog } from "@/features/locations/ui/create-location-dialog";
 import { UpdateLocationDialog } from "@/features/locations/ui/update-location-dialog";
 import { PAGE_SIZE } from "@/shared/api/pagination-request";
@@ -11,14 +11,13 @@ import { LocationCard } from "@/widgets/locations-list/ui/location-card";
 import { LocationFiltersPanel } from "@/widgets/locations-list/ui/location-filters-panel";
 import { LocationsListEmpty } from "@/widgets/locations-list/ui/location-list-empty";
 import { LocationsListError } from "@/widgets/locations-list/ui/location-list-error";
-import { LocationsPagination } from "@/widgets/locations-list/ui/locations-pagination";
 import { useLocationFilters } from "@/widgets/model/use-location-filters";
 import { useState } from "react";
 import { useDebounce } from "use-debounce";
 
 const DEBOUNCE_DELAY = 600;
 
-export function LocationsList() {
+export function InfinityLocationsList() {
 	const [createOpen, setCreateOpen] = useState(false);
 	const [updateOpen, setUpdateOpen] = useState(false);
 	const [, setIsDelete] = useState(false);
@@ -27,29 +26,21 @@ export function LocationsList() {
 
 	const {
 		filters,
-		actions: { setSearch, setIsActive, setSortBy, setSortDirection, setPage },
+		actions: { setSearch, setIsActive, setSortBy, setSortDirection },
 	} = useLocationFilters();
 
 	const [debouncedSearch] = useDebounce(filters.search, DEBOUNCE_DELAY);
 
-
-	const { locations, totalPages, isPending, isError, error } =
-		useLocationsList({
+	const { locations, isPending, isError, error, isFetchingNextPage, cursorRef } =
+		useInfinityLocationsList({
 			search: debouncedSearch,
 			isActive:
 				filters.isActive === "all" ? undefined : filters.isActive === "active",
 			sortBy: filters.sortBy,
 			sortDirection: filters.sortDirection,
 			departmentIds: filters.departmentIds,
-			page: filters.page,
 			pageSize: PAGE_SIZE,
 		});
-
-	console.log("locations data", {
-		page: filters.page,
-		totalPages,
-		locationsCount: locations.length,
-	});
 
 	return (
 		<div className="space-y-4">
@@ -78,7 +69,7 @@ export function LocationsList() {
 					<UpdateLocationDialog
 						key={selectedLocation.id}
 						location={selectedLocation}
-						open={updateOpen}
+						open={selectedLocation !== undefined && updateOpen}
 						setOpen={setUpdateOpen}
 					/>
 				)}
@@ -108,11 +99,10 @@ export function LocationsList() {
 						))}
 					</div>
 
-					<LocationsPagination
-						currentPage={filters.page}
-						totalPages={totalPages}
-						onPageChange={setPage}
-					/>
+
+					<div ref={cursorRef} className="flex justify-center py-10">
+						{isFetchingNextPage && <Spinner />}
+					</div>
 				</>
 			)}
 		</div>
