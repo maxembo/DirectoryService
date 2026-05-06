@@ -1,10 +1,8 @@
-﻿using System.Linq.Expressions;
-using CSharpFunctionalExtensions;
+﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Database;
 using DirectoryService.Contracts.Locations.GetLocations.Dtos;
 using DirectoryService.Contracts.Locations.GetLocations.Requests;
 using DirectoryService.Domain.Departments;
-using DirectoryService.Domain.Locations;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using SharedService.Core.Abstractions;
@@ -40,17 +38,15 @@ public class GetLocationsHandler : IQueryHandler<PaginationEnvelope<GetLocations
         {
             var deptIdsVo = deptIds.Select(DepartmentId.Create).ToArray();
 
-            locationQuery = locationQuery.Where(
-                l =>
-                    l.Departments.Any(dl => deptIdsVo.Contains(dl.DepartmentId)));
+            locationQuery = locationQuery.Where(l =>
+                l.Departments.Any(dl => deptIdsVo.Contains(dl.DepartmentId)));
         }
 
         if (!string.IsNullOrWhiteSpace(query.Request.Search))
         {
-            locationQuery = locationQuery.Where(
-                l => EF.Functions.Like(
-                    l.Name.Value,
-                    $"%{query.Request.Search.Trim().ToLower()}%"));
+            locationQuery = locationQuery.Where(l => EF.Functions.Like(
+                l.Name.Value,
+                $"%{query.Request.Search.Trim()}%"));
         }
 
         if (query.Request.IsActive.HasValue)
@@ -58,34 +54,33 @@ public class GetLocationsHandler : IQueryHandler<PaginationEnvelope<GetLocations
             locationQuery = locationQuery.Where(l => l.IsActive == query.Request.IsActive.Value);
         }
 
-        Expression<Func<Location, object>> sortBy = query.Request.SortBy?.ToLower() switch
-        {
-            "name" => l => l.Name.Value,
-            "created" => l => l.CreatedAt,
-            _ => l => l.Name.Value
-        };
+        int totalCount = await locationQuery.CountAsync(cancellationToken);
 
-        locationQuery = query.Request.SortDirection?.ToLower() == "asc"
-            ? locationQuery.OrderBy(sortBy)
-            : locationQuery.OrderByDescending(sortBy);
+        bool isAsc = query.Request.SortDirection?.ToLower() == "asc";
+        locationQuery = query.Request.SortBy?.ToLower() switch
+        {
+            "created" => isAsc
+                ? locationQuery.OrderBy(l => l.CreatedAt).ThenBy(l => l.Id.Value)
+                : locationQuery.OrderByDescending(l => l.CreatedAt).ThenByDescending(l => l.Id.Value),
+            "name" or _ => isAsc
+                ? locationQuery.OrderBy(l => l.Name.Value).ThenBy(l => l.Id.Value)
+                : locationQuery.OrderByDescending(l => l.Name.Value).ThenByDescending(l => l.Id.Value),
+        };
 
         locationQuery = locationQuery
             .Skip((query.Request.Page - 1) * query.Request.PageSize)
             .Take(query.Request.PageSize);
 
-        int totalCount = await locationQuery.CountAsync(cancellationToken);
-
-        var locations = await locationQuery.Select(
-                l => new GetLocationsDto()
-                {
-                    Id = l.Id.Value,
-                    Name = l.Name.Value,
-                    Timezone = l.Timezone.Value,
-                    Address = new AddressDto(l.Address.Country, l.Address.City, l.Address.Street, l.Address.House),
-                    UpdatedAt = l.UpdatedAt,
-                    CreatedAt = l.CreatedAt,
-                    IsActive = l.IsActive,
-                })
+        var locations = await locationQuery.Select(l => new GetLocationsDto()
+            {
+                Id = l.Id.Value,
+                Name = l.Name.Value,
+                Timezone = l.Timezone.Value,
+                Address = new AddressDto(l.Address.Country, l.Address.City, l.Address.Street, l.Address.House),
+                UpdatedAt = l.UpdatedAt,
+                CreatedAt = l.CreatedAt,
+                IsActive = l.IsActive,
+            })
             .ToListAsync(cancellationToken);
 
         return new PaginationEnvelope<GetLocationsDto>(
