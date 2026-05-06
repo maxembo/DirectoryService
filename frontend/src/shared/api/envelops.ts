@@ -7,7 +7,7 @@ export type Envelope<T = unknown> = {
 	timeGenerated: string;
 };
 
-export type PaginationEnvelope<T> = {
+export type PaginationEnvelope<T = unknown> = {
 	items: T[];
 	totalCount: number;
 	page: number;

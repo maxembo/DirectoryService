@@ -4,6 +4,7 @@ import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 import { Location } from "../model/types";
 import {
 	CreateLocationRequest,
+	GetLocationsInfinityRequest,
 	GetLocationsRequest,
 	UpdateLocationRequest,
 } from "./types";
@@ -30,9 +31,16 @@ export const locationsApi = {
 			},
 		}),
 
-	getLocationsInfinityOptions: (request: GetLocationsRequest) => {
+	getLocationsInfinityOptions: (request: GetLocationsInfinityRequest) => {
 		return infiniteQueryOptions({
-			queryKey: [locationsApi.baseKey, request],
+			queryKey: [
+				locationsApi.baseKey,
+				request.search,
+				request.isActive,
+				request.sortBy,
+				request.sortDirection,
+				request.pageSize,
+			],
 			queryFn: ({ pageParam }) => {
 				return locationsApi.getLocations({ ...request, page: pageParam });
 			},
@@ -44,13 +52,15 @@ export const locationsApi = {
 
 				return response.page + 1;
 			},
-			select: (data): PaginationEnvelope<Location> => ({
-				items: data.pages.flatMap((page) => page?.items ?? []),
-				totalCount: data.pages[0]?.totalCount ?? 0,
-				page: data.pages[0]?.page ?? 1,
-				pageSize: data.pages[0]?.pageSize ?? 0,
-				totalPages: data.pages[0]?.totalPages ?? 0,
-			}),
+			select: (data): PaginationEnvelope<Location> => {
+				return {
+					items: data.pages.flatMap((page) => page?.items ?? []),
+					totalCount: data.pages[0]?.totalCount ?? 0,
+					page: data.pages[data.pages.length - 1]?.page ?? 1,
+					pageSize: data.pages[0]?.pageSize ?? 0,
+					totalPages: data.pages[0]?.totalPages ?? 0,
+				};
+			},
 		});
 	},
 
