@@ -2,25 +2,11 @@ import {
 	SortByFilter,
 	SortDirectionFilter,
 } from "@/entities/locations/api/types";
+import { setFilterIsActive, setFilterSearch, setFilterSortBy, setFilterSortDirection, useGetLocationFilters } from "@/features/locations/model/locations-filter-store";
 import { Input } from "@/shared/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import { ActiveFilter } from "@/widgets/model/types";
 import { Search } from "lucide-react";
-
-type Props = {
-	filters: {
-		search: string;
-		isActive: ActiveFilter;
-		sortBy: SortByFilter;
-		sortDirection: SortDirectionFilter;
-	};
-	actions: {
-		setSearch: (search: string) => void;
-		setIsActive: (isActive: ActiveFilter) => void;
-		setSortBy: (sortBy: SortByFilter) => void;
-		setSortDirection: (sortDirection: SortDirectionFilter) => void;
-	};
-};
 
 type FilterSelectProps<T extends string> = {
 	value: T;
@@ -59,48 +45,44 @@ const sortByItems: Array<{ value: SortByFilter, label: string }> = [
 	{ value: "created", label: "По дате создания" },
 ];
 
-
 const sortDirectionItems: Array<{ value: SortDirectionFilter, label: string }> = [
 	{ value: "asc", label: "По возрастанию" },
 	{ value: "desc", label: "По убыванию" },
 ];
 
-export function LocationFiltersPanel({
-	filters, actions
-}: Props) {
+export function LocationFilters() {
 
-	const { search, isActive, sortBy, sortDirection } = filters;
-	const { setSearch, setIsActive, setSortBy, setSortDirection } = actions;
+	const { search, isActive, sortBy, sortDirection } = useGetLocationFilters();
 
 	return (
 		<div className="space-y-4">
-			<div className="flex-1 relative">
-				<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-				<Input
-					placeholder="Поиск по названию"
-					className="pl-9"
-					value={search}
-					onChange={(e) => setSearch(e.target.value)}
-				/>
-			</div>
 			<div className="flex items-center gap-4">
+				<div className="flex-1 relative">
+					<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+					<Input
+						placeholder="Поиск по названию"
+						className="pl-9"
+						value={search ?? ""}
+						onChange={(e) => setFilterSearch(e.target.value)}
+					/>
+				</div>
 				<FilterSelect
-					value={isActive}
-					onValueChange={setIsActive}
+					value={isActive ?? "all"}
+					onValueChange={setFilterIsActive}
 					items={activeItems}
 					placeholder="Статус"
 				/>
 
 				<FilterSelect
-					value={sortBy}
-					onValueChange={setSortBy}
+					value={sortBy ?? "name"}
+					onValueChange={setFilterSortBy}
 					items={sortByItems}
 					placeholder="Сортировка"
 				/>
 
 				<FilterSelect
-					value={sortDirection}
-					onValueChange={setSortDirection}
+					value={sortDirection ?? "asc"}
+					onValueChange={setFilterSortDirection}
 					items={sortDirectionItems}
 					placeholder="Направление"
 				/>
