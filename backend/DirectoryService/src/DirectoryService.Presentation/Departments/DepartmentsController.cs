@@ -3,9 +3,11 @@ using DirectoryService.Application.Departments.Commands.MoveDepartments;
 using DirectoryService.Application.Departments.Commands.SoftDeleteDepartments;
 using DirectoryService.Application.Departments.Commands.UpdateDepartments;
 using DirectoryService.Application.Departments.Queries.GetChildrenDepartments;
+using DirectoryService.Application.Departments.Queries.GetDepartments;
 using DirectoryService.Application.Departments.Queries.GetRootDepartments;
 using DirectoryService.Application.Departments.Queries.GetTopFiveDepartmentsWithMostPositions;
 using DirectoryService.Contracts.Departments.CreateDepartment;
+using DirectoryService.Contracts.Departments.GetDepartments.Dtos;
 using DirectoryService.Contracts.Departments.GetDepartments.Requests;
 using DirectoryService.Contracts.Departments.MoveDepartments;
 using DirectoryService.Contracts.Departments.UpdateDepartment;
@@ -103,6 +105,17 @@ public class DepartmentsController : ControllerBase
         CancellationToken cancellationToken)
     {
         var query = new GetChildrenDepartmentsQuery(parentId, departmentsRequest);
+
+        return await handler.Handle(query, cancellationToken);
+    }
+
+    [HttpGet]
+    public async Task<EndpointResult<PaginationEnvelope<DepartmentShortDto>>> Get(
+        [FromServices] IQueryHandler<PaginationEnvelope<DepartmentShortDto>, GetDepartmentsQuery> handler,
+        [FromQuery] GetDepartmentsRequest request,
+        CancellationToken cancellationToken)
+    {
+        var query = new GetDepartmentsQuery(request);
 
         return await handler.Handle(query, cancellationToken);
     }
