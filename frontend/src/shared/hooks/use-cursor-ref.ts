@@ -11,7 +11,7 @@ export const useCursorRef = ({
 	isFetchingNextPage,
 	fetchNextPage,
 }: Props) => {
-	const observerRef = useRef<IntersectionObserver>(null);
+	const observerRef = useRef<IntersectionObserver | null>(null);
 
 	return useCallback(
 		(node: HTMLDivElement | null) => {
@@ -22,7 +22,7 @@ export const useCursorRef = ({
 			}
 
 			observerRef.current = new IntersectionObserver(([entry]) => {
-				if (entry.isIntersecting && !isFetchingNextPage) {
+				if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
 					fetchNextPage();
 				}
 			});
