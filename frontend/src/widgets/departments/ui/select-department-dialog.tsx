@@ -39,7 +39,7 @@ export function SelectDepartmentDialog({
 					<DialogDescription>
 						Найдите подразделение и выберите его из списка
 					</DialogDescription>
-				</DialogHeader>
+stateId?: DepartmentListId; ... <InfinityDepartmentsList stateId={stateId ?? 'multi-select-locations'} ... />
 
 				<div className="flex-1 min-h-0">
 					<InfinityDepartmentsList
