@@ -7,10 +7,10 @@ import { UpdateLocationDialog } from "@/features/locations/ui/update-location-di
 import { PAGE_SIZE } from "@/shared/api/pagination-request";
 import { Button } from "@/shared/components/ui/button";
 import { Spinner } from "@/shared/components/ui/spinner";
+import { ListEmpty } from "@/widgets/list-empty";
+import { ListError } from "@/widgets/list-error";
 import { LocationCard } from "@/widgets/locations-list/ui/location-card";
 import { LocationFiltersPanel } from "@/widgets/locations-list/ui/location-filters-panel";
-import { LocationsListEmpty } from "@/widgets/locations-list/ui/location-list-empty";
-import { LocationsListError } from "@/widgets/locations-list/ui/location-list-error";
 import { LocationsPagination } from "@/widgets/locations-list/ui/locations-pagination";
 import { useLocationFilters } from "@/widgets/model/use-location-filters";
 import { useState } from "react";
@@ -23,7 +23,9 @@ export function LocationsList() {
 	const [updateOpen, setUpdateOpen] = useState(false);
 	const [, setIsDelete] = useState(false);
 
-	const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
+	const [selectedLocation, setSelectedLocation] = useState<Location | null>(
+		null,
+	);
 
 	const {
 		filters,
@@ -32,9 +34,8 @@ export function LocationsList() {
 
 	const [debouncedSearch] = useDebounce(filters.search, DEBOUNCE_DELAY);
 
-
-	const { locations, totalPages, isPending, isError, error } =
-		useLocationsList({
+	const { locations, totalPages, isPending, isError, error } = useLocationsList(
+		{
 			search: debouncedSearch,
 			isActive:
 				filters.isActive === "all" ? undefined : filters.isActive === "active",
@@ -43,7 +44,8 @@ export function LocationsList() {
 			departmentIds: filters.departmentIds,
 			page: filters.page,
 			pageSize: PAGE_SIZE,
-		});
+		},
+	);
 
 	console.log("locations data", {
 		page: filters.page,
@@ -89,9 +91,9 @@ export function LocationsList() {
 					<Spinner />
 				</div>
 			) : isError ? (
-				<LocationsListError message={error?.message ?? "Неизвестная ошибка"} />
+				<ListError message={error?.message ?? "Неизвестная ошибка"} />
 			) : locations?.length === 0 ? (
-				<LocationsListEmpty />
+				<ListEmpty title="Локация" />
 			) : (
 				<>
 					<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">

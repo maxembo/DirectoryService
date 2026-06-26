@@ -1,5 +1,7 @@
+export type LocationId = string;
+
 export type Location = {
-	id: string;
+	id: LocationId;
 	name: string;
 	timezone: string;
 	isActive: boolean;

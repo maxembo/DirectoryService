@@ -44,35 +44,36 @@ export function LocationCard({ location, onEdit }: Props) {
 		} catch {}
 	};
 	return (
-		<Card className="transition-shadow hover:shadow-md">
+		<Card className="min-w-0 transition-shadow hover:shadow-md">
 			<CardHeader className="space-y-3">
-				<div className="flex justify-between gap-4">
-					<CardTitle className="text-lg leading-tight">
+				<div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4">
+					<CardTitle className="min-w-0 flex-1 truncate text-lg leading-tight">
 						{location.name}
 					</CardTitle>
+					{location.isActive && (
+						<div className="flex shrink-0 gap-3">
+							<Button
+								type="button"
+								variant="link"
+								size="icon"
+								className="h-8 w-8 hover:bg-blue-500"
+								onClick={handleEdit}
+							>
+								<Pencil className="h-4 w-4" />
+							</Button>
 
-					<div className="flex gap-3">
-						<Button
-							type="button"
-							variant="link"
-							size="icon"
-							className="ml-auto h-8 w-8 hover:bg-blue-500"
-							onClick={handleEdit}
-						>
-							<Pencil className="h-4 w-4" />
-						</Button>
-
-						<Button
-							type="button"
-							variant="link"
-							size="icon"
-							className="ml-auto h-8 w-8 hover:bg-red-500"
-							onClick={handleDelete}
-							disabled={isPending}
-						>
-							<Trash2 className="h-4 w-4" />
-						</Button>
-					</div>
+							<Button
+								type="button"
+								variant="link"
+								size="icon"
+								className="h-8 w-8 hover:bg-red-500"
+								onClick={handleDelete}
+								disabled={isPending}
+							>
+								<Trash2 className="h-4 w-4" />
+							</Button>
+						</div>
+					)}
 				</div>
 				<div className="flex items-start justify-between gap-4">
 					<Badge

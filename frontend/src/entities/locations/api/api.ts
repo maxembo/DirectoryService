@@ -1,5 +1,9 @@
 import { apiClient } from "@/shared/api/axios-instance";
-import { Envelope, PaginationEnvelope } from "@/shared/api/envelops";
+import {
+	Envelope,
+	envelopeInfinityQueryOptions,
+	PaginationEnvelope,
+} from "@/shared/api/envelops";
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 import { Location } from "../model/types";
 import {
@@ -20,7 +24,7 @@ export const locationsApi = {
 			Envelope<PaginationEnvelope<Location>>
 		>(LOCATIONS_ENDPOINT, { params: request });
 
-		return response.data.result;
+		return response.data;
 	},
 
 	getLocationsQueryOptions: (request: GetLocationsRequest) =>
@@ -31,10 +35,11 @@ export const locationsApi = {
 			},
 		}),
 
-	getLocationsInfinityOptions: (request: GetLocationsInfinityRequest) => {
+	getLocationsInfinityQueryOptions: (request: GetLocationsInfinityRequest) => {
 		return infiniteQueryOptions({
 			queryKey: [
 				locationsApi.baseKey,
+				request.departmentIds,
 				request.search,
 				request.isActive,
 				request.sortBy,
@@ -44,23 +49,7 @@ export const locationsApi = {
 			queryFn: ({ pageParam }) => {
 				return locationsApi.getLocations({ ...request, page: pageParam });
 			},
-			initialPageParam: 1,
-			getNextPageParam: (response) => {
-				if (!response || response.page >= response.totalPages) {
-					return undefined;
-				}
-
-				return response.page + 1;
-			},
-			select: (data): PaginationEnvelope<Location> => {
-				return {
-					items: data.pages.flatMap((page) => page?.items ?? []),
-					totalCount: data.pages[0]?.totalCount ?? 0,
-					page: data.pages[data.pages.length - 1]?.page ?? 1,
-					pageSize: data.pages[0]?.pageSize ?? 0,
-					totalPages: data.pages[0]?.totalPages ?? 0,
-				};
-			},
+			...envelopeInfinityQueryOptions<Location>(),
 		});
 	},
 

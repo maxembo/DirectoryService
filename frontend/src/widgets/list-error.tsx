@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/shared/components/ui/card";
 
 type Props = { message: string };
 
-export function LocationsListError({ message }: Props) {
+export function ListError({ message }: Props) {
 	return (
 		<Card className="border-destructive/40">
 			<CardContent className="py-10 text-center">
