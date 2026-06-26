@@ -1,58 +1,84 @@
 import {
-	SortByFilter,
+	LocatinSortByFilter,
 	SortDirectionFilter,
 } from "@/entities/locations/api/types";
-import { setFilterIsActive, setFilterSearch, setFilterSortBy, setFilterSortDirection, useGetLocationFilters } from "@/features/locations/model/locations-filter-store";
+import {
+	setLocationIsActive,
+	setLocationSearch,
+	setLocationSortBy,
+	setLocationSortDirection,
+	useLocationList,
+} from "@/features/locations/model/location-list-store";
 import { Input } from "@/shared/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/shared/components/ui/select";
 import { ActiveFilter } from "@/widgets/model/types";
 import { Search } from "lucide-react";
 
-type FilterSelectProps<T extends string> = {
+export type FilterSelectProps<T extends string> = {
 	value: T;
 	onValueChange: (value: T) => void;
-	placeholder: string;
+	label?: string;
 	items: Array<{
 		value: T;
 		label: string;
 	}>;
 };
 
-function FilterSelect<T extends string>({ value, onValueChange, placeholder, items }: FilterSelectProps<T>) {
+export function FilterSelect<T extends string>({
+	value,
+	onValueChange,
+	label,
+	items,
+}: FilterSelectProps<T>) {
 	return (
-		<Select value={value} onValueChange={(value) => onValueChange(value as T)}>
-			<SelectTrigger>
-				<SelectValue placeholder={placeholder} />
-			</SelectTrigger>
-			<SelectContent position="popper" side="bottom" sideOffset={4}>
-				{items.map((item) => (
-					<SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>
-				))}
-			</SelectContent>
-
-		</Select>
-	)
+		<div className="flex flex-col gap-2">
+			<label className="text-sm font-medium">{label}</label>
+			<Select
+				value={value}
+				onValueChange={(value) => onValueChange(value as T)}
+			>
+				<SelectTrigger>
+					<SelectValue />
+				</SelectTrigger>
+				<SelectContent position="popper" side="bottom" sideOffset={4}>
+					{items.map((item) => (
+						<SelectItem key={item.value} value={item.value}>
+							{item.label}
+						</SelectItem>
+					))}
+				</SelectContent>
+			</Select>
+		</div>
+	);
 }
 
-const activeItems: Array<{ value: ActiveFilter, label: string }> = [
+export const activeItems: Array<{ value: ActiveFilter; label: string }> = [
 	{ value: "all", label: "Все" },
 	{ value: "active", label: "Активные" },
 	{ value: "inactive", label: "Неактивные" },
 ];
 
-const sortByItems: Array<{ value: SortByFilter, label: string }> = [
+const sortByItems: Array<{ value: LocatinSortByFilter; label: string }> = [
 	{ value: "name", label: "По имени" },
 	{ value: "created", label: "По дате создания" },
 ];
 
-const sortDirectionItems: Array<{ value: SortDirectionFilter, label: string }> = [
+export const sortDirectionItems: Array<{
+	value: SortDirectionFilter;
+	label: string;
+}> = [
 	{ value: "asc", label: "По возрастанию" },
 	{ value: "desc", label: "По убыванию" },
 ];
 
 export function LocationFilters() {
-
-	const { search, isActive, sortBy, sortDirection } = useGetLocationFilters();
+	const { search, isActive, sortBy, sortDirection } = useLocationList();
 
 	return (
 		<div className="space-y-4">
@@ -63,28 +89,25 @@ export function LocationFilters() {
 						placeholder="Поиск по названию"
 						className="pl-9"
 						value={search ?? ""}
-						onChange={(e) => setFilterSearch(e.target.value)}
+						onChange={(e) => setLocationSearch(e.target.value)}
 					/>
 				</div>
 				<FilterSelect
 					value={isActive ?? "all"}
-					onValueChange={setFilterIsActive}
+					onValueChange={setLocationIsActive}
 					items={activeItems}
-					placeholder="Статус"
 				/>
 
 				<FilterSelect
 					value={sortBy ?? "name"}
-					onValueChange={setFilterSortBy}
+					onValueChange={setLocationSortBy}
 					items={sortByItems}
-					placeholder="Сортировка"
 				/>
 
 				<FilterSelect
 					value={sortDirection ?? "asc"}
-					onValueChange={setFilterSortDirection}
+					onValueChange={setLocationSortDirection}
 					items={sortDirectionItems}
-					placeholder="Направление"
 				/>
 			</div>
 		</div>

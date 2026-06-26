@@ -1,9 +1,15 @@
 import {
-	SortByFilter,
+	LocatinSortByFilter,
 	SortDirectionFilter,
 } from "@/entities/locations/api/types";
 import { Input } from "@/shared/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/shared/components/ui/select";
 import { ActiveFilter } from "@/widgets/model/types";
 import { Search } from "lucide-react";
 
@@ -11,13 +17,13 @@ type Props = {
 	filters: {
 		search: string;
 		isActive: ActiveFilter;
-		sortBy: SortByFilter;
+		sortBy: LocatinSortByFilter;
 		sortDirection: SortDirectionFilter;
 	};
 	actions: {
 		setSearch: (search: string) => void;
 		setIsActive: (isActive: ActiveFilter) => void;
-		setSortBy: (sortBy: SortByFilter) => void;
+		setSortBy: (sortBy: LocatinSortByFilter) => void;
 		setSortDirection: (sortDirection: SortDirectionFilter) => void;
 	};
 };
@@ -32,7 +38,12 @@ type FilterSelectProps<T extends string> = {
 	}>;
 };
 
-function FilterSelect<T extends string>({ value, onValueChange, placeholder, items }: FilterSelectProps<T>) {
+function FilterSelect<T extends string>({
+	value,
+	onValueChange,
+	placeholder,
+	items,
+}: FilterSelectProps<T>) {
 	return (
 		<Select value={value} onValueChange={(value) => onValueChange(value as T)}>
 			<SelectTrigger>
@@ -40,35 +51,33 @@ function FilterSelect<T extends string>({ value, onValueChange, placeholder, ite
 			</SelectTrigger>
 			<SelectContent position="popper" side="bottom" sideOffset={4}>
 				{items.map((item) => (
-					<SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>
+					<SelectItem key={item.value} value={item.value}>
+						{item.label}
+					</SelectItem>
 				))}
 			</SelectContent>
-
 		</Select>
-	)
+	);
 }
 
-const activeItems: Array<{ value: ActiveFilter, label: string }> = [
+const activeItems: Array<{ value: ActiveFilter; label: string }> = [
 	{ value: "all", label: "Все" },
 	{ value: "active", label: "Активные" },
 	{ value: "inactive", label: "Неактивные" },
 ];
 
-const sortByItems: Array<{ value: SortByFilter, label: string }> = [
+const sortByItems: Array<{ value: LocatinSortByFilter; label: string }> = [
 	{ value: "name", label: "По имени" },
 	{ value: "created", label: "По дате создания" },
 ];
 
+const sortDirectionItems: Array<{ value: SortDirectionFilter; label: string }> =
+	[
+		{ value: "asc", label: "По возрастанию" },
+		{ value: "desc", label: "По убыванию" },
+	];
 
-const sortDirectionItems: Array<{ value: SortDirectionFilter, label: string }> = [
-	{ value: "asc", label: "По возрастанию" },
-	{ value: "desc", label: "По убыванию" },
-];
-
-export function LocationFiltersPanel({
-	filters, actions
-}: Props) {
-
+export function LocationFiltersPanel({ filters, actions }: Props) {
 	const { search, isActive, sortBy, sortDirection } = filters;
 	const { setSearch, setIsActive, setSortBy, setSortDirection } = actions;
 

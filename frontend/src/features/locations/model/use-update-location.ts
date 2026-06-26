@@ -1,4 +1,4 @@
-import { locationsApi } from "@/entities/locations/api/locations-api";
+import { locationsApi } from "@/entities/locations/api/api";
 import { EnvelopeError } from "@/shared/api/errors";
 import { queryClient } from "@/shared/api/query-client";
 import { useMutation } from "@tanstack/react-query";
