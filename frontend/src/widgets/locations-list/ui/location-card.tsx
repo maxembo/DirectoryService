@@ -1,5 +1,5 @@
 import { Location } from "@/entities/locations/model/types";
-import { useDeleteLocation } from "@/features/locations/model/use-delete-location";
+import { useDeleteLocation } from "@/features/locations/delete-location/model/use-delete-location";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import {

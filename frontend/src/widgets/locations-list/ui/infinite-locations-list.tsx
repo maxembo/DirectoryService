@@ -5,22 +5,22 @@ import {
 	DepartmentShortDto,
 } from "@/entities/departments/model/types";
 import { Location } from "@/entities/locations/model/types";
+import { SelectDepartmentDialog } from "@/features/departments/select-department/ui/select-department-dialog";
 import { SelectedDepartment } from "@/features/departments/select-department/ui/selected-department";
+import { CreateLocationDialog } from "@/features/locations/create-location/ui/create-location-dialog";
 import {
 	removeLocationSelectedDepartments,
 	setLocationSelectedDepartments,
 	useLocationSelectedDepartments,
 } from "@/features/locations/model/location-list-store";
 import { useInfiniteLocationsList } from "@/features/locations/model/use-infinite-locations-list";
-import { CreateLocationDialog } from "@/features/locations/ui/create-location-dialog";
-import { UpdateLocationDialog } from "@/features/locations/ui/update-location-dialog";
+import { LocationFilters } from "@/features/locations/ui/filters/location-filters";
+import { UpdateLocationDialog } from "@/features/locations/update-location/ui/update-location-dialog";
 import { Spinner } from "@/shared/components/ui/spinner";
-import { SelectDepartmentDialog } from "@/widgets/departments/select-department/ui/select-department-dialog";
 import { ListEmpty } from "@/widgets/list-empty";
 import { ListError } from "@/widgets/list-error";
 import { LocationCard } from "@/widgets/locations-list/ui/location-card";
 import { useState } from "react";
-import { LocationFilters } from "../../../features/locations/ui/location-filters";
 
 const LOCATIONS_DEPARTMENT_SELECT_STATE_ID = "locations-department-select";
 

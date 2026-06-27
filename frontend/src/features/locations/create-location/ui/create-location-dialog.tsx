@@ -1,4 +1,3 @@
-import { Location } from "@/entities/locations/model/types";
 import { Button } from "@/shared/components/ui/button";
 import {
 	Dialog,
@@ -8,42 +7,63 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
+	DialogTrigger,
 } from "@/shared/components/ui/dialog";
 import { Field, FieldGroup } from "@/shared/components/ui/field";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { locationSchema, UpdateLocationFormData } from "../model/location-form";
-import { useUpdateLocation } from "../model/use-update-location";
+import {
+	CreateLocationFormData,
+	locationSchema,
+} from "../../model/location-form";
+import { useCreateLocation } from "../model/use-create-location";
 
 type Props = {
-	location: Location;
 	open: boolean;
 	setOpen: (open: boolean) => void;
 };
 
-export function UpdateLocationDialog({ location, open, setOpen }: Props) {
+const initialData: CreateLocationFormData = {
+	name: "",
+	address: {
+		country: "",
+		city: "",
+		street: "",
+		house: "",
+	},
+	timezone: "",
+};
+
+export function CreateLocationDialog({ open, setOpen }: Props) {
 	const {
 		register,
 		handleSubmit,
 		formState: { errors },
-	} = useForm<UpdateLocationFormData>({
-		defaultValues: location,
+		reset,
+	} = useForm<CreateLocationFormData>({
+		defaultValues: initialData,
 		resolver: zodResolver(locationSchema),
 	});
 
-	const { updateLocation, isPending, isError, error } = useUpdateLocation();
+	const {
+		createLocation,
+		isPending,
+		isError,
+		error,
+		reset: resetCreateLocation,
+	} = useCreateLocation();
 
 	const handleClose = () => {
+		reset();
+		resetCreateLocation();
 		setOpen(false);
 	};
 
-	const onSubmit = async (data: UpdateLocationFormData) => {
-		try {
-			await updateLocation({ locationId: location.id, ...data });
-			handleClose();
-		} catch {}
+	const onSubmit = async (data: CreateLocationFormData) => {
+		await createLocation(data);
+		handleClose();
 	};
 
 	const handleOpenChange = (nextOpen: boolean) => {
@@ -57,12 +77,17 @@ export function UpdateLocationDialog({ location, open, setOpen }: Props) {
 
 	return (
 		<Dialog open={open} onOpenChange={handleOpenChange}>
+			<DialogTrigger asChild>
+				<Button type="button" onClick={() => setOpen(true)} className="ml-auto">
+					Создать локацию
+				</Button>
+			</DialogTrigger>
 			<DialogContent className="sm:max-w-md">
 				<form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
 					<DialogHeader>
-						<DialogTitle>Редактирование локации</DialogTitle>
+						<DialogTitle>Создание локации</DialogTitle>
 						<DialogDescription>
-							Измените данные локации и нажмите сохранить.
+							Заполните данные локации и нажмите сохранить.
 						</DialogDescription>
 					</DialogHeader>
 					{isError && (
@@ -172,7 +197,7 @@ export function UpdateLocationDialog({ location, open, setOpen }: Props) {
 							</Button>
 						</DialogClose>
 						<Button type="submit" disabled={isPending}>
-							{isPending ? "Изменение..." : "Изменить"}
+							{isPending ? "Создание..." : "Создать"}
 						</Button>
 					</DialogFooter>
 				</form>

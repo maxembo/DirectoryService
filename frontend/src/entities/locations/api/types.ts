@@ -3,8 +3,6 @@ import { PaginationRequest } from "@/shared/api/pagination-request";
 import { SortDirectionFilter } from "@/shared/model/filter-types";
 import { AddressDto } from "../model/types";
 
-export type LocatinSortByFilter = "name" | "created";
-
 export interface GetLocationsRequest extends PaginationRequest {
 	departmentIds?: string[];
 	search?: string;
