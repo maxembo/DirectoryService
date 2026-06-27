@@ -1,5 +1,5 @@
 import { Location } from "@/entities/locations/model/types";
-import { useDeleteLocation } from "@/features/locations/delete-location/model/use-delete-location";
+import { DeleteLocationButton } from "@/features/locations/delete-location/ui/delete-location-button";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -16,18 +16,14 @@ import {
 	Globe2,
 	MapPin,
 	Pencil,
-	Trash2,
 } from "lucide-react";
 
 type Props = {
 	location: Location;
 	onEdit: () => void;
-	onDelete: () => void;
 };
 
 export function LocationCard({ location, onEdit }: Props) {
-	const { deleteLocation, isPending } = useDeleteLocation();
-
 	const handleEdit = (e: React.MouseEvent) => {
 		e.preventDefault();
 		e.stopPropagation();
@@ -35,14 +31,6 @@ export function LocationCard({ location, onEdit }: Props) {
 		onEdit();
 	};
 
-	const handleDelete = async (e: React.MouseEvent) => {
-		e.preventDefault();
-		e.stopPropagation();
-
-		try {
-			await deleteLocation(location.id);
-		} catch {}
-	};
 	return (
 		<Card className="min-w-0 transition-shadow hover:shadow-md">
 			<CardHeader className="space-y-3">
@@ -62,16 +50,7 @@ export function LocationCard({ location, onEdit }: Props) {
 								<Pencil className="h-4 w-4" />
 							</Button>
 
-							<Button
-								type="button"
-								variant="link"
-								size="icon"
-								className="h-8 w-8 hover:bg-red-500"
-								onClick={handleDelete}
-								disabled={isPending}
-							>
-								<Trash2 className="h-4 w-4" />
-							</Button>
+							<DeleteLocationButton locationId={location.id} />
 						</div>
 					)}
 				</div>

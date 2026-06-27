@@ -27,7 +27,6 @@ const LOCATIONS_DEPARTMENT_SELECT_STATE_ID = "locations-department-select";
 export function InfiniteLocationsList() {
 	const [createOpen, setCreateOpen] = useState(false);
 	const [updateOpen, setUpdateOpen] = useState(false);
-	const [, setIsDelete] = useState(false);
 
 	const [selectOpen, setSelectOpen] = useState(false);
 
@@ -108,7 +107,6 @@ export function InfiniteLocationsList() {
 									setSelectedLocation(location);
 									setUpdateOpen(true);
 								}}
-								onDelete={() => setIsDelete(true)}
 							/>
 						))}
 					</div>

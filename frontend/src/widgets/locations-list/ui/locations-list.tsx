@@ -20,7 +20,6 @@ const DEBOUNCE_DELAY = 600;
 export function LocationsList() {
 	const [createOpen, setCreateOpen] = useState(false);
 	const [updateOpen, setUpdateOpen] = useState(false);
-	const [, setIsDelete] = useState(false);
 
 	const [selectedLocation, setSelectedLocation] = useState<Location | null>(
 		null,
@@ -91,7 +90,6 @@ export function LocationsList() {
 									setSelectedLocation(location);
 									setUpdateOpen(true);
 								}}
-								onDelete={() => setIsDelete(true)}
 							/>
 						))}
 					</div>
