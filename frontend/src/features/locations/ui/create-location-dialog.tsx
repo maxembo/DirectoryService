@@ -7,6 +7,7 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
+	DialogTrigger,
 } from "@/shared/components/ui/dialog";
 import { Field, FieldGroup } from "@/shared/components/ui/field";
 import { Input } from "@/shared/components/ui/input";
@@ -75,6 +76,11 @@ export function CreateLocationDialog({ open, setOpen }: Props) {
 
 	return (
 		<Dialog open={open} onOpenChange={handleOpenChange}>
+			<DialogTrigger asChild>
+				<Button type="button" onClick={() => setOpen(true)} className="ml-auto">
+					Создать локацию
+				</Button>
+			</DialogTrigger>
 			<DialogContent className="sm:max-w-md">
 				<form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
 					<DialogHeader>

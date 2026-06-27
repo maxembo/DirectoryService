@@ -1,15 +1,12 @@
-import {
-	LocatinSortByFilter,
-	SortDirectionFilter,
-} from "@/entities/locations/api/types";
+import { LocationSortByFilter } from "@/entities/locations/model/types";
+import { ActiveFilter, SortDirectionFilter } from "@/shared/model/filter-types";
 import { useState } from "react";
-import { ActiveFilter } from "./types";
 
 type LocationFilters = {
 	departmentIds: string[];
 	search: string;
 	isActive: ActiveFilter;
-	sortBy: LocatinSortByFilter;
+	sortBy: LocationSortByFilter;
 	sortDirection: SortDirectionFilter;
 	page: number;
 };
@@ -45,7 +42,7 @@ export function useLocationFilters() {
 	const setDepartmentIds = (departmentIds: string[]) =>
 		updateFilters({ departmentIds });
 
-	const setSortBy = (sortBy: LocatinSortByFilter) => updateFilters({ sortBy });
+	const setSortBy = (sortBy: LocationSortByFilter) => updateFilters({ sortBy });
 
 	const setSortDirection = (sortDirection: SortDirectionFilter) =>
 		updateFilters({ sortDirection });

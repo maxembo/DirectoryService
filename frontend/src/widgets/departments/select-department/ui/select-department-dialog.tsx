@@ -1,4 +1,5 @@
 import { DepartmentShortDto } from "@/entities/departments/model/types";
+import { DepartmentListId } from "@/features/departments/model/department-list-store";
 import { Button } from "@/shared/components/ui/button";
 import {
 	Dialog,
@@ -8,13 +9,14 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/shared/components/ui/dialog";
-import { InfinityDepartmentsList } from "./infinity-departments-list";
+import { SelectDepartmentList } from "./select-department-list";
 
 type Props = {
 	selectedDepartments: DepartmentShortDto[];
 	onChange: (selectedDepartments: DepartmentShortDto[]) => void;
 	multiSelect?: boolean;
 	excludeIds?: string[];
+	stateId?: DepartmentListId;
 	open: boolean;
 	setOpen: (open: boolean) => void;
 };
@@ -24,6 +26,7 @@ export function SelectDepartmentDialog({
 	onChange,
 	multiSelect = false,
 	excludeIds = [],
+	stateId,
 	open,
 	setOpen,
 }: Props) {
@@ -39,11 +42,11 @@ export function SelectDepartmentDialog({
 					<DialogDescription>
 						Найдите подразделение и выберите его из списка
 					</DialogDescription>
-stateId?: DepartmentListId; ... <InfinityDepartmentsList stateId={stateId ?? 'multi-select-locations'} ... />
+				</DialogHeader>
 
-				<div className="flex-1 min-h-0">
-					<InfinityDepartmentsList
-						stateId="multi-select-locations"
+				<div className="min-h-0 flex-1">
+					<SelectDepartmentList
+						stateId={stateId}
 						selectedDepartments={selectedDepartments}
 						onChange={onChange}
 						multiSelect={multiSelect}

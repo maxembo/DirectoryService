@@ -1,6 +1,6 @@
-import { SortDirectionFilter } from "@/entities/locations/api/types";
 import { InfinityScrollRequest } from "@/shared/api/infinity-scroll-request";
 import { PaginationRequest } from "@/shared/api/pagination-request";
+import { SortDirectionFilter } from "@/shared/model/filter-types";
 
 export interface GetDepartmentsRequest extends PaginationRequest {
 	selectedLocations?: string[];

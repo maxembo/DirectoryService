@@ -1,8 +1,10 @@
 "use client";
 
 import { Location } from "@/entities/locations/model/types";
-import { useLocationsList } from "@/entities/locations/model/use-locations-list";
+import { useLocationFilters } from "@/features/locations/model/use-location-filters";
+import { useLocationsList } from "@/features/locations/model/use-locations-list";
 import { CreateLocationDialog } from "@/features/locations/ui/create-location-dialog";
+import { LocationFiltersPanel } from "@/features/locations/ui/location-filters-panel";
 import { UpdateLocationDialog } from "@/features/locations/ui/update-location-dialog";
 import { PAGE_SIZE } from "@/shared/api/pagination-request";
 import { Button } from "@/shared/components/ui/button";
@@ -10,9 +12,7 @@ import { Spinner } from "@/shared/components/ui/spinner";
 import { ListEmpty } from "@/widgets/list-empty";
 import { ListError } from "@/widgets/list-error";
 import { LocationCard } from "@/widgets/locations-list/ui/location-card";
-import { LocationFiltersPanel } from "@/widgets/locations-list/ui/location-filters-panel";
 import { LocationsPagination } from "@/widgets/locations-list/ui/locations-pagination";
-import { useLocationFilters } from "@/widgets/model/use-location-filters";
 import { useState } from "react";
 import { useDebounce } from "use-debounce";
 

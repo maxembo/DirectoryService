@@ -1,33 +1,28 @@
-import { GetDepartmentsInfinityRequest } from "@/entities/departments/api/types";
 import {
 	DepartmentId,
 	DepartmentShortDto,
 } from "@/entities/departments/model/types";
-import { useInfinityDepartmentsList } from "@/entities/departments/model/use-infinity-departments-list";
 import { DepartmentListId } from "@/features/departments/model/department-list-store";
+import { useInfiniteDepartmentsList } from "@/features/departments/model/use-infinite-departments-list";
+import { SelectDepartmentCard } from "@/features/departments/select-department/ui/select-department-card";
+import { SelectDepartmentFilterPanel } from "@/features/departments/select-department/ui/select-department-filter-panel";
+import { SelectDepartmentSearch } from "@/features/departments/select-department/ui/select-department-filter-search";
+import { SelectedDepartment } from "@/features/departments/select-department/ui/selected-department";
 import { Spinner } from "@/shared/components/ui/spinner";
 import { ListEmpty } from "@/widgets/list-empty";
 import { ListError } from "@/widgets/list-error";
 import { useMemo } from "react";
-import { SelectDepartmentCard } from "./select-department-card";
-import {
-	SelectDepartmentFilterPanel,
-	SelectDepartmentSearch,
-} from "./select-department-filters";
-import { SelectedDepartment } from "./selected-department";
 
 type Props = {
 	stateId?: DepartmentListId;
-	request?: GetDepartmentsInfinityRequest;
 	selectedDepartments: DepartmentShortDto[];
 	onChange: (selectedDepartments: DepartmentShortDto[]) => void;
 	multiSelect?: boolean;
 	excludeIds?: string[];
 };
 
-export function InfinityDepartmentsList({
+export function SelectDepartmentList({
 	stateId,
-	request,
 	selectedDepartments,
 	onChange,
 	multiSelect,
@@ -40,9 +35,9 @@ export function InfinityDepartmentsList({
 		isPending,
 		isError,
 		isFetchingNextPage,
-	} = useInfinityDepartmentsList({ stateId, request });
+	} = useInfiniteDepartmentsList({ stateId });
 
-	const deps = useMemo(() => {
+	const filteredDepartments = useMemo(() => {
 		return departments.filter((dep) => !excludeIds.includes(dep.id));
 	}, [departments, excludeIds]);
 
@@ -96,7 +91,7 @@ export function InfinityDepartmentsList({
 				) : (
 					<div className="min-h-0 flex-1 overflow-y-auto">
 						<div className="flex flex-col gap-3 px-5 py-2">
-							{deps.map((department) => (
+							{filteredDepartments.map((department) => (
 								<SelectDepartmentCard
 									key={department.id}
 									department={department}

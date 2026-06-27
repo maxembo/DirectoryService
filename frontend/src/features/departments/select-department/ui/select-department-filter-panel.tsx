@@ -6,58 +6,31 @@ import {
 	DepartmentListId,
 	setDepartmentIsActive,
 	setDepartmentIsParent,
-	setDepartmentSearch,
 	setDepartmentSortBy,
 	setDepartmentSortDirection,
 	useDepartmentIsActive,
 	useDepartmentIsParent,
-	useDepartmentSearch,
 	useDepartmentSortBy,
 	useDepartmentSortDirection,
 } from "@/features/departments/model/department-list-store";
-import { Input } from "@/shared/components/ui/input";
+import { FilterSelect } from "@/shared/components/filter-select";
 import {
-	activeItems,
-	FilterSelect,
-	sortDirectionItems,
-} from "@/widgets/locations-list/ui/location-filters";
-import { Search } from "lucide-react";
+	activeFilterOptions,
+	sortDirectionOptions,
+} from "@/shared/model/filter-options";
+import { FilterOption } from "@/shared/model/filter-types";
 
-const sortByItems: Array<{ value: DepartmentSortByFilter; label: string }> = [
-	{
-		value: "name",
-		label: "По имени",
-	},
+const departmentSortByOptions: Array<FilterOption<DepartmentSortByFilter>> = [
+	{ value: "name", label: "По имени" },
 	{ value: "path", label: "По пути" },
 	{ value: "created", label: "По создании" },
 ];
 
-const parentIdItems: Array<{ value: DepartmentParentFilter; label: string }> = [
+const departmentParentOptions: Array<FilterOption<DepartmentParentFilter>> = [
 	{ value: "all", label: "Все" },
 	{ value: "parent", label: "Родители" },
 	{ value: "children", label: "Дочерние" },
 ];
-
-export function SelectDepartmentSearch({
-	stateId,
-}: {
-	stateId?: DepartmentListId;
-}) {
-	const search = useDepartmentSearch(stateId);
-
-	return (
-		<div className="relative">
-			<Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-
-			<Input
-				placeholder="Поиск по названию"
-				className="h-12 pl-11"
-				value={search ?? ""}
-				onChange={(event) => setDepartmentSearch(event.target.value, stateId)}
-			/>
-		</div>
-	);
-}
 
 export function SelectDepartmentFilterPanel({
 	stateId,
@@ -70,33 +43,33 @@ export function SelectDepartmentFilterPanel({
 	const sortDirection = useDepartmentSortDirection(stateId);
 
 	return (
-		<aside className="space-y-2 rounded-2xl border bg-muted/20 p-5">
+		<aside className="h-fit space-y-2 rounded-2xl border bg-muted/20 p-5">
 			<FilterSelect
 				value={isActive}
 				label="Статус"
 				onValueChange={(value) => setDepartmentIsActive(value, stateId)}
-				items={activeItems}
+				items={activeFilterOptions}
 			/>
 
 			<FilterSelect
 				value={isParent}
 				label="Родительский отдел"
 				onValueChange={(value) => setDepartmentIsParent(value, stateId)}
-				items={parentIdItems}
+				items={departmentParentOptions}
 			/>
 
 			<FilterSelect
 				value={sortBy}
 				label="Сортировка"
 				onValueChange={(value) => setDepartmentSortBy(value, stateId)}
-				items={sortByItems}
+				items={departmentSortByOptions}
 			/>
 
 			<FilterSelect
 				value={sortDirection}
 				label="Направление"
 				onValueChange={(value) => setDepartmentSortDirection(value, stateId)}
-				items={sortDirectionItems}
+				items={sortDirectionOptions}
 			/>
 		</aside>
 	);
