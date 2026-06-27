@@ -1,37 +1,38 @@
 "use client";
 
-import { DepartmentId } from "@/entities/departments/model/types";
-import { Location } from "@/entities/locations/model/types";
-import { useInfinityLocationsList } from "@/entities/locations/model/use-infinity-locations-list";
 import {
-	removeLocationSelectedDepartments as removeDepartmentSelectedLocations,
+	DepartmentId,
+	DepartmentShortDto,
+} from "@/entities/departments/model/types";
+import { Location } from "@/entities/locations/model/types";
+import { SelectDepartmentDialog } from "@/features/departments/select-department/ui/select-department-dialog";
+import { SelectedDepartment } from "@/features/departments/select-department/ui/selected-department";
+import { CreateLocationDialog } from "@/features/locations/create-location/ui/create-location-dialog";
+import {
+	removeLocationSelectedDepartments,
 	setLocationSelectedDepartments,
 	useLocationSelectedDepartments,
 } from "@/features/locations/model/location-list-store";
-import { CreateLocationDialog } from "@/features/locations/ui/create-location-dialog";
-import { UpdateLocationDialog } from "@/features/locations/ui/update-location-dialog";
-import { Button } from "@/shared/components/ui/button";
+import { useInfiniteLocationsList } from "@/features/locations/model/use-infinite-locations-list";
+import { LocationFilters } from "@/features/locations/ui/filters/location-filters";
+import { UpdateLocationDialog } from "@/features/locations/update-location/ui/update-location-dialog";
 import { Spinner } from "@/shared/components/ui/spinner";
-import { SelectedDepartment } from "@/widgets/departments/ui/selected-department";
 import { ListEmpty } from "@/widgets/list-empty";
 import { ListError } from "@/widgets/list-error";
 import { LocationCard } from "@/widgets/locations-list/ui/location-card";
 import { useState } from "react";
-import { SelectDepartmentDialog } from "../../departments/ui/select-department-dialog";
-import { LocationFilters } from "./location-filters";
 
-export function InfinityLocationsList() {
+const LOCATIONS_DEPARTMENT_SELECT_STATE_ID = "locations-department-select";
+
+export function InfiniteLocationsList() {
 	const [createOpen, setCreateOpen] = useState(false);
 	const [updateOpen, setUpdateOpen] = useState(false);
-	const [, setIsDelete] = useState(false);
 
 	const [selectOpen, setSelectOpen] = useState(false);
 
 	const [selectedLocation, setSelectedLocation] = useState<Location | null>(
 		null,
 	);
-
-	const selectedDepartments = useLocationSelectedDepartments();
 
 	const {
 		locations,
@@ -40,23 +41,30 @@ export function InfinityLocationsList() {
 		error,
 		isFetchingNextPage,
 		cursorRef,
-	} = useInfinityLocationsList({});
+	} = useInfiniteLocationsList({});
 
 	const handleRemove = (departmentId: DepartmentId) => {
-		removeDepartmentSelectedLocations(departmentId);
+		removeLocationSelectedDepartments(departmentId);
 	};
+
+	const handleSelectedDepartmentsChange = (
+		departments: DepartmentShortDto[],
+	) => {
+		setLocationSelectedDepartments(departments);
+	};
+
+	const selectedDepartments = useLocationSelectedDepartments();
 
 	return (
 		<div className="space-y-4">
 			<LocationFilters />
 
 			<SelectDepartmentDialog
+				stateId={LOCATIONS_DEPARTMENT_SELECT_STATE_ID}
 				open={selectOpen}
 				setOpen={setSelectOpen}
 				selectedDepartments={selectedDepartments}
-				onChange={(selectedDepartments) =>
-					setLocationSelectedDepartments(selectedDepartments)
-				}
+				onChange={handleSelectedDepartmentsChange}
 				multiSelect
 			/>
 
@@ -68,15 +76,8 @@ export function InfinityLocationsList() {
 			<div className="space-y-2">
 				<h1 className="text-2xl font-bold tracking-tight">Локации</h1>
 
-				<Button
-					type="button"
-					onClick={() => setCreateOpen(true)}
-					className="ml-auto"
-				>
-					Создать локацию
-				</Button>
-
 				<CreateLocationDialog open={createOpen} setOpen={setCreateOpen} />
+
 				{selectedLocation && (
 					<UpdateLocationDialog
 						key={selectedLocation.id}
@@ -106,7 +107,6 @@ export function InfinityLocationsList() {
 									setSelectedLocation(location);
 									setUpdateOpen(true);
 								}}
-								onDelete={() => setIsDelete(true)}
 							/>
 						))}
 					</div>

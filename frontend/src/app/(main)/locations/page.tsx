@@ -1,9 +1,9 @@
-import { InfinityLocationsList } from "@/widgets/locations-list/ui/infiinity-locations-list";
+import { InfiniteLocationsList } from "@/widgets/locations-list/ui/infinite-locations-list";
 
 export default function LocationsPage() {
 	return (
 		<div>
-			<InfinityLocationsList />
+			<InfiniteLocationsList />
 		</div>
 	);
 }

@@ -1,3 +1,5 @@
+import { departmentsApi } from "@/entities/departments/api/api";
+import { GetDepartmentsInfinityRequest } from "@/entities/departments/api/types";
 import {
 	DepartmentListId,
 	useDepartmentIsActive,
@@ -12,15 +14,13 @@ import { EnvelopeError } from "@/shared/api/errors";
 import { useCursorRef } from "@/shared/hooks/use-cursor-ref";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useDebounce } from "use-debounce";
-import { departmentsApi } from "../api/api";
-import { GetDepartmentsInfinityRequest } from "../api/types";
 
 type Props = {
 	stateId?: DepartmentListId;
 	request?: GetDepartmentsInfinityRequest;
 };
 
-export function useInfinityDepartmentsList({ stateId, request }: Props) {
+export function useInfiniteDepartmentsList({ stateId, request }: Props) {
 	const selectedLocations = useDepartmentSelectedLocations(stateId);
 	const search = useDepartmentSearch(stateId);
 	const [debouncedSearch] = useDebounce(search, 600);
@@ -44,9 +44,9 @@ export function useInfinityDepartmentsList({ stateId, request }: Props) {
 			search: debouncedSearch,
 			isParent: isParent === "all" ? undefined : isParent === "parent",
 			isActive: isActive === "all" ? undefined : isActive === "active",
-			sortBy: sortBy,
+			sortBy,
 			sortDirection,
-			parentId: parentId,
+			parentId,
 			...request,
 		}),
 	});

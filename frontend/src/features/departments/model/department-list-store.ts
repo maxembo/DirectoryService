@@ -2,16 +2,15 @@ import {
 	DepartmentParentFilter,
 	DepartmentSortByFilter,
 } from "@/entities/departments/model/types";
-import { SortDirectionFilter } from "@/entities/locations/api/types";
 import { Location } from "@/entities/locations/model/types";
 import { PAGE_SIZE } from "@/shared/api/pagination-request";
-import { ActiveFilter } from "@/widgets/model/types";
+import { ActiveFilter, SortDirectionFilter } from "@/shared/model/filter-types";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 export type DepartmentListId = string;
 
-type DepartmentsFilterState = {
+type DepartmentsListState = {
 	selectedLocations: Location[];
 	search: string;
 	parentId: string;
@@ -24,10 +23,10 @@ type DepartmentsFilterState = {
 
 type DepartmentListStates = Record<
 	DepartmentListId,
-	DepartmentsFilterState | undefined
+	DepartmentsListState | undefined
 >;
 
-const initialState: DepartmentsFilterState = {
+const initialState: DepartmentsListState = {
 	selectedLocations: [],
 	search: "",
 	parentId: "",

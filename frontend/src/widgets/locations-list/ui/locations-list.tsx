@@ -1,27 +1,25 @@
 "use client";
 
 import { Location } from "@/entities/locations/model/types";
-import { useLocationsList } from "@/entities/locations/model/use-locations-list";
-import { CreateLocationDialog } from "@/features/locations/ui/create-location-dialog";
-import { UpdateLocationDialog } from "@/features/locations/ui/update-location-dialog";
+import { CreateLocationDialog } from "@/features/locations/create-location/ui/create-location-dialog";
+import { useLocationFilters } from "@/features/locations/model/use-location-filters";
+import { useLocationsList } from "@/features/locations/model/use-locations-list";
+import { LocationFiltersPanel } from "@/features/locations/ui/filters/location-filters-panel";
+import { UpdateLocationDialog } from "@/features/locations/update-location/ui/update-location-dialog";
 import { PAGE_SIZE } from "@/shared/api/pagination-request";
-import { Button } from "@/shared/components/ui/button";
 import { Spinner } from "@/shared/components/ui/spinner";
 import { ListEmpty } from "@/widgets/list-empty";
 import { ListError } from "@/widgets/list-error";
 import { LocationCard } from "@/widgets/locations-list/ui/location-card";
-import { LocationFiltersPanel } from "@/widgets/locations-list/ui/location-filters-panel";
-import { LocationsPagination } from "@/widgets/locations-list/ui/locations-pagination";
-import { useLocationFilters } from "@/widgets/model/use-location-filters";
 import { useState } from "react";
 import { useDebounce } from "use-debounce";
+import { LocationsPagination } from "./locations-pagination";
 
 const DEBOUNCE_DELAY = 600;
 
 export function LocationsList() {
 	const [createOpen, setCreateOpen] = useState(false);
 	const [updateOpen, setUpdateOpen] = useState(false);
-	const [, setIsDelete] = useState(false);
 
 	const [selectedLocation, setSelectedLocation] = useState<Location | null>(
 		null,
@@ -47,12 +45,6 @@ export function LocationsList() {
 		},
 	);
 
-	console.log("locations data", {
-		page: filters.page,
-		totalPages,
-		locationsCount: locations.length,
-	});
-
 	return (
 		<div className="space-y-4">
 			<LocationFiltersPanel
@@ -67,15 +59,8 @@ export function LocationsList() {
 			<div className="space-y-2">
 				<h1 className="text-2xl font-bold tracking-tight">Локации</h1>
 
-				<Button
-					type="button"
-					onClick={() => setCreateOpen(true)}
-					className="ml-auto"
-				>
-					Создать локацию
-				</Button>
-
 				<CreateLocationDialog open={createOpen} setOpen={setCreateOpen} />
+
 				{selectedLocation && (
 					<UpdateLocationDialog
 						key={selectedLocation.id}
@@ -105,7 +90,6 @@ export function LocationsList() {
 									setSelectedLocation(location);
 									setUpdateOpen(true);
 								}}
-								onDelete={() => setIsDelete(true)}
 							/>
 						))}
 					</div>

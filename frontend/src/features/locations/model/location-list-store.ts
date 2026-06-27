@@ -2,13 +2,9 @@ import {
 	DepartmentId,
 	DepartmentShortDto,
 } from "@/entities/departments/model/types";
-import {
-	LocatinSortByFilter,
-	LocatinSortByFilter as LocationSortByFilter,
-	SortDirectionFilter,
-} from "@/entities/locations/api/types";
+import { LocationSortByFilter } from "@/entities/locations/model/types";
 import { PAGE_SIZE } from "@/shared/api/pagination-request";
-import { ActiveFilter } from "@/widgets/model/types";
+import { ActiveFilter, SortDirectionFilter } from "@/shared/model/filter-types";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { useShallow } from "zustand/shallow";
@@ -126,7 +122,7 @@ export const useLocationSortBy = (stateId?: LocationListId) =>
 	useLocationListStore((states) => getOrCreate(states, stateId).sortBy);
 
 export const setLocationSortBy = (
-	sortBy: LocatinSortByFilter,
+	sortBy: LocationSortByFilter,
 	stateId?: LocationListId,
 ) =>
 	useLocationListStore.setState((states) => ({

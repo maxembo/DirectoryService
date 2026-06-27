@@ -16,3 +16,5 @@ export type AddressDto = {
 	street: string;
 	house: string;
 };
+
+export type LocationSortByFilter = "name" | "created";

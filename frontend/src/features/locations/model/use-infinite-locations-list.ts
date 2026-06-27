@@ -10,7 +10,7 @@ import {
 } from "@/features/locations/model/location-list-store";
 import { EnvelopeError } from "@/shared/api/errors";
 import { useCursorRef } from "@/shared/hooks/use-cursor-ref";
-import { useInfiniteQuery as useInfinityQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { useDebounce } from "use-debounce";
 
 type Props = {
@@ -18,7 +18,7 @@ type Props = {
 	request?: GetLocationsInfinityRequest;
 };
 
-export function useInfinityLocationsList({ stateId, request }: Props) {
+export function useInfiniteLocationsList({ stateId, request }: Props) {
 	const selectedDepartments = useLocationSelectedDepartments(stateId);
 	const search = useLocationSearch(stateId);
 	const [debouncedSearch] = useDebounce(search, 600);
@@ -34,7 +34,7 @@ export function useInfinityLocationsList({ stateId, request }: Props) {
 		hasNextPage,
 		isFetchingNextPage,
 		fetchNextPage,
-	} = useInfinityQuery({
+	} = useInfiniteQuery({
 		...locationsApi.getLocationsInfinityQueryOptions({
 			departmentIds: selectedDepartments.map((department) => department.id),
 			search: debouncedSearch,
@@ -53,11 +53,11 @@ export function useInfinityLocationsList({ stateId, request }: Props) {
 
 	return {
 		locations: data?.result?.items ?? [],
-		isPending: isPending,
-		isError: isError,
+		isPending,
+		isError,
 		error: error instanceof EnvelopeError ? error : undefined,
 		isFetchingNextPage,
-		cursorRef: cursorRef,
+		cursorRef,
 		hasNextPage,
 	};
 }
