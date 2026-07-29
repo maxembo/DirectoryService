@@ -84,4 +84,19 @@ public class PositionsRepository : IPositionsRepository
             return GeneralErrors.Database(ex.Message);
         }
     }
+
+    public async Task<Result<Position, Error>> GetByIdAsync(
+        PositionId positionId, CancellationToken cancellationToken = default)
+    {
+        var position = await _dbContext.Positions
+            .Where(p => p.IsActive)
+            .FirstOrDefaultAsync(p => p.Id == positionId, cancellationToken);
+
+        if (position == null)
+        {
+            return GeneralErrors.NotFound("position", positionId.Value);
+        }
+
+        return position;
+    }
 }

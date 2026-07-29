@@ -1,4 +1,4 @@
-using DirectoryService.Domain.DepartmentPositions;
+﻿using DirectoryService.Domain.DepartmentPositions;
 using SharedService.SharedKernel;
 
 namespace DirectoryService.Domain.Positions;
@@ -38,5 +38,13 @@ public sealed class Position : BaseEntity<PositionId>, ISoftDeletable
     {
         IsActive = false;
         DeletedAt = DateTime.UtcNow;
+    }
+
+    public void Update(PositionName name, Description? description)
+    {
+        Name = name;
+        Description = description;
+
+        UpdatedAt = DateTime.UtcNow;
     }
 }

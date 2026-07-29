@@ -1,6 +1,6 @@
 ﻿using DirectoryService.Contracts.Positions.CreatePositions;
 using SharedService.Core.Abstractions;
 
-namespace DirectoryService.Application.Positions.CreatePositions;
+namespace DirectoryService.Application.Positions.Commands.CreatePositions;
 
 public record CreatePositionCommand(CreatePositionRequest Request) : ICommand;
