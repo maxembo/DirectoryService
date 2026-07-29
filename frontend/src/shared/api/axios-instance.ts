@@ -2,11 +2,10 @@ import axios from "axios";
 import { Envelope } from "./envelops";
 import { EnvelopeError } from "./errors";
 
-const API_BASE_URL = "http://localhost:5051/api";
 const HEADERS = { "Content-Type": "application/json" };
 
 export const apiClient = axios.create({
-	baseURL: API_BASE_URL,
+	baseURL: process.env.NEXT_PUBLIC_API_URL,
 	headers: HEADERS,
 	paramsSerializer: {
 		indexes: null,
@@ -15,11 +14,11 @@ export const apiClient = axios.create({
 
 apiClient.interceptors.response.use(
 	(response) => {
-		const data = response.data as Envelope;
+		const envelope = response.data as Envelope;
 
-		if (data.isError && data.errorsList) {
+		if (envelope.isError && envelope.errorsList) {
+			throw new EnvelopeError(envelope.errorsList);
 		}
-
 		return response;
 	},
 	(error) => {
