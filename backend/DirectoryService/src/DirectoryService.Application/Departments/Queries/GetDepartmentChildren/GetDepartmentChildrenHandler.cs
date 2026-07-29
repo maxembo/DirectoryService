@@ -10,18 +10,18 @@ using SharedService.Core.Validation;
 using SharedService.SharedKernel;
 using SharedService.SharedKernel.Response;
 
-namespace DirectoryService.Application.Departments.Queries.GetChildrenDepartments;
+namespace DirectoryService.Application.Departments.Queries.GetDepartmentChildren;
 
-public class GetChildrenDepartmentsHandler
-    : IQueryHandler<PaginationEnvelope<GetDepartmentDto>, GetChildrenDepartmentsQuery>
+public class GetDepartmentChildrenHandler
+    : IQueryHandler<PaginationEnvelope<GetDepartmentChildrenDto>, GetDepartmentChildrenQuery>
 {
     private readonly IDbConnectionFactory _dbConnectionFactory;
-    private readonly IValidator<GetChildrenDepartmentsQuery> _validator;
+    private readonly IValidator<GetDepartmentChildrenQuery> _validator;
     private readonly HybridCache _cache;
 
-    public GetChildrenDepartmentsHandler(
+    public GetDepartmentChildrenHandler(
         IDbConnectionFactory dbConnectionFactory,
-        IValidator<GetChildrenDepartmentsQuery> validator,
+        IValidator<GetDepartmentChildrenQuery> validator,
         HybridCache cache)
     {
         _dbConnectionFactory = dbConnectionFactory;
@@ -29,8 +29,8 @@ public class GetChildrenDepartmentsHandler
         _cache = cache;
     }
 
-    public async Task<Result<PaginationEnvelope<GetDepartmentDto>, Errors>> Handle(
-        GetChildrenDepartmentsQuery query, CancellationToken cancellationToken)
+    public async Task<Result<PaginationEnvelope<GetDepartmentChildrenDto>, Errors>> Handle(
+        GetDepartmentChildrenQuery query, CancellationToken cancellationToken)
     {
         var validationResult = await _validator.ValidateAsync(query, cancellationToken);
         if (!validationResult.IsValid)
@@ -38,11 +38,11 @@ public class GetChildrenDepartmentsHandler
             return validationResult.ToErrors();
         }
 
-        return await GetPresignedChildrenDepartmentsFromCache(query, cancellationToken);
+        return await GetPresignedDepartmentChildrenFromCache(query, cancellationToken);
     }
 
-    private async Task<PaginationEnvelope<GetDepartmentDto>> GetPresignedChildrenDepartmentsFromCache(
-        GetChildrenDepartmentsQuery query, CancellationToken cancellationToken)
+    private async Task<PaginationEnvelope<GetDepartmentChildrenDto>> GetPresignedDepartmentChildrenFromCache(
+        GetDepartmentChildrenQuery query, CancellationToken cancellationToken)
     {
         string key = CacheKeys.CreateDepartmentsKey(
             "parentId", query.ParentId.ToString(),
@@ -53,18 +53,18 @@ public class GetChildrenDepartmentsHandler
             key,
             factory: async _ =>
             {
-                var result = await GetChildrenDepartments(query);
+                var result = await GetDepartmentChildren(query);
 
                 return result.IsFailure
-                    ? new PaginationEnvelope<GetDepartmentDto>([], 0, 0, 0)
+                    ? new PaginationEnvelope<GetDepartmentChildrenDto>([], 0, 0, 0)
                     : result.Value;
             },
             tags: [CacheKeys.DEPARTMENT_KEY],
             cancellationToken: cancellationToken);
     }
 
-    private async Task<Result<PaginationEnvelope<GetDepartmentDto>>> GetChildrenDepartments(
-        GetChildrenDepartmentsQuery query)
+    private async Task<Result<PaginationEnvelope<GetDepartmentChildrenDto>>> GetDepartmentChildren(
+        GetDepartmentChildrenQuery query)
     {
         const string sql = """
                            SELECT d.id,
@@ -92,14 +92,14 @@ public class GetChildrenDepartmentsHandler
 
         long? totalCount = null;
 
-        var childrenDepartments = (await dbConnection.QueryAsync<GetDepartmentDto, bool, long, GetDepartmentDto>(
+        var childrenDepartments = (await dbConnection.QueryAsync<GetDepartmentChildrenDto, bool, long, GetDepartmentChildrenDto>(
             sql,
             splitOn: "has_more_children, total_count",
             map: (dto, children, c) =>
             {
                 totalCount ??= c;
 
-                dto = dto with { HasMoreChildren = children };
+                dto = dto with { HasChildren = children };
 
                 return dto;
             },
@@ -111,7 +111,7 @@ public class GetChildrenDepartmentsHandler
                 ChildPage = (query.Request.Page - 1) * query.Request.PageSize,
             })).ToList();
 
-        return new PaginationEnvelope<GetDepartmentDto>(
+        return new PaginationEnvelope<GetDepartmentChildrenDto>(
             childrenDepartments, totalCount ?? 0, query.Request.Page, query.Request.PageSize);
     }
 }

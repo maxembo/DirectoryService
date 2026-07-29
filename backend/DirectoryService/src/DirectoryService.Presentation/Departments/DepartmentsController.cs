@@ -2,15 +2,16 @@
 using DirectoryService.Application.Departments.Commands.MoveDepartments;
 using DirectoryService.Application.Departments.Commands.SoftDeleteDepartments;
 using DirectoryService.Application.Departments.Commands.UpdateDepartments;
-using DirectoryService.Application.Departments.Queries.GetChildrenDepartments;
+using DirectoryService.Application.Departments.Queries.GetDepartmentChildren;
 using DirectoryService.Application.Departments.Queries.GetDepartments;
-using DirectoryService.Application.Departments.Queries.GetRootDepartments;
+using DirectoryService.Application.Departments.Queries.GetDepartmentTreeRoots;
 using DirectoryService.Application.Departments.Queries.GetTopFiveDepartmentsWithMostPositions;
 using DirectoryService.Contracts.Departments.CreateDepartment;
 using DirectoryService.Contracts.Departments.GetDepartments.Dtos;
 using DirectoryService.Contracts.Departments.GetDepartments.Requests;
 using DirectoryService.Contracts.Departments.MoveDepartments;
 using DirectoryService.Contracts.Departments.UpdateDepartment;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SharedService.Core.Abstractions;
 using SharedService.Framework.EndpointResults;
@@ -28,7 +29,7 @@ public class DepartmentsController : ControllerBase
     [ProducesResponseType<Envelope>(404)]
     [ProducesResponseType<Envelope>(500)]
     [ProducesResponseType<Envelope>(401)]
-    public async Task<EndpointResult<Guid>> Create(
+    public async Task<EndpointResult<Guid>> CreateDepartment(
         [FromServices] ICommandHandler<Guid, CreateDepartmentCommand> handler,
         [FromBody] CreateDepartmentRequest request,
         CancellationToken cancellationToken)
@@ -86,31 +87,39 @@ public class DepartmentsController : ControllerBase
         return await handler.Handle(cancellationToken);
     }
 
-    [HttpGet("roots")]
-    public async Task<EndpointResult<PaginationEnvelope<GetDepartmentDto>>> GetRoots(
-        [FromServices] IQueryHandler<PaginationEnvelope<GetDepartmentDto>, GetRootDepartmentsQuery> handler,
-        [FromQuery] GetRootDepartmentsRequest request,
+    [HttpGet("tree")]
+    [EndpointSummary("Получить корневые подразделения дерева")]
+    [EndpointDescription(
+        "Возвращает только корневой уровень дерева подразделений. " +
+        "Дочерние подразделения загружаются отдельным запросом.")]
+    public async Task<EndpointResult<PaginationEnvelope<GetDepartmentTreeRootsDto>>> GetTreeRoots(
+        [FromServices] IQueryHandler<PaginationEnvelope<GetDepartmentTreeRootsDto>, GetDepartmentTreeRootsQuery> handler,
+        [FromQuery] GetDepartmentTreeRootsRequest request,
         CancellationToken cancellationToken)
     {
-        var query = new GetRootDepartmentsQuery(request);
+        var query = new GetDepartmentTreeRootsQuery(request);
 
         return await handler.Handle(query, cancellationToken);
     }
 
     [HttpGet("{parentId:guid}/children")]
-    public async Task<EndpointResult<PaginationEnvelope<GetDepartmentDto>>> GetChildrens(
+    [EndpointSummary("Получить прямые дочерние подразделения")]
+    [EndpointDescription(
+        "Возвращает только непосредственных детей выбранного подразделения. " +
+        "Вложенные уровни загружаются отдельными запросами при раскрытии дерева.")]
+    public async Task<EndpointResult<PaginationEnvelope<GetDepartmentChildrenDto>>> GetChildren(
         Guid parentId,
-        [FromServices] IQueryHandler<PaginationEnvelope<GetDepartmentDto>, GetChildrenDepartmentsQuery> handler,
-        [FromQuery] GetChildrenDepartmentsRequest departmentsRequest,
+        [FromServices] IQueryHandler<PaginationEnvelope<GetDepartmentChildrenDto>, GetDepartmentChildrenQuery> handler,
+        [FromQuery] GetDepartmentChildrenRequest request,
         CancellationToken cancellationToken)
     {
-        var query = new GetChildrenDepartmentsQuery(parentId, departmentsRequest);
+        var query = new GetDepartmentChildrenQuery(parentId, request);
 
         return await handler.Handle(query, cancellationToken);
     }
 
     [HttpGet]
-    public async Task<EndpointResult<PaginationEnvelope<DepartmentShortDto>>> Get(
+    public async Task<EndpointResult<PaginationEnvelope<DepartmentShortDto>>> GetDepartments(
         [FromServices] IQueryHandler<PaginationEnvelope<DepartmentShortDto>, GetDepartmentsQuery> handler,
         [FromQuery] GetDepartmentsRequest request,
         CancellationToken cancellationToken)
@@ -121,7 +130,7 @@ public class DepartmentsController : ControllerBase
     }
 
     [HttpDelete("{departmentId:guid}")]
-    public async Task<EndpointResult<Guid>> Delete(
+    public async Task<EndpointResult<Guid>> DeleteDepartment(
         Guid departmentId,
         [FromServices] ICommandHandler<Guid, SoftDeleteDepartmentCommand> handler,
         CancellationToken cancellationToken)

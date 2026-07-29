@@ -2,14 +2,14 @@
 using SharedService.Core.Validation;
 using SharedService.SharedKernel;
 
-namespace DirectoryService.Application.Departments.Queries.GetChildrenDepartments;
+namespace DirectoryService.Application.Departments.Queries.GetDepartmentChildren;
 
-public class GetChildrenDepartmentsValidator : AbstractValidator<GetChildrenDepartmentsQuery>
+public class GetDepartmentChildrenValidator : AbstractValidator<GetDepartmentChildrenQuery>
 {
-    public GetChildrenDepartmentsValidator()
+    public GetDepartmentChildrenValidator()
     {
         RuleFor(g => g.ParentId)
-            .NotNull()
+            .NotEmpty()
             .WithError(GeneralErrors.Required("parentId"))
             .Must(parentId => parentId != Guid.Empty)
             .WithError(GeneralErrors.Invalid("parentId"));

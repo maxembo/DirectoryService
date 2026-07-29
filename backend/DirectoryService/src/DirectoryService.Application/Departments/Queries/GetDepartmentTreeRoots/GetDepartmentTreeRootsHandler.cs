@@ -11,17 +11,19 @@ using SharedService.Core.Validation;
 using SharedService.SharedKernel;
 using SharedService.SharedKernel.Response;
 
-namespace DirectoryService.Application.Departments.Queries.GetRootDepartments;
+namespace DirectoryService.Application.Departments.Queries.GetDepartmentTreeRoots;
 
-public class GetRootDepartmentsHandler : IQueryHandler<PaginationEnvelope<GetDepartmentDto>, GetRootDepartmentsQuery>
+public class
+    GetDepartmentTreeRootsHandler : IQueryHandler<PaginationEnvelope<GetDepartmentTreeRootsDto>,
+    GetDepartmentTreeRootsQuery>
 {
     private readonly IDbConnectionFactory _dbConnectionFactory;
-    private readonly IValidator<GetRootDepartmentsRequest> _validator;
+    private readonly IValidator<GetDepartmentTreeRootsRequest> _validator;
     private readonly HybridCache _cache;
 
-    public GetRootDepartmentsHandler(
+    public GetDepartmentTreeRootsHandler(
         IDbConnectionFactory dbConnectionFactory,
-        IValidator<GetRootDepartmentsRequest> validator,
+        IValidator<GetDepartmentTreeRootsRequest> validator,
         HybridCache cache)
     {
         _dbConnectionFactory = dbConnectionFactory;
@@ -29,8 +31,8 @@ public class GetRootDepartmentsHandler : IQueryHandler<PaginationEnvelope<GetDep
         _cache = cache;
     }
 
-    public async Task<Result<PaginationEnvelope<GetDepartmentDto>, Errors>> Handle(
-        GetRootDepartmentsQuery query, CancellationToken cancellationToken)
+    public async Task<Result<PaginationEnvelope<GetDepartmentTreeRootsDto>, Errors>> Handle(
+        GetDepartmentTreeRootsQuery query, CancellationToken cancellationToken)
     {
         var validationResult = await _validator.ValidateAsync(query.Request, cancellationToken);
         if (!validationResult.IsValid)
@@ -38,11 +40,11 @@ public class GetRootDepartmentsHandler : IQueryHandler<PaginationEnvelope<GetDep
             return validationResult.ToErrors();
         }
 
-        return await GetPresignedRootDepartmentsFromCache(query, cancellationToken);
+        return await GetPresignedDepartmentTreeRootsFromCache(query, cancellationToken);
     }
 
-    private async Task<PaginationEnvelope<GetDepartmentDto>> GetPresignedRootDepartmentsFromCache(
-        GetRootDepartmentsQuery query, CancellationToken cancellationToken)
+    private async Task<PaginationEnvelope<GetDepartmentTreeRootsDto>> GetPresignedDepartmentTreeRootsFromCache(
+        GetDepartmentTreeRootsQuery query, CancellationToken cancellationToken)
     {
         string key = CacheKeys.CreateDepartmentsKey(
             "prefetch", query.Request.Prefetch.ToString(),
@@ -53,17 +55,17 @@ public class GetRootDepartmentsHandler : IQueryHandler<PaginationEnvelope<GetDep
             key,
             factory: async _ =>
             {
-                var result = await GetRootDepartments(query);
+                var result = await GetDepartmentTreeRoots(query);
                 return result.IsFailure
-                    ? new PaginationEnvelope<GetDepartmentDto>([], 0, 0, 0)
+                    ? new PaginationEnvelope<GetDepartmentTreeRootsDto>([], 0, 0, 0)
                     : result.Value;
             },
             tags: [CacheKeys.DEPARTMENT_KEY],
             cancellationToken: cancellationToken);
     }
 
-    private async Task<Result<PaginationEnvelope<GetDepartmentDto>, Errors>> GetRootDepartments(
-        GetRootDepartmentsQuery query)
+    private async Task<Result<PaginationEnvelope<GetDepartmentTreeRootsDto>, Errors>> GetDepartmentTreeRoots(
+        GetDepartmentTreeRootsQuery query)
     {
         const string sql = """
                            WITH roots AS (SELECT d.id,
@@ -137,33 +139,34 @@ public class GetRootDepartmentsHandler : IQueryHandler<PaginationEnvelope<GetDep
 
         long? totalCount = null;
 
-        var departments = (await dbConnection.QueryAsync<GetDepartmentDto, long, bool, GetDepartmentDto>(
-            sql,
-            splitOn: "total_count, has_more_children",
-            map: (dto, c, children) =>
-            {
-                totalCount ??= c;
+        var departments =
+            (await dbConnection.QueryAsync<GetDepartmentTreeRootsDto, long, bool, GetDepartmentTreeRootsDto>(
+                sql,
+                splitOn: "total_count, has_more_children",
+                map: (dto, c, children) =>
+                {
+                    totalCount ??= c;
 
-                dto = dto with { HasMoreChildren = children };
+                    dto = dto with { HasChildren = children };
 
-                return dto;
-            },
-            param: new
-            {
-                RootSize = query.Request.PageSize,
-                RootPage = (query.Request.Page - 1) * query.Request.PageSize,
-                Prefetch = query.Request.Prefetch,
-            })).ToList();
+                    return dto;
+                },
+                param: new
+                {
+                    RootSize = query.Request.PageSize,
+                    RootPage = (query.Request.Page - 1) * query.Request.PageSize,
+                    Prefetch = query.Request.Prefetch,
+                })).ToList();
 
         var departmentDictionary = departments.ToDictionary(d => d.Id);
-        List<GetDepartmentDto> roots = [];
+        List<GetDepartmentTreeRootsDto> roots = [];
 
         foreach (var department in departmentDictionary.Values)
         {
             if (department.ParentId.HasValue &&
                 departmentDictionary.TryGetValue(department.ParentId.Value, out var parent))
             {
-                parent.Childrens.Add(department.Id);
+                parent.Children.Add(department.Id);
             }
             else
             {
@@ -171,7 +174,7 @@ public class GetRootDepartmentsHandler : IQueryHandler<PaginationEnvelope<GetDep
             }
         }
 
-        return new PaginationEnvelope<GetDepartmentDto>(
+        return new PaginationEnvelope<GetDepartmentTreeRootsDto>(
             roots, totalCount ?? 0, query.Request.Page, query.Request.PageSize);
     }
 }
