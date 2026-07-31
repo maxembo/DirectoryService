@@ -10,7 +10,7 @@ using SharedService.Core.Abstractions;
 using SharedService.Core.Validation;
 using SharedService.SharedKernel;
 
-namespace DirectoryService.Application.Positions.CreatePositions;
+namespace DirectoryService.Application.Positions.Commands.CreatePositions;
 
 public class CreatePositionHandler : ICommandHandler<Guid, CreatePositionCommand>
 {
@@ -65,7 +65,7 @@ public class CreatePositionHandler : ICommandHandler<Guid, CreatePositionCommand
                 .ToErrors();
         }
 
-        _logger.LogInformation("Location {Position.Id} has been created.", position.Id);
+        _logger.LogInformation("Position {Position.Id} has been created.", position.Id);
 
         return positionId.Value;
     }

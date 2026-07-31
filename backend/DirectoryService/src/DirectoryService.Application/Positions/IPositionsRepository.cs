@@ -13,4 +13,6 @@ public interface IPositionsRepository
         DepartmentId departmentId, CancellationToken cancellationToken = default);
 
     Task<UnitResult<Error>> DeletePositionsMarkDelete(CancellationToken cancellationToken = default);
+
+    Task<Result<Position, Error>> GetByIdAsync(PositionId positionId, CancellationToken cancellationToken = default);
 }

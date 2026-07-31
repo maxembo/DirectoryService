@@ -3,11 +3,11 @@ using FluentValidation;
 using SharedService.Core.Validation;
 using SharedService.SharedKernel;
 
-namespace DirectoryService.Application.Departments.Queries.GetRootDepartments;
+namespace DirectoryService.Application.Departments.Queries.GetDepartmentTreeRoots;
 
-public class GetRootsDepartmentsValidator : AbstractValidator<GetRootDepartmentsRequest>
+public class GetDepartmentTreeRootsValidator : AbstractValidator<GetDepartmentTreeRootsRequest>
 {
-    public GetRootsDepartmentsValidator()
+    public GetDepartmentTreeRootsValidator()
     {
         RuleFor(g => g.Page)
             .GreaterThanOrEqualTo(1)

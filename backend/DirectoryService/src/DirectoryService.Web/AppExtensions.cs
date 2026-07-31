@@ -8,12 +8,20 @@ public static class AppExtensions
 {
     public static IApplicationBuilder Configure(this WebApplication app)
     {
-        app.UseCors(builder =>
-        {
-            builder.WithOrigins("http://localhost:3000")
-                .AllowAnyHeader()
-                .AllowAnyMethod();
-        });
+        string[] allowedOrigins = app.Configuration["CORS_ALLOWED_ORIGINS"]?
+                                      .Split(
+                                          ',',
+                                          StringSplitOptions.RemoveEmptyEntries |
+                                          StringSplitOptions.TrimEntries)
+                                  ?? [];
+
+        app.UseCors(
+            builder =>
+            {
+                builder.WithOrigins(allowedOrigins)
+                    .AllowAnyHeader()
+                    .AllowAnyMethod();
+            });
 
         app.UseSerilogRequestLogging();
 

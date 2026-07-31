@@ -5,6 +5,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/shared/components/ui/select";
+import { cn } from "@/shared/lib/utils";
 import { FilterOption } from "@/shared/model/filter-types";
 
 export type FilterSelectProps<T extends string> = {
@@ -13,6 +14,7 @@ export type FilterSelectProps<T extends string> = {
 	items: Array<FilterOption<T>>;
 	label?: string;
 	placeholder?: string;
+	className?: string;
 };
 
 export function FilterSelect<T extends string>({
@@ -21,9 +23,10 @@ export function FilterSelect<T extends string>({
 	items,
 	label,
 	placeholder,
+	className,
 }: FilterSelectProps<T>) {
 	return (
-		<div className="flex flex-col gap-2">
+		<div className={cn("flex flex-col gap-2", className)}>
 			{label && <label className="text-sm font-medium">{label}</label>}
 			<Select
 				value={value}

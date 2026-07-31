@@ -21,3 +21,11 @@ export interface GetDepartmentsInfinityRequest extends InfinityScrollRequest {
 	sortBy?: string;
 	sortDirection?: SortDirectionFilter;
 }
+
+export interface GetDepartmentTreeRootsRequest extends PaginationRequest {
+	prefetch?: number;
+}
+
+export interface GetDepartmentChildrenRequest extends PaginationRequest {
+	parentId: string;
+}

@@ -11,6 +11,16 @@ export type DepartmentShortDto = {
 	deletedAt: string;
 };
 
+export type DepartmentTreeDto = {
+	id: DepartmentId;
+	name: string;
+	identifier: string;
+	parentId: DepartmentId | null;
+	isActive: boolean;
+	depth: number;
+	hasChildren: boolean;
+};
+
 export type DepartmentSortByFilter = "name" | "path" | "created";
 
 export type DepartmentParentFilter = "all" | "parent" | "children";
