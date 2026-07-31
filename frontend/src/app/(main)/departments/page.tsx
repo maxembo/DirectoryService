@@ -1,5 +1,5 @@
-import { Departments } from "@/widgets/department-positions/ui/departments";
+import { DepartmentPositions } from "@/widgets/department-positions/ui/department-positions";
 
 export default function DepartmentsPage() {
-	return <Departments />;
+	return <DepartmentPositions />;
 }

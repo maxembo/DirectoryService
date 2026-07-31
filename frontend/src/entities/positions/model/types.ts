@@ -15,4 +15,4 @@ export type PositionSortByFilter =
 	| "created"
 	| "updated"
 	| "status"
-	| "departmentcount";
+	| "department_count";

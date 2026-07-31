@@ -65,7 +65,7 @@ public class GetPositionsHandler : IQueryHandler<PaginationEnvelope<GetPositions
             "created" => "p.created_at",
             "updated" => "p.updated_at",
             "status" => "p.is_active",
-            "departmentcount" => "department_count",
+            "department_count" => "department_count",
             _ => "p.name",
         };
 

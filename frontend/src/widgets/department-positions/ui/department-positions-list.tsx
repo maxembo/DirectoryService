@@ -3,9 +3,9 @@ import {
 	DepartmentTreeId,
 	useDepartmentTreeSelectedId,
 } from "@/features/departments/department-tree/model/department-tree-store";
-import { useDepartmentPositionsList } from "@/features/positions/model/use-department-positions-list";
 import { PositionFilters } from "@/features/positions/ui/position-filters";
 import { Spinner } from "@/shared/components/ui/spinner";
+import { useDepartmentPositionsList } from "@/widgets/department-positions/model/use-department-positions-list";
 import { ListEmpty } from "@/widgets/list-empty";
 import { ListError } from "@/widgets/list-error";
 import { DepartmentPositionCard } from "./department-position-card";

@@ -14,7 +14,7 @@ import {
 	usePositionSearch,
 	usePositionSortBy,
 	usePositionSortDirection,
-} from "./position-list-store";
+} from "../../../features/positions/model/position-list-store";
 
 type Props = {
 	stateId?: PositionListId;

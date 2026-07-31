@@ -23,7 +23,7 @@ const positionSortByOptions: Array<FilterOption<PositionSortByFilter>> = [
 	{ value: "created", label: "По дате создания" },
 	{ value: "updated", label: "По дате обновления" },
 	{ value: "status", label: "По статусу" },
-	{ value: "departmentcount", label: "По количеству отделов" },
+	{ value: "department_count", label: "По количеству отделов" },
 ];
 
 export function PositionFilters({ stateId }: { stateId?: PositionListId }) {

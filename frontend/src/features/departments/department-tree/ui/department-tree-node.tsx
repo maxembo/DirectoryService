@@ -4,58 +4,32 @@ import { DepartmentTreeDto } from "@/entities/departments/model/types";
 import { Button } from "@/shared/components/ui/button";
 import { cn } from "@/shared/lib/utils";
 import { ChevronRight, LoaderCircle } from "lucide-react";
-import {
-	loadNextDepartmentChildrenPage,
-	setDepartmentTreeSelectedId,
-	toggleDepartmentTreeExpandedId,
-	useDepartmentTreeChildrenByParentId,
-	useDepartmentTreeExpandedIds,
-	useDepartmentTreeLoadingIds,
-	useDepartmentTreeSelectedId,
-	useNextPageByParentId,
-} from "../model/department-tree-store";
+import { DepartmentTreeId } from "../model/department-tree-store";
+import { useDepartmentTreeNode } from "../model/use-department-tree-node";
 
 const TREE_INDENT = 22;
 
 type Props = {
 	department: DepartmentTreeDto;
-	stateId?: string;
 	depth: number;
+	stateId?: DepartmentTreeId;
 };
 
 export function DepartmentTreeNode({ stateId, department, depth }: Props) {
-	const selectedId = useDepartmentTreeSelectedId(stateId);
-
-	const expandedIds = useDepartmentTreeExpandedIds(stateId);
-	const loadingIds = useDepartmentTreeLoadingIds(stateId);
-	const childrenByParentId = useDepartmentTreeChildrenByParentId(stateId);
-	const nextPageByParentId = useNextPageByParentId(stateId);
-
-	const children = childrenByParentId[department.id] ?? [];
-	const isSelected = selectedId === department.id;
-	const isExpanded = expandedIds.includes(department.id);
-	const isLoading = loadingIds.includes(department.id);
-	const hasChildren = department.hasMoreChildren;
-
-	const nextPage = nextPageByParentId[department.id];
-
-	const canLoadMore = typeof nextPage === "number";
-
-	const handleToggle = () => {
-		void toggleDepartmentTreeExpandedId(department.id, hasChildren, stateId);
-	};
-
-	const handleSelect = () => {
-		setDepartmentTreeSelectedId(department.id, stateId);
-	};
+	const {
+		children,
+		isSelected,
+		isExpanded,
+		hasChildren,
+		isLoading,
+		canLoadMore,
+		handleSelect,
+		handleToggle,
+		handleLoadMore,
+	} = useDepartmentTreeNode({ department, stateId });
 
 	return (
-		<li
-			role="treeitem"
-			aria-selected={isSelected}
-			aria-expanded={hasChildren ? isExpanded : undefined}
-			className="relative list-none"
-		>
+		<li className="relative list-none">
 			<div
 				className={cn(
 					"group relative flex min-h-10 items-center gap-1 rounded-md pr-2 transition-colors",
@@ -141,7 +115,7 @@ export function DepartmentTreeNode({ stateId, department, depth }: Props) {
 			</div>
 
 			{isExpanded && (
-				<ul role="group" className="space-y-0.5">
+				<ul className="space-y-0.5">
 					{children.map((child) => (
 						<DepartmentTreeNode
 							key={child.id}
@@ -155,13 +129,11 @@ export function DepartmentTreeNode({ stateId, department, depth }: Props) {
 						<TreeNodeLoading depth={depth + 1} />
 					)}
 					{canLoadMore && (
-						<Button
-							onClick={() =>
-								loadNextDepartmentChildrenPage(department.id, stateId)
-							}
-						>
-							{isLoading ? "Загрузка..." : "Показать ещё"}
-						</Button>
+						<li>
+							<Button onClick={handleLoadMore}>
+								{isLoading ? "Загрузка..." : "Показать ещё"}
+							</Button>
+						</li>
 					)}
 				</ul>
 			)}

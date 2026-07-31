@@ -18,7 +18,7 @@ export type DepartmentTreeDto = {
 	parentId: DepartmentId | null;
 	isActive: boolean;
 	depth: number;
-	hasMoreChildren: boolean;
+	hasChildren: boolean;
 };
 
 export type DepartmentSortByFilter = "name" | "path" | "created";
