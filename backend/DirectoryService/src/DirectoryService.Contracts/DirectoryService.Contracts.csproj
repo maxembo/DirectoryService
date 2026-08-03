@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="SharedService.Core" Version="0.0.2"/>
+    <PackageReference Include="SharedService.Core" />
   </ItemGroup>
 
 </Project>
