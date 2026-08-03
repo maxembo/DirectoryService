@@ -44,7 +44,7 @@ public class PositionsRepository : IPositionsRepository
                              AND dp.department_id = @departmentId
                              AND NOT EXISTS (SELECT 1
                                              FROM department_positions dp2
-                                                      JOIN departments d ON dp.department_id = d.id
+                                                      JOIN departments d ON dp2.department_id = d.id
                                              WHERE dp2.position_id = dp.position_id
                                                AND d.is_active = true
                                                AND d.id <> @departmentId)

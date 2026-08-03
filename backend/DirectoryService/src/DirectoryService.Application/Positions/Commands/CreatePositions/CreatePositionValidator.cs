@@ -17,9 +17,11 @@ public class CreatePositionValidator : AbstractValidator<CreatePositionRequest>
             .MustBeValueObject(Description.Create);
 
         RuleFor(c => c.DepartmentIds)
-            .Must(departmentIds => departmentIds.Distinct().Count() == departmentIds.Length)
-            .WithError(GeneralErrors.ArrayContainsDuplicates("position.departmentIds"))
+            .Cascade(CascadeMode.Stop)
             .NotEmpty()
-            .WithError(GeneralErrors.Required("departmentIds"));
+            .WithError(GeneralErrors.Required("position.departmentIds"))
+            .Must(departmentIds =>
+                departmentIds.Distinct().Count() == departmentIds.Length)
+            .WithError(GeneralErrors.ArrayContainsDuplicates("position.departmentIds"));
     }
 }

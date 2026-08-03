@@ -2,8 +2,10 @@
 using CSharpFunctionalExtensions;
 using Dapper;
 using DirectoryService.Contracts.Positions.GetPositions;
+using FluentValidation;
 using SharedService.Core.Abstractions;
 using SharedService.Core.Database;
+using SharedService.Core.Validation;
 using SharedService.SharedKernel;
 using SharedService.SharedKernel.Response;
 
@@ -12,16 +14,26 @@ namespace DirectoryService.Application.Positions.Queries.GetPositions;
 public class GetPositionsHandler : IQueryHandler<PaginationEnvelope<GetPositionsDto>, GetPositionsQuery>
 {
     private readonly IDbConnectionFactory _dbConnectionFactory;
+    private readonly IValidator<GetPositionsRequest> _validator;
 
-    public GetPositionsHandler(IDbConnectionFactory dbConnectionFactory)
+    public GetPositionsHandler(
+        IDbConnectionFactory dbConnectionFactory,
+        IValidator<GetPositionsRequest> validator)
     {
         _dbConnectionFactory = dbConnectionFactory;
+        _validator = validator;
     }
 
     public async Task<Result<PaginationEnvelope<GetPositionsDto>, Errors>> Handle(
         GetPositionsQuery query, CancellationToken cancellationToken)
     {
         var request = query.Request;
+
+        var validationResult = await _validator.ValidateAsync(request, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            return validationResult.ToErrors();
+        }
 
         var parameters = new DynamicParameters();
         var conditions = new List<string>();
@@ -77,10 +89,12 @@ public class GetPositionsHandler : IQueryHandler<PaginationEnvelope<GetPositions
 
         var connection = _dbConnectionFactory.GetDbConnection();
 
-        long totalCount = 0;
-
-        var positions = await connection.QueryAsync<GetPositionsDto, long, GetPositionsDto>(
+        var command = new CommandDefinition(
             $"""
+             SELECT COUNT(*)
+             FROM positions p
+             {whereClause};
+
              SELECT p.id,
                     p.name,
                     p.description,
@@ -92,23 +106,20 @@ public class GetPositionsHandler : IQueryHandler<PaginationEnvelope<GetPositions
                      FROM department_positions dp
                               JOIN departments d ON d.id = dp.department_id
                      WHERE dp.position_id = p.id
-                       AND d.is_active = true) AS department_count,
-                    COUNT(*) OVER ()           as total_count
-             FROM positions p 
+                       AND d.is_active = true) AS department_count
+             FROM positions p
              {whereClause}
              {orderClause}
              LIMIT @pageSize OFFSET @page
              """,
-            splitOn: "total_count",
-            map: (position, count) =>
-            {
-                totalCount = count;
+            parameters,
+            cancellationToken: cancellationToken);
 
-                return position;
-            },
-            param: parameters);
+        await using var result = await connection.QueryMultipleAsync(command);
 
-        return new PaginationEnvelope<GetPositionsDto>(
-            positions.ToList(), totalCount, request.Page, request.PageSize);
+        long totalCount = await result.ReadSingleAsync<long>();
+        var positions = await result.ReadAsync<GetPositionsDto>();
+
+        return new PaginationEnvelope<GetPositionsDto>(positions.ToList(), totalCount, request.Page, request.PageSize);
     }
 }

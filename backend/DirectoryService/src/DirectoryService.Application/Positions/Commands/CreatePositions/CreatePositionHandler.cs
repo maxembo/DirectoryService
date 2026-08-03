@@ -53,7 +53,7 @@ public class CreatePositionHandler : ICommandHandler<Guid, CreatePositionCommand
             return checkExistingAndActiveResult.Error;
 
         var departmentIds = command.Request.DepartmentIds.Select(
-                di => new DepartmentPosition(DepartmentPositionId.CreateNew(), DepartmentId.Create(di), positionId))
+                id => new DepartmentPosition(DepartmentPositionId.CreateNew(), DepartmentId.Create(id), positionId))
             .ToList();
 
         var position = new Position(positionId, name, description, departmentIds);
@@ -61,8 +61,7 @@ public class CreatePositionHandler : ICommandHandler<Guid, CreatePositionCommand
         var addPositionResult = await _positionsRepository.AddAsync(position, cancellationToken);
         if (addPositionResult.IsFailure)
         {
-            return Error.Failure(null, addPositionResult.Error.Message)
-                .ToErrors();
+            return addPositionResult.Error.ToErrors();
         }
 
         _logger.LogInformation("Position {Position.Id} has been created.", position.Id);
