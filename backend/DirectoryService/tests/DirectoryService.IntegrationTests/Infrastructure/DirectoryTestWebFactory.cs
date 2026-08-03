@@ -70,10 +70,10 @@ public class DirectoryTestWebFactory : WebApplicationFactory<Program>, IAsyncLif
                 services.AddScoped<DirectoryServiceDbContext>(
                     _ => new DirectoryServiceDbContext(_dbContainer.GetConnectionString()));
 
-                services.AddScoped<IReadDbContext, DirectoryServiceDbContext>(
+                services.AddScoped<IReadDbContext>(
                     _ => new DirectoryServiceDbContext(_dbContainer.GetConnectionString()));
 
-                services.AddScoped<IDbConnectionFactory, DirectoryServiceDbContext>(
+                services.AddScoped<IDbConnectionFactory>(
                     _ => new DirectoryServiceDbContext(_dbContainer.GetConnectionString()));
             });
     }
