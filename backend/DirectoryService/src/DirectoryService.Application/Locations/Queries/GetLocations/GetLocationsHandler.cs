@@ -45,7 +45,7 @@ public class GetLocationsHandler : IQueryHandler<PaginationEnvelope<GetLocations
         if (!string.IsNullOrWhiteSpace(query.Request.Search))
         {
             locationQuery = locationQuery.Where(l => EF.Functions.Like(
-                l.Name.Value,
+                EF.Property<string>(l.Name, nameof(l.Name.Value)),
                 $"%{query.Request.Search.Trim()}%"));
         }
 
@@ -60,11 +60,15 @@ public class GetLocationsHandler : IQueryHandler<PaginationEnvelope<GetLocations
         locationQuery = query.Request.SortBy?.ToLower() switch
         {
             "created" => isAsc
-                ? locationQuery.OrderBy(l => l.CreatedAt).ThenBy(l => l.Id.Value)
-                : locationQuery.OrderByDescending(l => l.CreatedAt).ThenByDescending(l => l.Id.Value),
+                ? locationQuery.OrderBy(l => l.CreatedAt).ThenBy(l => l.Id)
+                : locationQuery.OrderByDescending(l => l.CreatedAt).ThenByDescending(l => l.Id),
             "name" or _ => isAsc
-                ? locationQuery.OrderBy(l => l.Name.Value).ThenBy(l => l.Id.Value)
-                : locationQuery.OrderByDescending(l => l.Name.Value).ThenByDescending(l => l.Id.Value),
+                ? locationQuery
+                    .OrderBy(l => l.Name.Value)
+                    .ThenBy(l => l.Id)
+                : locationQuery
+                    .OrderByDescending(l => l.Name.Value)
+                    .ThenByDescending(l => l.Id),
         };
 
         locationQuery = locationQuery
