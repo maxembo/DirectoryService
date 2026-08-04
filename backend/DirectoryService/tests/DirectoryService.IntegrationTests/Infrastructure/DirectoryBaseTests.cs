@@ -177,4 +177,52 @@ public abstract class DirectoryBaseTests : IClassFixture<DirectoryTestWebFactory
             await dbContext.SaveChangesAsync();
         });
     }
+
+    protected async Task MarkDepartmentAsDeletedAt(DepartmentId departmentId, DateTime deletedAt)
+    {
+        await ExecuteInDb(async dbContext =>
+        {
+            var department = await dbContext.Departments.SingleAsync(d => d.Id == departmentId);
+
+            department.MarkAsDelete();
+
+            dbContext.Entry(department)
+                .Property(d => d.DeletedAt)
+                .CurrentValue = deletedAt;
+
+            await dbContext.SaveChangesAsync();
+        });
+    }
+
+    protected async Task MarkLocationAsDeletedAt(LocationId departmentId, DateTime deletedAt)
+    {
+        await ExecuteInDb(async dbContext =>
+        {
+            var department = await dbContext.Locations.SingleAsync(d => d.Id == departmentId);
+
+            department.MarkAsDelete();
+
+            dbContext.Entry(department)
+                .Property(d => d.DeletedAt)
+                .CurrentValue = deletedAt;
+
+            await dbContext.SaveChangesAsync();
+        });
+    }
+
+    protected async Task MarkPositionAsDeletedAt(PositionId positionId, DateTime deletedAt)
+    {
+        await ExecuteInDb(async dbContext =>
+        {
+            var position = await dbContext.Positions.SingleAsync(p => p.Id == positionId);
+
+            position.MarkAsDelete();
+
+            dbContext.Entry(position)
+                .Property(p => p.DeletedAt)
+                .CurrentValue = deletedAt;
+
+            await dbContext.SaveChangesAsync();
+        });
+    }
 }
