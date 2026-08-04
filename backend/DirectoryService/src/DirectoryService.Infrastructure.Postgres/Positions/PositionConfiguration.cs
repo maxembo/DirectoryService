@@ -23,6 +23,7 @@ public class PositionConfiguration : IEntityTypeConfiguration<Position>
             p => p.Name, pb =>
             {
                 pb.Property(p => p.Value)
+                    .HasColumnType("citext")
                     .HasMaxLength(Constants.MAX_POSITION_NAME_LENGTH)
                     .IsRequired()
                     .HasColumnName("name");

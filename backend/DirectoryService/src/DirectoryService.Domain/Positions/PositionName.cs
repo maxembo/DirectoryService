@@ -12,17 +12,19 @@ public sealed record PositionName
 
     public static Result<PositionName, Error> Create(string value)
     {
-        if (string.IsNullOrWhiteSpace(value))
+        string? normalizedValue = value?.Trim();
+
+        if (string.IsNullOrEmpty(normalizedValue))
         {
-            return GeneralErrors.Required("position name");
+            return GeneralErrors.Required("position.name");
         }
 
-        if (value.Length is > Constants.MAX_POSITION_NAME_LENGTH or < Constants.MIN_TEXT_LENGTH)
+        if (normalizedValue.Length is > Constants.MAX_POSITION_NAME_LENGTH or < Constants.MIN_TEXT_LENGTH)
         {
             return GeneralErrors.LengthOutOfRange(
-                "position name", Constants.MAX_POSITION_NAME_LENGTH, Constants.MIN_TEXT_LENGTH);
+                "position.name", Constants.MIN_TEXT_LENGTH, Constants.MAX_POSITION_NAME_LENGTH);
         }
 
-        return new PositionName(value);
+        return new PositionName(normalizedValue);
     }
 }

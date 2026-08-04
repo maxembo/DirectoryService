@@ -12,10 +12,11 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Dapper" Version="2.1.66" />
-      <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.10" />
-      <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.10" />
-      <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+      <PackageReference Include="Dapper" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+      <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Console" />
+      <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
     </ItemGroup>
 
 </Project>

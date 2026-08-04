@@ -29,7 +29,7 @@ public sealed record Identifier
         if (value.Length is < Constants.MIN_TEXT_LENGTH or > Constants.MAX_DEPARTMENT_IDENTIFIER_LENGTH)
         {
             return GeneralErrors.LengthOutOfRange(
-                "identifier", Constants.MAX_DEPARTMENT_IDENTIFIER_LENGTH, Constants.MIN_TEXT_LENGTH);
+                "identifier", Constants.MIN_TEXT_LENGTH, Constants.MAX_DEPARTMENT_IDENTIFIER_LENGTH);
         }
 
         return new Identifier(value);
