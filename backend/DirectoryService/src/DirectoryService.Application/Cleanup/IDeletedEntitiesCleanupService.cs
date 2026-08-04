@@ -1,9 +1,9 @@
 ﻿using CSharpFunctionalExtensions;
 using SharedService.SharedKernel;
 
-namespace DirectoryService.Application;
+namespace DirectoryService.Application.Cleanup;
 
-public interface IDeleteDepartmentsService
+public interface IDeletedEntitiesCleanupService
 {
     public Task<UnitResult<Error>> Process(CancellationToken cancelToken = default);
 }

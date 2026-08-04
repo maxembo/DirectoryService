@@ -1,15 +1,16 @@
 ﻿using System.Reflection;
 using Dapper;
 using DirectoryService.Application;
+using DirectoryService.Application.Cleanup;
 using DirectoryService.Application.Database;
 using DirectoryService.Application.Departments;
 using DirectoryService.Application.Locations;
 using DirectoryService.Application.Positions;
+using DirectoryService.Infrastructure.Postgres.Cleanup;
 using DirectoryService.Infrastructure.Postgres.Database;
 using DirectoryService.Infrastructure.Postgres.Departments;
 using DirectoryService.Infrastructure.Postgres.Locations;
 using DirectoryService.Infrastructure.Postgres.Positions;
-using DirectoryService.Infrastructure.Postgres.SoftDelete;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SharedService.Core.Database;
@@ -83,11 +84,11 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        services.AddScoped<IDeleteDepartmentsService, DeleteDepartmentsService>();
+        services.AddScoped<IDeletedEntitiesCleanupService, DeletedEntitiesCleanupService>();
 
-        services.AddHostedService<CleaningInactiveDepartmentsBackgroundService>();
+        services.AddHostedService<DeletedEntitiesCleanupBackgroundService>();
 
-        services.Configure<InactiveDepartmentsCleanupOptions>(
+        services.Configure<DeletedEntitiesCleanupOptions>(
             configuration.GetSection(INACTIVE_DEPARTMENTS_CLEANUP_SECTION));
 
         return services;

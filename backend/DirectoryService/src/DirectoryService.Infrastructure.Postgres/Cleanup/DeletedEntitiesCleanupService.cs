@@ -1,21 +1,21 @@
 ﻿using CSharpFunctionalExtensions;
-using DirectoryService.Application;
+using DirectoryService.Application.Cleanup;
 using DirectoryService.Application.Departments;
 using DirectoryService.Application.Locations;
 using DirectoryService.Application.Positions;
 using SharedService.Core.Database;
 using SharedService.SharedKernel;
 
-namespace DirectoryService.Infrastructure.Postgres.SoftDelete;
+namespace DirectoryService.Infrastructure.Postgres.Cleanup;
 
-public class DeleteDepartmentsService : IDeleteDepartmentsService
+public class DeletedEntitiesCleanupService : IDeletedEntitiesCleanupService
 {
     private readonly ITransactionManager _transactionManager;
     private readonly IDepartmentsRepository _departmentsRepository;
     private readonly IPositionsRepository _positionsRepository;
     private readonly ILocationsRepository _locationsRepository;
 
-    public DeleteDepartmentsService(
+    public DeletedEntitiesCleanupService(
         ITransactionManager transactionManager,
         IDepartmentsRepository departmentsRepository,
         IPositionsRepository positionsRepository,
