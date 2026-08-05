@@ -272,11 +272,10 @@ public class DepartmentsRepository : IDepartmentsRepository
         try
         {
             await _dbContext.DepartmentLocations
-                .Where(
-                    dl => _dbContext.Departments
-                        .Where(d => d.IsActive == false && d.DeletedAt < DateTime.UtcNow.AddMonths(-1))
-                        .Select(d => d.Id)
-                        .Contains(dl.DepartmentId))
+                .Where(dl => _dbContext.Departments
+                    .Where(d => d.IsActive == false && d.DeletedAt < DateTime.UtcNow.AddMonths(-1))
+                    .Select(d => d.Id)
+                    .Contains(dl.DepartmentId))
                 .ExecuteDeleteAsync(cancellationToken);
 
             return UnitResult.Success<Error>();
@@ -295,11 +294,10 @@ public class DepartmentsRepository : IDepartmentsRepository
         try
         {
             await _dbContext.DepartmentPositions
-                .Where(
-                    dl => _dbContext.Departments
-                        .Where(d => d.IsActive == false && d.DeletedAt < DateTime.UtcNow.AddMonths(-1))
-                        .Select(d => d.Id)
-                        .Contains(dl.DepartmentId))
+                .Where(dl => _dbContext.Departments
+                    .Where(d => d.IsActive == false && d.DeletedAt < DateTime.UtcNow.AddMonths(-1))
+                    .Select(d => d.Id)
+                    .Contains(dl.DepartmentId))
                 .ExecuteDeleteAsync(cancellationToken);
 
             return UnitResult.Success<Error>();
@@ -315,39 +313,74 @@ public class DepartmentsRepository : IDepartmentsRepository
     public async Task<UnitResult<Error>> UpdatePathsAfterDelete(CancellationToken cancellationToken = default)
     {
         const string sql = """
-                           WITH outdated_departments AS (SELECT *
-                                                         FROM departments d
-                                                         WHERE d.is_active = false
-                                                           AND d.deleted_at < (NOW() - INTERVAL '1 month'))
+                           WITH RECURSIVE expired AS MATERIALIZED (
+                               SELECT id
+                               FROM departments
+                               WHERE is_active = false
+                                 AND deleted_at < (NOW() - INTERVAL '1 month')
+                           ),
+                           rebuilt AS (
+                               SELECT d.id,
+                                      e.id IS NOT NULL AS is_expired,
+                                      CASE WHEN e.id IS NULL THEN d.id END AS survivor_id,
+                                      CASE
+                                          WHEN e.id IS NULL
+                                              THEN subpath(d.path, nlevel(d.path) - 1, 1)
+                                      END AS survivor_path,
+                                      NULL::uuid AS new_parent_id,
+                                      CASE
+                                          WHEN e.id IS NULL
+                                              THEN subpath(d.path, nlevel(d.path) - 1, 1)
+                                      END AS new_path,
+                                      CASE WHEN e.id IS NULL THEN 0::smallint END AS new_depth
+                               FROM departments d
+                               LEFT JOIN expired e ON e.id = d.id
+                               WHERE d.parent_id IS NULL
 
+                               UNION ALL
+
+                               SELECT child.id,
+                                      e.id IS NOT NULL AS is_expired,
+                                      CASE
+                                          WHEN e.id IS NULL THEN child.id
+                                          ELSE parent.survivor_id
+                                      END AS survivor_id,
+                                      CASE
+                                          WHEN e.id IS NULL THEN paths.new_path
+                                          ELSE parent.survivor_path
+                                      END AS survivor_path,
+                                      CASE
+                                          WHEN e.id IS NULL THEN parent.survivor_id
+                                      END AS new_parent_id,
+                                      CASE
+                                          WHEN e.id IS NULL THEN paths.new_path
+                                      END AS new_path,
+                                      CASE
+                                          WHEN e.id IS NULL
+                                              THEN (nlevel(paths.new_path) - 1)::smallint
+                                      END AS new_depth
+                               FROM departments child
+                               JOIN rebuilt parent ON child.parent_id = parent.id
+                               LEFT JOIN expired e ON e.id = child.id
+                               CROSS JOIN LATERAL (
+                                   SELECT CASE
+                                              WHEN parent.survivor_path IS NULL
+                                                  THEN subpath(child.path, nlevel(child.path) - 1, 1)
+                                              ELSE parent.survivor_path
+                                                   || subpath(child.path, nlevel(child.path) - 1, 1)
+                                          END AS new_path
+                               ) paths
+                           )
                            UPDATE departments d
-                           SET path      = CASE
-                                               WHEN d.path = od.path
-                                                   THEN subpath(d.path, 0, nlevel(od.path::ltree) - 1)
-                                               ELSE subpath(d.path, 0, nlevel(od.path::ltree) - 1)
-                                                   || subpath(d.path, nlevel(od.path::ltree))
-                               END,
-                               depth     = CASE
-                                               WHEN d.path = od.path THEN 0
-                                               ELSE d.depth - 1
-                                   END,
-                               parent_id = CASE
-                                               WHEN d.path = od.path THEN NULL
-                                               WHEN d.depth - 1 = 0 THEN NULL
-                                               ELSE (SELECT id
-                                                     FROM departments dp
-                                                     WHERE dp.path = subpath(
-                                                             CASE
-                                                                 WHEN od.depth = 0
-                                                                     THEN subpath(d.path, nlevel(od.path::ltree) - 1)
-                                                                 ELSE subpath(d.path, 0, nlevel(od.path::ltree) - 1)
-                                                                     || subpath(d.path, nlevel(od.path::ltree))
-                                                                 END,
-                                                             0,
-                                                             -1))
-                                   END
-                           FROM outdated_departments od
-                           WHERE d.path <@ od.path;
+                           SET parent_id = r.new_parent_id,
+                               path = r.new_path,
+                               depth = r.new_depth
+                           FROM rebuilt r
+                           WHERE d.id = r.id
+                             AND r.is_expired = false
+                             AND (d.parent_id IS DISTINCT FROM r.new_parent_id
+                                  OR d.path IS DISTINCT FROM r.new_path
+                                  OR d.depth IS DISTINCT FROM r.new_depth);
                            """;
 
         var dbConnection = _dbContext.Database.GetDbConnection();

@@ -1,23 +1,23 @@
 ﻿using CSharpFunctionalExtensions;
-using DirectoryService.Application;
+using DirectoryService.Application.Cleanup;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SharedService.SharedKernel;
 
-namespace DirectoryService.Infrastructure.Postgres.SoftDelete;
+namespace DirectoryService.Infrastructure.Postgres.Cleanup;
 
-public class CleaningInactiveDepartmentsBackgroundService : BackgroundService
+public class DeletedEntitiesCleanupBackgroundService : BackgroundService
 {
     private readonly IServiceScopeFactory _serviceScopeFactory;
-    private readonly ILogger<CleaningInactiveDepartmentsBackgroundService> _logger;
-    private readonly InactiveDepartmentsCleanupOptions _options;
+    private readonly ILogger<DeletedEntitiesCleanupBackgroundService> _logger;
+    private readonly DeletedEntitiesCleanupOptions _options;
 
-    public CleaningInactiveDepartmentsBackgroundService(
-        IOptions<InactiveDepartmentsCleanupOptions> options,
+    public DeletedEntitiesCleanupBackgroundService(
+        IOptions<DeletedEntitiesCleanupOptions> options,
         IServiceScopeFactory serviceScopeFactory,
-        ILogger<CleaningInactiveDepartmentsBackgroundService> logger)
+        ILogger<DeletedEntitiesCleanupBackgroundService> logger)
     {
         _options = options.Value;
         _serviceScopeFactory = serviceScopeFactory;
@@ -41,6 +41,7 @@ public class CleaningInactiveDepartmentsBackgroundService : BackgroundService
             }
         }
         catch (OperationCanceledException)
+            when (stoppingToken.IsCancellationRequested)
         {
             _logger.LogInformation("CleaningInactiveDepartmentsBackgroundService is canceled.");
         }
@@ -48,8 +49,6 @@ public class CleaningInactiveDepartmentsBackgroundService : BackgroundService
         {
             _logger.LogError(ex, "CleaningInactiveDepartmentsBackgroundService failed.");
         }
-
-        await Task.CompletedTask;
     }
 
     private async Task<UnitResult<Error>> DeleteInactiveDepartmentsAsync(CancellationToken stoppingToken)
@@ -57,7 +56,7 @@ public class CleaningInactiveDepartmentsBackgroundService : BackgroundService
         await using var scope = _serviceScopeFactory.CreateAsyncScope();
 
         var deletedRecordsCleanerService =
-            scope.ServiceProvider.GetRequiredService<IDeleteDepartmentsService>();
+            scope.ServiceProvider.GetRequiredService<IDeletedEntitiesCleanupService>();
 
         return await deletedRecordsCleanerService.Process(stoppingToken);
     }
