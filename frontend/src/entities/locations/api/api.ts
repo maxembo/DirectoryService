@@ -5,7 +5,7 @@ import {
 	PaginationEnvelope,
 } from "@/shared/api/envelops";
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
-import { Location } from "../model/types";
+import { Location, LocationId } from "../model/types";
 import {
 	CreateLocationRequest,
 	GetLocationsInfinityRequest,
@@ -37,15 +37,7 @@ export const locationsApi = {
 
 	getLocationsInfinityQueryOptions: (request: GetLocationsInfinityRequest) => {
 		return infiniteQueryOptions({
-			queryKey: [
-				locationsApi.baseKey,
-				request.departmentIds,
-				request.search,
-				request.isActive,
-				request.sortBy,
-				request.sortDirection,
-				request.pageSize,
-			],
+			queryKey: [locationsApi.baseKey, request],
 			queryFn: ({ pageParam }) => {
 				return locationsApi.getLocations({ ...request, page: pageParam });
 			},
@@ -63,7 +55,7 @@ export const locationsApi = {
 	},
 
 	updateLocation: async (
-		request: UpdateLocationRequest & { locationId: string },
+		request: UpdateLocationRequest & { locationId: LocationId },
 	) => {
 		const response = await apiClient.patch<Envelope<Location>>(
 			`${LOCATIONS_ENDPOINT}/${request.locationId}`,
@@ -73,8 +65,16 @@ export const locationsApi = {
 		return response.data;
 	},
 
-	deleteLocation: async (locationId: string) => {
-		const response = await apiClient.delete<Envelope<Location>>(
+	restoreLocation: async (locationId: LocationId) => {
+		const response = await apiClient.patch<Envelope<LocationId>>(
+			`${LOCATIONS_ENDPOINT}/${locationId}/restore`,
+		);
+
+		return response.data;
+	},
+
+	deleteLocation: async (locationId: LocationId) => {
+		const response = await apiClient.delete<Envelope<LocationId>>(
 			`${LOCATIONS_ENDPOINT}/${locationId}`,
 		);
 
