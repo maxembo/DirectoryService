@@ -1,7 +1,6 @@
 import { LocationSortByFilter } from "@/entities/locations/model/types";
 import {
 	LocationListId,
-	setLocationIsActive,
 	setLocationSearch,
 	setLocationSortBy,
 	setLocationSortDirection,
@@ -9,10 +8,7 @@ import {
 } from "@/features/locations/model/location-list-store";
 import { FilterSelect } from "@/shared/components/filter-select";
 import { SearchInput } from "@/shared/components/search-input";
-import {
-	activeFilterOptions,
-	sortDirectionOptions,
-} from "@/shared/model/filter-options";
+import { sortDirectionOptions } from "@/shared/model/filter-options";
 import { FilterOption } from "@/shared/model/filter-types";
 
 const locationSortByOptions: Array<FilterOption<LocationSortByFilter>> = [
@@ -21,7 +17,7 @@ const locationSortByOptions: Array<FilterOption<LocationSortByFilter>> = [
 ];
 
 export function LocationFilters({ stateId }: { stateId?: LocationListId }) {
-	const { search, isActive, sortBy, sortDirection } = useLocationList(stateId);
+	const { search, sortBy, sortDirection } = useLocationList(stateId);
 
 	return (
 		<div className="space-y-4">
@@ -31,12 +27,6 @@ export function LocationFilters({ stateId }: { stateId?: LocationListId }) {
 					value={search}
 					placeholder="Поиск по названию"
 					onChange={(value) => setLocationSearch(value, stateId)}
-				/>
-
-				<FilterSelect
-					value={isActive ?? "all"}
-					onValueChange={(value) => setLocationIsActive(value, stateId)}
-					items={activeFilterOptions}
 				/>
 
 				<FilterSelect

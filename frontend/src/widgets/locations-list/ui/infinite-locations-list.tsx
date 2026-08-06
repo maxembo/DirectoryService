@@ -16,7 +16,9 @@ import {
 import { useInfiniteLocationsList } from "@/features/locations/model/use-infinite-locations-list";
 import { LocationFilters } from "@/features/locations/ui/filters/location-filters";
 import { UpdateLocationDialog } from "@/features/locations/update-location/ui/update-location-dialog";
+import { ArchiveViewSwitch } from "@/shared/components/archive-view-switch";
 import { Spinner } from "@/shared/components/ui/spinner";
+import { useArchiveView } from "@/shared/hooks/use-archive-view";
 import { ListEmpty } from "@/widgets/list-empty";
 import { ListError } from "@/widgets/list-error";
 import { LocationCard } from "@/widgets/locations-list/ui/location-card";
@@ -34,6 +36,7 @@ export function InfiniteLocationsList() {
 		null,
 	);
 
+	const { view, setView } = useArchiveView();
 	const {
 		locations,
 		isPending,
@@ -41,7 +44,11 @@ export function InfiniteLocationsList() {
 		error,
 		isFetchingNextPage,
 		cursorRef,
-	} = useInfiniteLocationsList({});
+	} = useInfiniteLocationsList({
+		request: {
+			isActive: view === "active",
+		},
+	});
 
 	const handleRemove = (departmentId: DepartmentId) => {
 		removeLocationSelectedDepartments(departmentId);
@@ -57,8 +64,6 @@ export function InfiniteLocationsList() {
 
 	return (
 		<div className="space-y-4">
-			<LocationFilters />
-
 			<SelectDepartmentDialog
 				stateId={LOCATIONS_DEPARTMENT_SELECT_STATE_ID}
 				open={selectOpen}
@@ -73,12 +78,29 @@ export function InfiniteLocationsList() {
 				onRemove={handleRemove}
 			/>
 
+			<div className="flex flex-wrap items-center justify-between gap-3">
+				<div>
+					<h1 className="text-2xl font-bold tracking-tight">Локации</h1>
+					<p className="text-sm text-muted-foreground">
+						{view === "active" ? "Действующие локации" : "Удалённые локации"}
+					</p>
+				</div>
+
+				<ArchiveViewSwitch
+					value={view}
+					onValueChange={setView}
+					title="Режим отображения локаций"
+				/>
+			</div>
+
+			<LocationFilters />
+
 			<div className="space-y-2">
-				<h1 className="text-2xl font-bold tracking-tight">Локации</h1>
+				{view === "active" && (
+					<CreateLocationDialog open={createOpen} setOpen={setCreateOpen} />
+				)}
 
-				<CreateLocationDialog open={createOpen} setOpen={setCreateOpen} />
-
-				{selectedLocation && (
+				{view === "active" && selectedLocation && (
 					<UpdateLocationDialog
 						key={selectedLocation.id}
 						location={selectedLocation}
