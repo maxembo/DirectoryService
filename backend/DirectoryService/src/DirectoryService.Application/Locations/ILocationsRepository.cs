@@ -17,4 +17,7 @@ public interface ILocationsRepository
         DepartmentId departmentId, CancellationToken cancellationToken = default);
 
     Task<UnitResult<Error>> DeleteLocationsMarkDelete(CancellationToken cancellationToken = default);
+
+    Task<Result<Location, Error>> GetByIdIncludingInactiveAsync(
+        LocationId locationId, CancellationToken cancellationToken = default);
 }
