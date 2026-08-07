@@ -83,6 +83,7 @@ public class GetLocationsHandler : IQueryHandler<PaginationEnvelope<GetLocations
                 Address = new AddressDto(l.Address.Country, l.Address.City, l.Address.Street, l.Address.House),
                 UpdatedAt = l.UpdatedAt,
                 CreatedAt = l.CreatedAt,
+                DeletedAt = l.DeletedAt,
                 IsActive = l.IsActive,
             })
             .ToListAsync(cancellationToken);

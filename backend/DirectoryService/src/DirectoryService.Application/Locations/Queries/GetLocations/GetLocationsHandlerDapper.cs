@@ -94,6 +94,7 @@ public class GetLocationsHandlerDapper : IQueryHandler<PaginationEnvelope<GetLoc
                  l.address,
                  l.created_at,
                  l.updated_at,
+                 l.deleted_at,
                  COUNT(*) OVER () as total_count
              FROM locations l
              {whereClause}

@@ -47,4 +47,11 @@ public sealed class Location : BaseEntity<LocationId>, ISoftDeletable
 
         UpdatedAt = DateTime.UtcNow;
     }
+
+    public void Restore()
+    {
+        IsActive = true;
+        DeletedAt = null;
+        UpdatedAt = DateTime.UtcNow;
+    }
 }

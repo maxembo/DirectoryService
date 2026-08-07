@@ -8,6 +8,7 @@ export type Location = {
 	address: AddressDto;
 	createdAt: string;
 	updatedAt: string;
+	deletedAt: string | null;
 };
 
 export type AddressDto = {

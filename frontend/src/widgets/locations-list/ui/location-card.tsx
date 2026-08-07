@@ -1,5 +1,6 @@
 import { Location } from "@/entities/locations/model/types";
 import { DeleteLocationButton } from "@/features/locations/delete-location/ui/delete-location-button";
+import { RestoreLocationDialog } from "@/features/locations/restore-location/ui/restore-location-dialog";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -38,7 +39,7 @@ export function LocationCard({ location, onEdit }: Props) {
 					<CardTitle className="min-w-0 flex-1 truncate text-lg leading-tight">
 						{location.name}
 					</CardTitle>
-					{location.isActive && (
+					{location.isActive ? (
 						<div className="flex shrink-0 gap-3">
 							<Button
 								type="button"
@@ -52,6 +53,11 @@ export function LocationCard({ location, onEdit }: Props) {
 
 							<DeleteLocationButton locationId={location.id} />
 						</div>
+					) : (
+						<RestoreLocationDialog
+							locationId={location.id}
+							name={location.name}
+						/>
 					)}
 				</div>
 				<div className="flex items-start justify-between gap-4">
@@ -104,9 +110,18 @@ export function LocationCard({ location, onEdit }: Props) {
 
 				<div className="flex items-center gap-2 text-sm text-muted-foreground">
 					<Clock3 className="h-4 w-4 shrink-0" />
-					<span>
-						Дата создания: {new Date(location.createdAt).toLocaleDateString()}
-					</span>
+					{location.isActive ? (
+						<span>
+							Дата создания: {new Date(location.createdAt).toLocaleDateString()}
+						</span>
+					) : (
+						<span>
+							Дата удаления:{" "}
+							{location.deletedAt
+								? new Date(location.deletedAt).toLocaleDateString("ru-RU")
+								: "не указана"}
+						</span>
+					)}
 				</div>
 
 				<Separator />

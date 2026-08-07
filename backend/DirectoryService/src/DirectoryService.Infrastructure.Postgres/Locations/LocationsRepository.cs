@@ -45,6 +45,18 @@ public class LocationsRepository : ILocationsRepository
         return location;
     }
 
+    public async Task<Result<Location, Error>> GetByIdIncludingInactiveAsync(
+        LocationId locationId, CancellationToken cancellationToken = default)
+    {
+        var location = await _dbContext.Locations
+            .FirstOrDefaultAsync(l => l.Id == locationId, cancellationToken);
+
+        if (location is null)
+            return GeneralErrors.NotFound("location", locationId.Value);
+
+        return location;
+    }
+
     public async Task<UnitResult<Errors>> CheckExistingAndActiveIdsAsync(
         Guid[] ids, CancellationToken cancellationToken = default)
     {
