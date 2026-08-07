@@ -6,7 +6,7 @@ import {
 	useLocationSelectedDepartments,
 	useLocationSortBy,
 	useLocationSortDirection,
-} from "@/features/locations/model/location-list-store";
+} from "@/features/locations/location-list/model/location-list-store";
 import { EnvelopeError } from "@/shared/api/errors";
 import { useCursorRef } from "@/shared/hooks/use-cursor-ref";
 import { useInfiniteQuery } from "@tanstack/react-query";

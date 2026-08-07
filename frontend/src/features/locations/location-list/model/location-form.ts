@@ -65,6 +65,4 @@ export const locationSchema = z.object({
 		),
 });
 
-export type CreateLocationFormData = z.infer<typeof locationSchema>;
-
-export type UpdateLocationFormData = z.infer<typeof locationSchema>;
+export type LocationFormData = z.infer<typeof locationSchema>;

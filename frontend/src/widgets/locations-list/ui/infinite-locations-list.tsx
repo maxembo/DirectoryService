@@ -12,9 +12,9 @@ import {
 	removeLocationSelectedDepartments,
 	setLocationSelectedDepartments,
 	useLocationSelectedDepartments,
-} from "@/features/locations/model/location-list-store";
-import { useInfiniteLocationsList } from "@/features/locations/model/use-infinite-locations-list";
-import { LocationFilters } from "@/features/locations/ui/filters/location-filters";
+} from "@/features/locations/location-list/model/location-list-store";
+import { useInfiniteLocationsList } from "@/features/locations/location-list/model/use-infinite-locations-list";
+import { LocationFilters } from "@/features/locations/location-list/ui/location-filters";
 import { UpdateLocationDialog } from "@/features/locations/update-location/ui/update-location-dialog";
 import { ArchiveViewSwitch } from "@/shared/components/archive-view-switch";
 import { Spinner } from "@/shared/components/ui/spinner";

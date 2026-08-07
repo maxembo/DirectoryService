@@ -17,7 +17,7 @@ import { useForm } from "react-hook-form";
 import {
 	locationSchema,
 	UpdateLocationFormData,
-} from "../../model/location-form";
+} from "../../location-list/model/location-form";
 import { useUpdateLocation } from "../model/use-update-location";
 
 type Props = {

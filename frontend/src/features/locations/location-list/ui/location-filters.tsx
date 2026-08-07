@@ -5,7 +5,7 @@ import {
 	setLocationSortBy,
 	setLocationSortDirection,
 	useLocationList,
-} from "@/features/locations/model/location-list-store";
+} from "@/features/locations/location-list/model/location-list-store";
 import { FilterSelect } from "@/shared/components/filter-select";
 import { SearchInput } from "@/shared/components/search-input";
 import { sortDirectionOptions } from "@/shared/model/filter-options";

@@ -15,9 +15,9 @@ import { Label } from "@/shared/components/ui/label";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import {
-	CreateLocationFormData,
+	LocationFormData,
 	locationSchema,
-} from "../../model/location-form";
+} from "../../location-list/model/location-form";
 import { useCreateLocation } from "../model/use-create-location";
 
 type Props = {
@@ -25,7 +25,7 @@ type Props = {
 	setOpen: (open: boolean) => void;
 };
 
-const initialData: CreateLocationFormData = {
+const initialData: LocationFormData = {
 	name: "",
 	address: {
 		country: "",
@@ -42,7 +42,7 @@ export function CreateLocationDialog({ open, setOpen }: Props) {
 		handleSubmit,
 		formState: { errors },
 		reset,
-	} = useForm<CreateLocationFormData>({
+	} = useForm<LocationFormData>({
 		defaultValues: initialData,
 		resolver: zodResolver(locationSchema),
 	});
@@ -61,7 +61,7 @@ export function CreateLocationDialog({ open, setOpen }: Props) {
 		setOpen(false);
 	};
 
-	const onSubmit = async (data: CreateLocationFormData) => {
+	const onSubmit = async (data: LocationFormData) => {
 		await createLocation(data);
 		handleClose();
 	};
