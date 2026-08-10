@@ -1,10 +1,12 @@
-﻿using DirectoryService.Domain.DepartmentLocations;
+﻿using DirectoryService.Application.Constants;
+using DirectoryService.Domain.DepartmentLocations;
 using DirectoryService.Domain.DepartmentPositions;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Locations;
 using DirectoryService.Domain.Positions;
 using DirectoryService.Infrastructure.Postgres.Database;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectoryService.IntegrationTests.Infrastructure;
@@ -224,5 +226,14 @@ public abstract class DirectoryBaseTests : IClassFixture<DirectoryTestWebFactory
 
             await dbContext.SaveChangesAsync();
         });
+    }
+
+    protected async Task ClearDepartmentCache()
+    {
+        await using var scope = _services.CreateAsyncScope();
+
+        var cache = scope.ServiceProvider.GetRequiredService<HybridCache>();
+
+        await cache.RemoveByTagAsync(CacheKeys.DEPARTMENT_KEY, CancellationToken.None);
     }
 }
