@@ -75,15 +75,16 @@ public class GetDepartmentChildrenHandler
                                   d.is_active,
                                   d.created_at,
                                   d.updated_at,
-                           
+
                                   (EXISTS(SELECT 1
-                                          FROM departments
-                                          WHERE parent_id = d.id)) AS has_more_children,
-                           
+                                          FROM departments child
+                                          WHERE parent_id = d.id 
+                                            AND child.is_active = true)) AS has_more_children,
+
                                   COUNT(*) OVER ()                 AS total_count
                            FROM departments d
                            WHERE d.parent_id = @ParentId
-                             AND d.is_active
+                             AND d.is_active = true
                            ORDER BY d.created_at
                            LIMIT @ChildSize OFFSET @ChildPage
                            """;
@@ -92,24 +93,25 @@ public class GetDepartmentChildrenHandler
 
         long? totalCount = null;
 
-        var childrenDepartments = (await dbConnection.QueryAsync<GetDepartmentChildrenDto, bool, long, GetDepartmentChildrenDto>(
-            sql,
-            splitOn: "has_more_children, total_count",
-            map: (dto, children, c) =>
-            {
-                totalCount ??= c;
+        var childrenDepartments =
+            (await dbConnection.QueryAsync<GetDepartmentChildrenDto, bool, long, GetDepartmentChildrenDto>(
+                sql,
+                splitOn: "has_more_children, total_count",
+                map: (dto, children, c) =>
+                {
+                    totalCount ??= c;
 
-                dto = dto with { HasChildren = children };
+                    dto = dto with { HasChildren = children };
 
-                return dto;
-            },
-            param:
-            new
-            {
-                ParentId = query.ParentId,
-                ChildSize = query.Request.PageSize,
-                ChildPage = (query.Request.Page - 1) * query.Request.PageSize,
-            })).ToList();
+                    return dto;
+                },
+                param:
+                new
+                {
+                    ParentId = query.ParentId,
+                    ChildSize = query.Request.PageSize,
+                    ChildPage = (query.Request.Page - 1) * query.Request.PageSize,
+                })).ToList();
 
         return new PaginationEnvelope<GetDepartmentChildrenDto>(
             childrenDepartments, totalCount ?? 0, query.Request.Page, query.Request.PageSize);

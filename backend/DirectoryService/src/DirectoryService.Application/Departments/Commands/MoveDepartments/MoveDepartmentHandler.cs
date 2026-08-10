@@ -23,7 +23,8 @@ public class MoveDepartmentHandler : ICommandHandler<Guid, MoveDepartmentCommand
         IDepartmentsRepository departmentsRepository,
         IValidator<MoveDepartmentCommand> validator,
         ITransactionManager transactionManager,
-        ILogger<MoveDepartmentHandler> logger, HybridCache cache)
+        ILogger<MoveDepartmentHandler> logger,
+        HybridCache cache)
     {
         _departmentsRepository = departmentsRepository;
         _validator = validator;
@@ -54,7 +55,7 @@ public class MoveDepartmentHandler : ICommandHandler<Guid, MoveDepartmentCommand
 
         using var transaction = transactionResult.Value;
 
-        var departmentResult = await _departmentsRepository.GetByIdWithLock(departmentId, cancellationToken);
+        var departmentResult = await _departmentsRepository.GetActiveByIdWithLock(departmentId, cancellationToken);
         if (departmentResult.IsFailure)
         {
             return departmentResult.Error.ToErrors();
@@ -66,7 +67,7 @@ public class MoveDepartmentHandler : ICommandHandler<Guid, MoveDepartmentCommand
 
         if (parentId != null)
         {
-            var parentResult = await _departmentsRepository.GetByIdWithLock(
+            var parentResult = await _departmentsRepository.GetActiveByIdWithLock(
                 DepartmentId.Create(parentId.Value), cancellationToken);
             if (parentResult.IsFailure)
             {

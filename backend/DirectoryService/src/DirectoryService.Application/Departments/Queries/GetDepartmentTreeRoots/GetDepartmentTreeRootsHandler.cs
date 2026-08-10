@@ -79,10 +79,11 @@ public class
                                                  d.updated_at,
                                                  COUNT(*) OVER () AS total_count
                                           FROM departments d
-                                          WHERE d.parent_id IS NULL
+                                          WHERE d.parent_id IS NULL 
+                                                AND d.is_active = true
                                           ORDER BY d.created_at
                                           LIMIT @RootSize OFFSET @RootPage),
-                           
+
                                 ranked_children AS (SELECT d.id,
                                                            d.parent_id,
                                                            d.name,
@@ -108,10 +109,11 @@ public class
                                   r.created_at,
                                   r.updated_at,
                                   r.total_count,
-                           
+
                                   (EXISTS(SELECT 1
                                           FROM departments d
-                                          WHERE d.parent_id = r.id)) AS has_more_children
+                                          WHERE d.parent_id = r.id 
+                                            AND d.is_active = true)) AS has_more_children
                            FROM roots r
 
                            UNION ALL
@@ -126,10 +128,11 @@ public class
                                   rc.created_at,
                                   rc.updated_at,
                                   rc.total_count,
-                           
+
                                   (EXISTS(SELECT 1
                                           FROM departments d
-                                          WHERE d.parent_id = rc.id)) AS has_more_children
+                                          WHERE d.parent_id = rc.id 
+                                            AND d.is_active = true)) AS has_more_children
 
                            FROM ranked_children rc
                            WHERE rc.child_rank <= @Prefetch

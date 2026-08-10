@@ -1,5 +1,6 @@
 ﻿using DirectoryService.Application.Departments.Commands.CreateDepartments;
 using DirectoryService.Application.Departments.Commands.MoveDepartments;
+using DirectoryService.Application.Departments.Commands.RestoreDepartments;
 using DirectoryService.Application.Departments.Commands.SoftDeleteDepartments;
 using DirectoryService.Application.Departments.Commands.UpdateDepartments;
 using DirectoryService.Application.Departments.Queries.GetDepartmentChildren;
@@ -136,6 +137,17 @@ public class DepartmentsController : ControllerBase
         CancellationToken cancellationToken)
     {
         var command = new SoftDeleteDepartmentCommand(departmentId);
+
+        return await handler.Handle(command, cancellationToken);
+    }
+    
+    [HttpPatch("{departmentId:guid}/restore")]
+    public async Task<EndpointResult<Guid>> Restore(
+        Guid departmentId,
+        [FromServices] ICommandHandler<Guid, RestoreDepartmentCommand> handler,
+        CancellationToken cancellationToken)
+    {
+        var command = new RestoreDepartmentCommand(departmentId);
 
         return await handler.Handle(command, cancellationToken);
     }
