@@ -7,7 +7,7 @@ using DirectoryService.IntegrationTests.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using SharedService.SharedKernel;
 
-namespace DirectoryService.IntegrationTests.Departments;
+namespace DirectoryService.IntegrationTests.Departments.Commands;
 
 public class CreateDepartmentTests : DirectoryBaseTests
 {
