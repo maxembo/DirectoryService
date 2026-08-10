@@ -5,7 +5,11 @@ import {
 	PaginationEnvelope,
 } from "@/shared/api/envelops";
 import { infiniteQueryOptions } from "@tanstack/react-query";
-import { DepartmentShortDto, DepartmentTreeDto } from "../model/types";
+import {
+	DepartmentId,
+	DepartmentShortDto,
+	DepartmentTreeDto,
+} from "../model/types";
 import {
 	GetDepartmentChildrenRequest,
 	GetDepartmentsInfinityRequest,
@@ -52,17 +56,7 @@ export const departmentsApi = {
 		request: GetDepartmentsInfinityRequest,
 	) => {
 		return infiniteQueryOptions({
-			queryKey: [
-				departmentsApi.baseKey,
-				request.selectedLocations,
-				request.search,
-				request.isParent,
-				request.parentId,
-				request.isActive,
-				request.sortBy,
-				request.sortDirection,
-				request.pageSize,
-			],
+			queryKey: [departmentsApi.baseKey, request],
 			queryFn: ({ pageParam }) => {
 				return departmentsApi.getDepartmentsShort({
 					...request,
@@ -86,5 +80,13 @@ export const departmentsApi = {
 			},
 			...envelopeInfinityQueryOptions<DepartmentTreeDto>(),
 		});
+	},
+
+	restoreDepartment: async (departmentId: DepartmentId) => {
+		const response = await apiClient.patch<Envelope<DepartmentId>>(
+			`${DEPARTMENTS_ENDPOINT}/${departmentId}/restore`,
+		);
+
+		return response.data;
 	},
 };

@@ -9,7 +9,7 @@ import {
 	useDepartmentSelectedLocations,
 	useDepartmentSortBy,
 	useDepartmentSortDirection,
-} from "@/features/departments/model/department-list-store";
+} from "@/features/departments/department-list/model/department-list-store";
 import { EnvelopeError } from "@/shared/api/errors";
 import { useCursorRef } from "@/shared/hooks/use-cursor-ref";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -40,7 +40,7 @@ export function useInfiniteDepartmentsList({ stateId, request }: Props) {
 		fetchNextPage,
 	} = useInfiniteQuery({
 		...departmentsApi.getDepartmentsInfinityQueryOptions({
-			selectedLocations: selectedLocations.map((location) => location.id),
+			locationsIds: selectedLocations.map((location) => location.id),
 			search: debouncedSearch,
 			isParent: isParent === "all" ? undefined : isParent === "parent",
 			isActive: isActive === "all" ? undefined : isActive === "active",

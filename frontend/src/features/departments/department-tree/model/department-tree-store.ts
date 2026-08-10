@@ -245,3 +245,22 @@ export const loadNextDepartmentChildrenPage = async (
 		});
 	}
 };
+
+export const resetDepartmentTreeData = () =>
+	useDepartmentTreeStore.setState((states) => {
+		const nextStates: DepartmentTreeStates = {};
+
+		for (const [id, state] of Object.entries(states)) {
+			nextStates[id] = state
+				? {
+						...state,
+						expandedIds: [],
+						loadingIds: [],
+						childrenByParentId: {},
+						nextPageByParentId: {},
+					}
+				: undefined;
+		}
+
+		return nextStates;
+	});
