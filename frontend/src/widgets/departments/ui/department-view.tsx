@@ -9,8 +9,8 @@ export function DepartmentView() {
 	const { view, setView } = useArchiveView();
 
 	return (
-		<div className="space-y-4">
-			<div className="flex flex-wrap items-center justify-between gap-4">
+		<div className="flex h-full min-h-0 flex-col gap-4">
+			<div className="flex shrink-0 flex-wrap items-center justify-between gap-4">
 				<div>
 					<h1 className="text-2xl font-bold tracking-tight">Отделы</h1>
 					<p className="text-sm text-muted-foreground">
@@ -26,7 +26,13 @@ export function DepartmentView() {
 				/>
 			</div>
 
-			{view === "active" ? <DepartmentPositions /> : <ArchivedDepartmentList />}
+			<div className="min-h-0 flex-1 overflow-y-auto">
+				{view === "active" ? (
+					<DepartmentPositions />
+				) : (
+					<ArchivedDepartmentList />
+				)}
+			</div>
 		</div>
 	);
 }
