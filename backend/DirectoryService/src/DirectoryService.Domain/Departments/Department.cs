@@ -176,10 +176,12 @@ public sealed class Department : BaseEntity<DepartmentId>, ISoftDeletable
 
     public void MarkAsDelete()
     {
-        IsActive = false;
-        DeletedAt = DateTime.UtcNow;
+        var now = DateTime.UtcNow;
 
-        UpdatedAt = DateTime.UtcNow;
+        IsActive = false;
+        DeletedAt = now;
+
+        UpdatedAt = now;
     }
 
     public void Restore()

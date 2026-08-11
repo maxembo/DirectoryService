@@ -9,10 +9,13 @@ public interface IPositionsRepository
 {
     Task<Result<Guid, Error>> AddAsync(Position position, CancellationToken cancellationToken = default);
 
-    Task<UnitResult<Error>> DeleteUnusedPositionsByDepartmentIdAsync(
+    Task<UnitResult<Error>> SoftDeleteUnusedPositionsByDepartmentIdAsync(
         DepartmentId departmentId, CancellationToken cancellationToken = default);
 
     Task<UnitResult<Error>> DeletePositionsMarkDelete(CancellationToken cancellationToken = default);
 
     Task<Result<Position, Error>> GetByIdAsync(PositionId positionId, CancellationToken cancellationToken = default);
+
+    Task<UnitResult<Error>> RestorePositionsByDepartmentIdAsync(
+        DepartmentId departmentId, CancellationToken cancellationToken = default);
 }

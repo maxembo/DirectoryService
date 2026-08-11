@@ -81,7 +81,7 @@ public class SoftDeleteDepartmentHandler : ICommandHandler<Guid, SoftDeleteDepar
         }
 
         var deleteUnusedLocationsResult =
-            await _locationsRepository.DeleteUnusedLocationsByDepartmentIdAsync(departmentId, cancellationToken);
+            await _locationsRepository.SoftDeleteUnusedLocationsByDepartmentIdAsync(departmentId, cancellationToken);
         if (deleteUnusedLocationsResult.IsFailure)
         {
             transaction.Rollback();
@@ -89,7 +89,7 @@ public class SoftDeleteDepartmentHandler : ICommandHandler<Guid, SoftDeleteDepar
         }
 
         var deleteUnusedPositionsResult =
-            await _positionsRepository.DeleteUnusedPositionsByDepartmentIdAsync(departmentId, cancellationToken);
+            await _positionsRepository.SoftDeleteUnusedPositionsByDepartmentIdAsync(departmentId, cancellationToken);
         if (deleteUnusedPositionsResult.IsFailure)
         {
             transaction.Rollback();

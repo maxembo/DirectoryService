@@ -1,5 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Constants;
+using DirectoryService.Application.Locations;
+using DirectoryService.Application.Positions;
 using DirectoryService.Domain.Departments;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
@@ -13,17 +15,23 @@ namespace DirectoryService.Application.Departments.Commands.RestoreDepartments;
 public class RestoreDepartmentHandler : ICommandHandler<Guid, RestoreDepartmentCommand>
 {
     private readonly IDepartmentsRepository _departmentsRepository;
+    private readonly ILocationsRepository _locationsRepository;
+    private readonly IPositionsRepository _positionsRepository;
     private readonly ITransactionManager _transactionManager;
     private readonly HybridCache _cache;
     private readonly ILogger<RestoreDepartmentHandler> _logger;
 
     public RestoreDepartmentHandler(
         IDepartmentsRepository departmentsRepository,
+        ILocationsRepository locationsRepository,
+        IPositionsRepository positionsRepository,
         ITransactionManager transactionManager,
         HybridCache cache,
         ILogger<RestoreDepartmentHandler> logger)
     {
         _departmentsRepository = departmentsRepository;
+        _locationsRepository = locationsRepository;
+        _positionsRepository = positionsRepository;
         _transactionManager = transactionManager;
         _cache = cache;
         _logger = logger;
@@ -98,6 +106,22 @@ public class RestoreDepartmentHandler : ICommandHandler<Guid, RestoreDepartmentC
         }
 
         department.Restore();
+
+        var restoreLocationsResult =
+            await _locationsRepository.RestoreLocationsByDepartmentIdAsync(departmentId, cancellationToken);
+        if (restoreLocationsResult.IsFailure)
+        {
+            transaction.Rollback();
+            return restoreLocationsResult.Error.ToErrors();
+        }
+
+        var restorePositionsResult =
+            await _positionsRepository.RestorePositionsByDepartmentIdAsync(departmentId, cancellationToken);
+        if (restorePositionsResult.IsFailure)
+        {
+            transaction.Rollback();
+            return restorePositionsResult.Error.ToErrors();
+        }
 
         var saveChangeResult = await _transactionManager.SaveChangeAsync(cancellationToken);
         if (saveChangeResult.IsFailure)

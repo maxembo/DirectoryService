@@ -1,6 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using Dapper;
 using DirectoryService.Application.Positions;
+using DirectoryService.Domain;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Positions;
 using DirectoryService.Infrastructure.Postgres.Database;
@@ -32,13 +33,15 @@ public class PositionsRepository : IPositionsRepository
         return position.Id.Value;
     }
 
-    public async Task<UnitResult<Error>> DeleteUnusedPositionsByDepartmentIdAsync(
+    public async Task<UnitResult<Error>> SoftDeleteUnusedPositionsByDepartmentIdAsync(
         DepartmentId departmentId, CancellationToken cancellationToken = default)
     {
         const string sql = """
                            UPDATE positions p
                            SET is_active  = false,
-                               deleted_at = NOW()
+                               deleted_at = NOW(),
+                               updated_at = NOW(),
+                               deletion_reason = @deletionReason
                            FROM department_positions dp
                            WHERE dp.position_id = p.id
                              AND dp.department_id = @departmentId
@@ -55,15 +58,65 @@ public class PositionsRepository : IPositionsRepository
 
         try
         {
-            await dbConnection.ExecuteAsync(sql, param: new { departmentId = departmentId.Value });
+            await dbConnection.ExecuteAsync(
+                sql,
+                param: new
+                {
+                    departmentId = departmentId.Value,
+                    deletionReason = DeletionReason.NO_ACTIVE_DEPARTMENTS.ToString(),
+                });
 
             return UnitResult.Success<Error>();
         }
         catch (Exception ex)
         {
-            _logger.LogError("Failed to delete positions");
+            _logger.LogError(
+                ex,
+                "Failed to soft delete positions for department {DepartmentId}",
+                departmentId.Value);
 
-            return GeneralErrors.Database(ex.Message);
+            return GeneralErrors.Database(message: "Не удалось пометить как мягкое удаление позиции подразделения.");
+        }
+    }
+
+    public async Task<UnitResult<Error>> RestorePositionsByDepartmentIdAsync(
+        DepartmentId departmentId, CancellationToken cancellationToken = default)
+    {
+        const string sql = """
+                           UPDATE positions p
+                           SET is_active  = true,
+                               deleted_at = NULL,
+                               updated_at = NOW(),
+                               deletion_reason = NULL
+                           FROM department_positions dp
+                           WHERE dp.position_id = p.id
+                             AND dp.department_id = @departmentId
+                             AND p.is_active = false
+                             AND p.deletion_reason = @deletionReason
+                           """;
+
+        var dbConnection = _dbContext.Database.GetDbConnection();
+
+        try
+        {
+            await dbConnection.ExecuteAsync(
+                sql,
+                param: new
+                {
+                    departmentId = departmentId.Value,
+                    deletionReason = DeletionReason.NO_ACTIVE_DEPARTMENTS.ToString(),
+                });
+
+            return UnitResult.Success<Error>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "Failed to restore positions for department {DepartmentId}",
+                departmentId.Value);
+
+            return GeneralErrors.Database(message: "Не удалось восстановить позиции подразделения.");
         }
     }
 

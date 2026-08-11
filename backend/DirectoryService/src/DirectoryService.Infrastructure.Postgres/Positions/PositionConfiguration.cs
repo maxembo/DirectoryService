@@ -53,5 +53,10 @@ public class PositionConfiguration : IEntityTypeConfiguration<Position>
 
         builder.Property(d => d.UpdatedAt)
             .HasColumnName("updated_at");
+
+        builder.Property(l => l.DeletionReason)
+            .HasConversion<string>()
+            .HasMaxLength(50)
+            .HasColumnName("deletion_reason");
     }
 }

@@ -13,11 +13,14 @@ public interface ILocationsRepository
 
     Task<UnitResult<Errors>> CheckExistingAndActiveIdsAsync(Guid[] ids, CancellationToken cancellationToken = default);
 
-    Task<UnitResult<Error>> DeleteUnusedLocationsByDepartmentIdAsync(
+    Task<UnitResult<Error>> SoftDeleteUnusedLocationsByDepartmentIdAsync(
         DepartmentId departmentId, CancellationToken cancellationToken = default);
 
     Task<UnitResult<Error>> DeleteLocationsMarkDelete(CancellationToken cancellationToken = default);
 
     Task<Result<Location, Error>> GetByIdIncludingInactiveAsync(
         LocationId locationId, CancellationToken cancellationToken = default);
+
+    Task<UnitResult<Error>> RestoreLocationsByDepartmentIdAsync(
+        DepartmentId departmentId, CancellationToken cancellationToken = default);
 }
