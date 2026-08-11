@@ -1,4 +1,6 @@
 import { departmentsApi } from "@/entities/departments/api/api";
+import { locationsApi } from "@/entities/locations/api/api";
+import { positionsApi } from "@/entities/positions/api/api";
 import { resetDepartmentTreeData } from "@/features/departments/department-tree/model/department-tree-store";
 import { EnvelopeError } from "@/shared/api/errors";
 import { queryClient } from "@/shared/api/query-client";
@@ -8,12 +10,21 @@ import { toast } from "sonner";
 export function useRestoreDepartment() {
 	const mutation = useMutation({
 		mutationFn: departmentsApi.restoreDepartment,
-		onSuccess: () => {
+		onSuccess: async () => {
 			resetDepartmentTreeData();
 
-			queryClient.invalidateQueries({
-				queryKey: [departmentsApi.baseKey],
-			});
+			await Promise.all([
+				queryClient.invalidateQueries({
+					queryKey: [departmentsApi.baseKey],
+				}),
+				queryClient.invalidateQueries({
+					queryKey: [locationsApi.baseKey],
+				}),
+				queryClient.invalidateQueries({
+					queryKey: [positionsApi.baseKey],
+				}),
+			]);
+
 			toast.success(`Подразделение успешно восстановлено`);
 		},
 		onError: (error) => {
