@@ -1,6 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Departments.Commands.RestoreDepartments;
 using DirectoryService.Application.Departments.Commands.SoftDeleteDepartments;
+using DirectoryService.Domain;
 using DirectoryService.Domain.Departments;
 using DirectoryService.IntegrationTests.Infrastructure;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +11,287 @@ namespace DirectoryService.IntegrationTests.Departments.Commands;
 
 public class RestoreDepartmentTests(DirectoryTestWebFactory factory) : DirectoryBaseTests(factory)
 {
+    [Fact]
+    public async Task
+        RestoreDepartment_WhenSharedResourcesWereArchivedAfterLastDepartmentDeletion_ShouldRestoreResources()
+    {
+        // arrange
+        var locationId = await CreateLocation();
+
+        var firstCompany =
+            await CreateParentDepartment("firstCompany", "first-company", [locationId]);
+
+        var secondCompany =
+            await CreateParentDepartment("secondCompany", "second-company", [locationId]);
+
+        var positionId = await CreatePosition("position", null, [firstCompany.Id, secondCompany.Id]);
+
+        var command = new RestoreDepartmentCommand(firstCompany.Id.Value);
+
+        // soft delete
+        var softDeleteFirstCompanyResult =
+            await ExecuteSoftDelete(new SoftDeleteDepartmentCommand(firstCompany.Id.Value));
+
+        Assert.True(softDeleteFirstCompanyResult.IsSuccess);
+        Assert.Equal(softDeleteFirstCompanyResult.Value, firstCompany.Id.Value);
+
+        await ExecuteInDb(async dbContext =>
+        {
+            var location = await dbContext.Locations
+                .SingleAsync(d => d.Id == locationId, CancellationToken.None);
+
+            Assert.True(location.IsActive);
+            Assert.Null(location.DeletedAt);
+            Assert.Null(location.DeletionReason);
+
+            var position = await dbContext.Positions
+                .SingleAsync(p => p.Id == positionId, CancellationToken.None);
+
+            Assert.True(position.IsActive);
+            Assert.Null(position.DeletedAt);
+            Assert.Null(position.DeletionReason);
+        });
+
+        // soft delete
+        var softDeleteSecondCompanyResult =
+            await ExecuteSoftDelete(new SoftDeleteDepartmentCommand(secondCompany.Id.Value));
+
+        Assert.True(softDeleteSecondCompanyResult.IsSuccess);
+        Assert.Equal(softDeleteSecondCompanyResult.Value, secondCompany.Id.Value);
+
+        await ExecuteInDb(async dbContext =>
+        {
+            var softDeleteLocation = await dbContext.Locations
+                .SingleAsync(d => d.Id == locationId, CancellationToken.None);
+
+            Assert.False(softDeleteLocation.IsActive);
+            Assert.NotNull(softDeleteLocation.DeletedAt);
+            Assert.Equal(softDeleteLocation.DeletionReason, DeletionReason.NO_ACTIVE_DEPARTMENTS);
+
+            var softDeletePosition = await dbContext.Positions
+                .SingleAsync(p => p.Id == positionId, CancellationToken.None);
+
+            Assert.False(softDeletePosition.IsActive);
+            Assert.NotNull(softDeletePosition.DeletedAt);
+            Assert.Equal(softDeletePosition.DeletionReason, DeletionReason.NO_ACTIVE_DEPARTMENTS);
+        });
+
+        // act
+        var result = await Execute(command);
+
+        // assert
+        Assert.True(result.IsSuccess);
+        Assert.Equal(result.Value, firstCompany.Id.Value);
+
+        await ExecuteInDb(async dbContext =>
+        {
+            var restoredDepartment = await dbContext.Departments.SingleAsync(
+                d => d.Id == DepartmentId.Create(result.Value), CancellationToken.None);
+
+            Assert.True(restoredDepartment.IsActive);
+
+            var restoredLocation = await dbContext.Locations.SingleAsync(
+                d => d.Id == locationId, CancellationToken.None);
+
+            Assert.True(restoredLocation.IsActive);
+            Assert.Null(restoredLocation.DeletedAt);
+
+            Assert.Null(restoredLocation.DeletionReason);
+
+            var restoredPosition = await dbContext.Positions.SingleAsync(
+                d => d.Id == positionId, CancellationToken.None);
+
+            Assert.True(restoredPosition.IsActive);
+            Assert.Null(restoredPosition.DeletedAt);
+
+            Assert.Null(restoredPosition.DeletionReason);
+        });
+    }
+
+    [Fact]
+    public async Task RestoreDepartment_WhenPositionWasManuallyArchived_ShouldNotRestorePosition()
+    {
+        // arrange
+        var locationId = await CreateLocation();
+
+        var company =
+            await CreateParentDepartment("company", "company", [locationId]);
+
+        var positionId = await CreatePosition("position", null, [company.Id]);
+
+        await MarkPositionAsDeleted(positionId);
+
+        var command = new RestoreDepartmentCommand(company.Id.Value);
+
+        // soft delete
+        var softDeleteCompanyResult = await ExecuteSoftDelete(new SoftDeleteDepartmentCommand(company.Id.Value));
+
+        Assert.True(softDeleteCompanyResult.IsSuccess);
+        Assert.Equal(softDeleteCompanyResult.Value, company.Id.Value);
+
+        // act
+        var result = await Execute(command);
+
+        // assert
+        Assert.True(result.IsSuccess);
+        Assert.Equal(result.Value, company.Id.Value);
+
+        await ExecuteInDb(async dbContext =>
+        {
+            var restoredDepartment = await dbContext.Departments.SingleAsync(
+                d => d.Id == DepartmentId.Create(result.Value), CancellationToken.None);
+
+            Assert.True(restoredDepartment.IsActive);
+
+            var restorePosition = await dbContext.Positions.SingleAsync(
+                d => d.Id == positionId, CancellationToken.None);
+
+            Assert.False(restorePosition.IsActive);
+            Assert.NotNull(restorePosition.DeletedAt);
+
+            Assert.Equal(DeletionReason.MANUAL, restorePosition.DeletionReason);
+        });
+    }
+
+    [Fact]
+    public async Task RestoreDepartment_WhenLocationWasManuallyArchived_ShouldNotRestoreLocation()
+    {
+        // arrange
+        var locationId = await CreateLocation();
+
+        var company =
+            await CreateParentDepartment("company", "company", [locationId]);
+
+        await MarkLocationAsDeleted(locationId);
+
+        var command = new RestoreDepartmentCommand(company.Id.Value);
+
+        // soft delete
+        var softDeleteCompanyResult = await ExecuteSoftDelete(new SoftDeleteDepartmentCommand(company.Id.Value));
+
+        Assert.True(softDeleteCompanyResult.IsSuccess);
+        Assert.Equal(softDeleteCompanyResult.Value, company.Id.Value);
+
+        // act
+        var result = await Execute(command);
+
+        // assert
+        Assert.True(result.IsSuccess);
+        Assert.Equal(result.Value, company.Id.Value);
+
+        await ExecuteInDb(async dbContext =>
+        {
+            var restoredDepartment = await dbContext.Departments.SingleAsync(
+                d => d.Id == DepartmentId.Create(result.Value), CancellationToken.None);
+
+            Assert.True(restoredDepartment.IsActive);
+
+            var restoredLocation = await dbContext.Locations.SingleAsync(
+                d => d.Id == locationId, CancellationToken.None);
+
+            Assert.False(restoredLocation.IsActive);
+            Assert.NotNull(restoredLocation.DeletedAt);
+
+            Assert.Equal(DeletionReason.MANUAL, restoredLocation.DeletionReason);
+        });
+    }
+
+    [Fact]
+    public async Task RestoreDepartment_WhenPositionWasAutomaticallyArchived_ShouldRestorePosition()
+    {
+        // arrange
+        var locationId = await CreateLocation();
+
+        var company =
+            await CreateParentDepartment("company", "company", [locationId]);
+
+        var positionId = await CreatePosition("position", null, [company.Id]);
+
+        var command = new RestoreDepartmentCommand(company.Id.Value);
+
+        // soft delete
+        var softDeleteCompanyResult = await ExecuteSoftDelete(new SoftDeleteDepartmentCommand(company.Id.Value));
+
+        Assert.True(softDeleteCompanyResult.IsSuccess);
+        Assert.Equal(softDeleteCompanyResult.Value, company.Id.Value);
+
+        await ExecuteInDb(async dbContext =>
+        {
+            var softDeletePosition = await dbContext.Positions.SingleAsync(
+                l => l.Id == positionId, CancellationToken.None);
+
+            Assert.False(softDeletePosition.IsActive);
+            Assert.NotNull(softDeletePosition.DeletedAt);
+
+            Assert.Equal(DeletionReason.NO_ACTIVE_DEPARTMENTS, softDeletePosition.DeletionReason);
+        });
+
+        // act
+        var result = await Execute(command);
+
+        // assert
+        Assert.True(result.IsSuccess);
+        Assert.Equal(result.Value, company.Id.Value);
+
+        await ExecuteInDb(async dbContext =>
+        {
+            var restoredPosition = await dbContext.Positions.SingleAsync(
+                d => d.Id == positionId, CancellationToken.None);
+
+            Assert.True(restoredPosition.IsActive);
+            Assert.Null(restoredPosition.DeletedAt);
+
+            Assert.Null(restoredPosition.DeletionReason);
+        });
+    }
+
+    [Fact]
+    public async Task RestoreDepartment_WhenLocationWasAutomaticallyArchived_ShouldRestoreLocation()
+    {
+        // arrange
+        var locationId = await CreateLocation();
+
+        var company =
+            await CreateParentDepartment("company", "company", [locationId]);
+
+        var command = new RestoreDepartmentCommand(company.Id.Value);
+
+        // soft delete
+        var softDeleteCompanyResult = await ExecuteSoftDelete(new SoftDeleteDepartmentCommand(company.Id.Value));
+
+        Assert.True(softDeleteCompanyResult.IsSuccess);
+        Assert.Equal(softDeleteCompanyResult.Value, company.Id.Value);
+
+        await ExecuteInDb(async dbContext =>
+        {
+            var softDeleteLocation = await dbContext.Locations.SingleAsync(
+                l => l.Id == locationId, CancellationToken.None);
+
+            Assert.False(softDeleteLocation.IsActive);
+            Assert.NotNull(softDeleteLocation.DeletedAt);
+
+            Assert.Equal(DeletionReason.NO_ACTIVE_DEPARTMENTS, softDeleteLocation.DeletionReason);
+        });
+
+        // act
+        var result = await Execute(command);
+
+        // assert
+        Assert.True(result.IsSuccess);
+        Assert.Equal(result.Value, company.Id.Value);
+
+        await ExecuteInDb(async dbContext =>
+        {
+            var restoredLocation = await dbContext.Locations.SingleAsync(
+                d => d.Id == locationId, CancellationToken.None);
+
+            Assert.True(restoredLocation.IsActive);
+            Assert.Null(restoredLocation.DeletedAt);
+
+            Assert.Null(restoredLocation.DeletionReason);
+        });
+    }
+
     [Fact]
     public async Task RestoreDepartment_WhenDepartmentDoesNotExist_ShouldFail()
     {
