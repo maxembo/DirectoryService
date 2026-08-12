@@ -79,11 +79,26 @@ public class DepartmentsRepository : IDepartmentsRepository
         return UnitResult.Success<Error>();
     }
 
-    public async Task<Result<Department, Error>> GetByIdWithLock(
+    public async Task<Result<Department, Error>> GetActiveByIdWithLock(
         DepartmentId id, CancellationToken cancellationToken = default)
     {
         var department = await _dbContext.Departments
             .FromSql($"SELECT d.* FROM departments d WHERE d.id = {id.Value} AND d.is_active = TRUE FOR UPDATE")
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (department is null)
+        {
+            return GeneralErrors.NotFound("departmentId", id.Value);
+        }
+
+        return department;
+    }
+
+    public async Task<Result<Department, Error>> GetByIdWithLock(
+        DepartmentId id, CancellationToken cancellationToken = default)
+    {
+        var department = await _dbContext.Departments
+            .FromSql($"SELECT d.* FROM departments d WHERE d.id = {id.Value} FOR UPDATE")
             .FirstOrDefaultAsync(cancellationToken);
 
         if (department is null)
@@ -113,7 +128,8 @@ public class DepartmentsRepository : IDepartmentsRepository
 
     public async Task<UnitResult<Error>> MoveDepartments(
         DepartmentId parentId,
-        Path parentPath, Path departmentPath,
+        Path parentPath,
+        Path departmentPath,
         CancellationToken cancellationToken = default)
     {
         const string sqlUpdatePathAndDepth = """
@@ -394,6 +410,44 @@ public class DepartmentsRepository : IDepartmentsRepository
         catch (Exception ex)
         {
             _logger.LogError("Failed to update paths delete departments");
+
+            return GeneralErrors.Database(message: ex.Message);
+        }
+    }
+
+    public async Task<UnitResult<Error>> RestoreSubtreePaths(
+        Path departmentPath,
+        Path restoredPath,
+        CancellationToken cancellationToken)
+    {
+        const string sql = """
+                           UPDATE departments d
+                           SET path = CASE
+                                          WHEN d.path = @departmentPath::ltree
+                                              THEN
+                                              @restoredPath::ltree
+                                          ELSE (@restoredPath::ltree || subpath(d.path, nlevel(@departmentPath::ltree)))
+                               END
+                           WHERE path <@ @departmentPath::ltree;
+                           """;
+
+        var dbConnection = _dbContext.Database.GetDbConnection();
+
+        var sqlParams = new { departmentPath = departmentPath.Value, restoredPath = restoredPath.Value };
+
+        try
+        {
+            await dbConnection.ExecuteAsync(
+                new CommandDefinition(sql, sqlParams, cancellationToken: cancellationToken));
+
+            return UnitResult.Success<Error>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "Failed to restore paths for department subtree {DepartmentPath}",
+                departmentPath.Value);
 
             return GeneralErrors.Database(message: ex.Message);
         }

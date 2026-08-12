@@ -18,7 +18,8 @@ public interface IDepartmentsRepository
     Task<UnitResult<Error>> DeleteLocationsAsync(
         DepartmentId departmentId, CancellationToken cancellationToken = default);
 
-    Task<Result<Department, Error>> GetByIdWithLock(DepartmentId id, CancellationToken cancellationToken = default);
+    Task<Result<Department, Error>> GetActiveByIdWithLock(
+        DepartmentId id, CancellationToken cancellationToken = default);
 
     Task LockDescendants(Path path, CancellationToken cancellationToken = default);
 
@@ -45,4 +46,11 @@ public interface IDepartmentsRepository
     Task<UnitResult<Error>> DeleteDepartmentPositionsMarkDelete(CancellationToken cancellationToken = default);
 
     Task<UnitResult<Error>> UpdatePathsAfterDelete(CancellationToken cancellationToken = default);
+
+    Task<UnitResult<Error>> RestoreSubtreePaths(
+        Path departmentPath,
+        Path restoredPath,
+        CancellationToken cancellationToken = default);
+
+    Task<Result<Department, Error>> GetByIdWithLock(DepartmentId id, CancellationToken cancellationToken = default);
 }

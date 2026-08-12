@@ -9,9 +9,9 @@ namespace DirectoryService.Application.Locations.Commands.SoftDeleteLocations;
 
 public class SoftDeleteLocationHandler : ICommandHandler<Guid, SoftDeleteLocationCommand>
 {
-    private ILocationsRepository _locationRepository;
-    private ITransactionManager _transactionManager;
-    private ILogger<SoftDeleteLocationHandler> _logger;
+    private readonly ILocationsRepository _locationRepository;
+    private readonly ITransactionManager _transactionManager;
+    private readonly ILogger<SoftDeleteLocationHandler> _logger;
 
     public SoftDeleteLocationHandler(
         ILocationsRepository locationRepository,

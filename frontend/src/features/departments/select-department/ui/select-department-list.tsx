@@ -2,8 +2,8 @@ import {
 	DepartmentId,
 	DepartmentShortDto,
 } from "@/entities/departments/model/types";
-import { DepartmentListId } from "@/features/departments/model/department-list-store";
-import { useInfiniteDepartmentsList } from "@/features/departments/model/use-infinite-departments-list";
+import { DepartmentListId } from "@/features/departments/department-list/model/department-list-store";
+import { useInfiniteDepartmentsList } from "@/features/departments/department-list/model/use-infinite-departments-list";
 import { SelectDepartmentCard } from "@/features/departments/select-department/ui/select-department-card";
 import { SelectDepartmentFilterPanel } from "@/features/departments/select-department/ui/select-department-filter-panel";
 import { SelectDepartmentSearch } from "@/features/departments/select-department/ui/select-department-filter-search";

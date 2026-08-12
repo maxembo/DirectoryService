@@ -2,7 +2,7 @@ import {
 	DepartmentListId,
 	setDepartmentSearch,
 	useDepartmentSearch,
-} from "@/features/departments/model/department-list-store";
+} from "@/features/departments/department-list/model/department-list-store";
 import { SearchInput } from "@/shared/components/search-input";
 
 export function SelectDepartmentSearch({

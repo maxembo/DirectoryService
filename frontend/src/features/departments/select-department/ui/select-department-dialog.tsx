@@ -1,5 +1,5 @@
 import { DepartmentShortDto } from "@/entities/departments/model/types";
-import { DepartmentListId } from "@/features/departments/model/department-list-store";
+import { DepartmentListId } from "@/features/departments/department-list/model/department-list-store";
 import { Button } from "@/shared/components/ui/button";
 import {
 	Dialog,

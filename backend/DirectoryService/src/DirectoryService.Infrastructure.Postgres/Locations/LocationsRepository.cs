@@ -1,6 +1,7 @@
 using CSharpFunctionalExtensions;
 using Dapper;
 using DirectoryService.Application.Locations;
+using DirectoryService.Domain;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Locations;
 using DirectoryService.Infrastructure.Postgres.Database;
@@ -80,13 +81,15 @@ public class LocationsRepository : ILocationsRepository
             : UnitResult.Success<Errors>();
     }
 
-    public async Task<UnitResult<Error>> DeleteUnusedLocationsByDepartmentIdAsync(
+    public async Task<UnitResult<Error>> SoftDeleteUnusedLocationsByDepartmentIdAsync(
         DepartmentId departmentId, CancellationToken cancellationToken = default)
     {
         const string sql = """
                            UPDATE locations l
                            SET is_active  = false,
-                               deleted_at = NOW()
+                               deleted_at = NOW(),
+                               updated_at = NOW(),
+                               deletion_reason = @deletionReason
                            FROM department_locations dl
                            WHERE dl.location_id = l.id
                              AND dl.department_id = @departmentId
@@ -103,15 +106,67 @@ public class LocationsRepository : ILocationsRepository
 
         try
         {
-            await dbConnection.ExecuteAsync(sql, param: new { departmentId = departmentId.Value });
+            await dbConnection.ExecuteAsync(
+                sql,
+                param: new
+                {
+                    departmentId = departmentId.Value,
+                    deletionReason = DeletionReason.NO_ACTIVE_DEPARTMENTS.ToString(),
+                });
 
             return UnitResult.Success<Error>();
         }
         catch (Exception ex)
         {
-            _logger.LogError("Failed to delete locations");
+            _logger.LogError(
+                ex,
+                "Failed to soft delete locations for department {DepartmentId}",
+                departmentId.Value);
 
-            return GeneralErrors.Database(ex.Message);
+            return GeneralErrors.Database(
+                message: "Не удалось пометить как мягкое удаление локации подразделения.");
+        }
+    }
+
+    public async Task<UnitResult<Error>> RestoreLocationsByDepartmentIdAsync(
+        DepartmentId departmentId, CancellationToken cancellationToken = default)
+    {
+        const string sql = """
+                           UPDATE locations l
+                           SET is_active  = true,
+                               deleted_at = NULL,
+                               updated_at = NOW(),
+                               deletion_reason = NULL
+                           FROM department_locations dl
+                           WHERE dl.location_id = l.id
+                             AND dl.department_id = @departmentId
+                             AND l.is_active = false
+                             AND l.deletion_reason = @deletionReason
+                           """;
+
+        var dbConnection = _dbContext.Database.GetDbConnection();
+
+        try
+        {
+            await dbConnection.ExecuteAsync(
+                sql,
+                param: new
+                {
+                    departmentId = departmentId.Value,
+                    deletionReason = DeletionReason.NO_ACTIVE_DEPARTMENTS.ToString(),
+                });
+
+            return UnitResult.Success<Error>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "Failed to restore locations for department {DepartmentId}",
+                departmentId.Value);
+
+            return GeneralErrors.Database(
+                message: "Не удалось восстановить локации подразделения.");
         }
     }
 

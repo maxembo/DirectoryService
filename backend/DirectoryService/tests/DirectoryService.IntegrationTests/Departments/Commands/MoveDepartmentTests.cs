@@ -5,7 +5,7 @@ using DirectoryService.IntegrationTests.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using SharedService.SharedKernel;
 
-namespace DirectoryService.IntegrationTests.Departments;
+namespace DirectoryService.IntegrationTests.Departments.Commands;
 
 public class MoveDepartmentTests : DirectoryBaseTests
 {
@@ -118,7 +118,7 @@ public class MoveDepartmentTests : DirectoryBaseTests
                 Assert.NotNull(departmentFronted);
                 Assert.Equal("dev.frontend", departmentFronted.Path.Value);
                 Assert.Equal(1, departmentFronted.Path.Depth);
-                Assert.Equal(dev.Id.Value, departmentFronted.ParentId.Value);
+                Assert.Equal(dev.Id, departmentFronted.ParentId);
             });
 
         Assert.True(result.IsSuccess);

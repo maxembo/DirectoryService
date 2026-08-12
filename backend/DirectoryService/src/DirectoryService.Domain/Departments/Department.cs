@@ -10,7 +10,8 @@ public sealed class Department : BaseEntity<DepartmentId>, ISoftDeletable
     // ef core
     private Department(DepartmentId id)
         : base(id)
-    { }
+    {
+    }
 
     public Department(
         DepartmentId id,
@@ -175,7 +176,19 @@ public sealed class Department : BaseEntity<DepartmentId>, ISoftDeletable
 
     public void MarkAsDelete()
     {
+        var now = DateTime.UtcNow;
+
         IsActive = false;
-        DeletedAt = DateTime.UtcNow;
+        DeletedAt = now;
+
+        UpdatedAt = now;
+    }
+
+    public void Restore()
+    {
+        IsActive = true;
+        DeletedAt = null;
+
+        UpdatedAt = DateTime.UtcNow;
     }
 }

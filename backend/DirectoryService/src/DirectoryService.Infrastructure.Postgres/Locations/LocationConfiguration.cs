@@ -79,5 +79,10 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
 
         builder.Property(l => l.DeletedAt)
             .HasColumnName("deleted_at");
+
+        builder.Property(l => l.DeletionReason)
+            .HasConversion<string>()
+            .HasMaxLength(50)
+            .HasColumnName("deletion_reason");
     }
 }

@@ -21,7 +21,7 @@ public class SoftDeleteDepartmentHandler : ICommandHandler<Guid, SoftDeleteDepar
     private readonly IPositionsRepository _positionsRepository;
     private readonly IValidator<SoftDeleteDepartmentCommand> _validator;
     private readonly HybridCache _cache;
-    private ILogger<SoftDeleteDepartmentHandler> _logger;
+    private readonly ILogger<SoftDeleteDepartmentHandler> _logger;
 
     public SoftDeleteDepartmentHandler(
         IDepartmentsRepository departmentsRepository,
@@ -81,7 +81,7 @@ public class SoftDeleteDepartmentHandler : ICommandHandler<Guid, SoftDeleteDepar
         }
 
         var deleteUnusedLocationsResult =
-            await _locationsRepository.DeleteUnusedLocationsByDepartmentIdAsync(departmentId, cancellationToken);
+            await _locationsRepository.SoftDeleteUnusedLocationsByDepartmentIdAsync(departmentId, cancellationToken);
         if (deleteUnusedLocationsResult.IsFailure)
         {
             transaction.Rollback();
@@ -89,20 +89,25 @@ public class SoftDeleteDepartmentHandler : ICommandHandler<Guid, SoftDeleteDepar
         }
 
         var deleteUnusedPositionsResult =
-            await _positionsRepository.DeleteUnusedPositionsByDepartmentIdAsync(departmentId, cancellationToken);
+            await _positionsRepository.SoftDeleteUnusedPositionsByDepartmentIdAsync(departmentId, cancellationToken);
         if (deleteUnusedPositionsResult.IsFailure)
         {
             transaction.Rollback();
             return deleteUnusedPositionsResult.Error.ToErrors();
         }
 
-        await _transactionManager.SaveChangeAsync(cancellationToken);
-
-        var commitedResult = transaction.Commit();
-        if (commitedResult.IsFailure)
+        var saveChangesResult = await _transactionManager.SaveChangeAsync(cancellationToken);
+        if (saveChangesResult.IsFailure)
         {
             transaction.Rollback();
-            return commitedResult.Error.ToErrors();
+            return saveChangesResult.Error.ToErrors();
+        }
+
+        var commitResult = transaction.Commit();
+        if (commitResult.IsFailure)
+        {
+            transaction.Rollback();
+            return commitResult.Error.ToErrors();
         }
 
         await _cache.RemoveByTagAsync(CacheKeys.DEPARTMENT_KEY, cancellationToken);

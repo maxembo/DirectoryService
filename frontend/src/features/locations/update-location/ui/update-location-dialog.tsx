@@ -15,8 +15,8 @@ import { Label } from "@/shared/components/ui/label";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import {
+	LocationFormData,
 	locationSchema,
-	UpdateLocationFormData,
 } from "../../location-list/model/location-form";
 import { useUpdateLocation } from "../model/use-update-location";
 
@@ -31,7 +31,7 @@ export function UpdateLocationDialog({ location, open, setOpen }: Props) {
 		register,
 		handleSubmit,
 		formState: { errors },
-	} = useForm<UpdateLocationFormData>({
+	} = useForm<LocationFormData>({
 		defaultValues: location,
 		resolver: zodResolver(locationSchema),
 	});
@@ -42,7 +42,7 @@ export function UpdateLocationDialog({ location, open, setOpen }: Props) {
 		setOpen(false);
 	};
 
-	const onSubmit = async (data: UpdateLocationFormData) => {
+	const onSubmit = async (data: LocationFormData) => {
 		try {
 			await updateLocation({ locationId: location.id, ...data });
 			handleClose();

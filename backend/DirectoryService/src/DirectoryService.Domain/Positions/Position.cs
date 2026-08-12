@@ -5,11 +5,6 @@ namespace DirectoryService.Domain.Positions;
 
 public sealed class Position : BaseEntity<PositionId>, ISoftDeletable
 {
-    // ef core
-    private Position(PositionId id)
-        : base(id)
-    { }
-
     public Position(
         PositionId id,
         PositionName name,
@@ -20,6 +15,12 @@ public sealed class Position : BaseEntity<PositionId>, ISoftDeletable
         Name = name;
         Description = description;
         _departments = departments.ToList();
+    }
+
+    // ef core
+    private Position(PositionId id)
+        : base(id)
+    {
     }
 
     private readonly List<DepartmentPosition> _departments = [];
@@ -34,10 +35,11 @@ public sealed class Position : BaseEntity<PositionId>, ISoftDeletable
 
     public DateTime? DeletedAt { get; private set; }
 
+    public DeletionReason? DeletionReason { get; private set; }
+
     public void MarkAsDelete()
     {
-        IsActive = false;
-        DeletedAt = DateTime.UtcNow;
+        ApplySoftDelete(Domain.DeletionReason.MANUAL);
     }
 
     public void Update(PositionName name, Description? description)
@@ -46,5 +48,15 @@ public sealed class Position : BaseEntity<PositionId>, ISoftDeletable
         Description = description;
 
         UpdatedAt = DateTime.UtcNow;
+    }
+
+    private void ApplySoftDelete(DeletionReason reason)
+    {
+        var now = DateTime.UtcNow;
+        IsActive = false;
+        DeletedAt = now;
+        DeletionReason = reason;
+
+        UpdatedAt = now;
     }
 }

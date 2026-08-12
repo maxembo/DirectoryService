@@ -7,8 +7,8 @@ import { toast } from "sonner";
 export function useRestoreLocation() {
 	const mutation = useMutation({
 		mutationFn: locationsApi.restoreLocation,
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: [locationsApi.baseKey] });
+		onSuccess: async () => {
+			await queryClient.invalidateQueries({ queryKey: [locationsApi.baseKey] });
 			toast.success(`Локация успешно восстановлена`);
 		},
 		onError: (error) => {

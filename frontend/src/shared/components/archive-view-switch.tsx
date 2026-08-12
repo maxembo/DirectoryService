@@ -16,7 +16,7 @@ export function ArchiveViewSwitch({ value, onValueChange, title }: Props) {
 		>
 			<Button
 				type="button"
-				aria-selected={value === "active"}
+				aria-pressed={value === "active"}
 				variant={value === "active" ? "default" : "outline"}
 				onClick={() => onValueChange("active")}
 			>
@@ -24,7 +24,7 @@ export function ArchiveViewSwitch({ value, onValueChange, title }: Props) {
 			</Button>
 			<Button
 				type="button"
-				aria-selected={value === "archived"}
+				aria-pressed={value === "archived"}
 				variant={value === "archived" ? "default" : "outline"}
 				onClick={() => onValueChange("archived")}
 			>

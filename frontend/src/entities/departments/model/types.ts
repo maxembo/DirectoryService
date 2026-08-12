@@ -8,7 +8,7 @@ export type DepartmentShortDto = {
 	isActive: boolean;
 	createdAt: string;
 	updatedAt: string;
-	deletedAt: string;
+	deletedAt: string | null;
 };
 
 export type DepartmentTreeDto = {
