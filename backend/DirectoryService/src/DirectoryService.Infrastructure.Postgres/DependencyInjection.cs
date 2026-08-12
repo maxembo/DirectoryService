@@ -67,9 +67,9 @@ public static class DependencyInjection
                 .Where(t => t.IsClass && typeof(IDapperJson).IsAssignableFrom(t))
                 .ToList();
 
-            foreach (Type? type in jsonTypes)
+            foreach (var type in jsonTypes)
             {
-                Type? handlerType = typeof(JsonTypeHandler<>).MakeGenericType(type);
+                var handlerType = typeof(JsonTypeHandler<>).MakeGenericType(type);
                 object? handler = Activator.CreateInstance(handlerType);
                 SqlMapper.AddTypeHandler(
                     type, handler as SqlMapper.ITypeHandler ?? throw new InvalidOperationException());

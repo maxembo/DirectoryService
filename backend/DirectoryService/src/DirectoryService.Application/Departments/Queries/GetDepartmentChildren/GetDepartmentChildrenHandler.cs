@@ -1,10 +1,8 @@
-﻿using System.Data.Common;
-using CSharpFunctionalExtensions;
+﻿using CSharpFunctionalExtensions;
 using Dapper;
 using DirectoryService.Application.Constants;
 using DirectoryService.Contracts.Departments.GetDepartments.Dtos;
 using FluentValidation;
-using FluentValidation.Results;
 using Microsoft.Extensions.Caching.Hybrid;
 using SharedService.Core.Abstractions;
 using SharedService.Core.Database;
@@ -34,7 +32,7 @@ public class GetDepartmentChildrenHandler
     public async Task<Result<PaginationEnvelope<GetDepartmentChildrenDto>, Errors>> Handle(
         GetDepartmentChildrenQuery query, CancellationToken cancellationToken)
     {
-        ValidationResult? validationResult = await _validator.ValidateAsync(query, cancellationToken);
+        var validationResult = await _validator.ValidateAsync(query, cancellationToken);
         if (!validationResult.IsValid)
         {
             return validationResult.ToErrors();
@@ -55,7 +53,7 @@ public class GetDepartmentChildrenHandler
             key,
             async _ =>
             {
-                Result<PaginationEnvelope<GetDepartmentChildrenDto>> result = await GetDepartmentChildren(query);
+                var result = await GetDepartmentChildren(query);
 
                 return result.IsFailure
                     ? new PaginationEnvelope<GetDepartmentChildrenDto>([], 0, 0, 0)
@@ -77,12 +75,12 @@ public class GetDepartmentChildrenHandler
                                   d.is_active,
                                   d.created_at,
                                   d.updated_at,
-                           
+
                                   (EXISTS(SELECT 1
                                           FROM departments child
                                           WHERE parent_id = d.id 
                                             AND child.is_active = true)) AS has_more_children,
-                           
+
                                   COUNT(*) OVER ()                 AS total_count
                            FROM departments d
                            WHERE d.parent_id = @ParentId
@@ -91,7 +89,7 @@ public class GetDepartmentChildrenHandler
                            LIMIT @ChildSize OFFSET @ChildPage
                            """;
 
-        DbConnection? dbConnection = _dbConnectionFactory.GetDbConnection();
+        var dbConnection = _dbConnectionFactory.GetDbConnection();
 
         long? totalCount = null;
 

@@ -1,11 +1,9 @@
-﻿using System.Data.Common;
-using CSharpFunctionalExtensions;
+﻿using CSharpFunctionalExtensions;
 using Dapper;
 using DirectoryService.Application.Constants;
 using DirectoryService.Contracts.Departments.GetDepartments.Dtos;
 using DirectoryService.Contracts.Departments.GetDepartments.Requests;
 using FluentValidation;
-using FluentValidation.Results;
 using Microsoft.Extensions.Caching.Hybrid;
 using SharedService.Core.Abstractions;
 using SharedService.Core.Database;
@@ -36,7 +34,7 @@ public class
     public async Task<Result<PaginationEnvelope<GetDepartmentTreeRootsDto>, Errors>> Handle(
         GetDepartmentTreeRootsQuery query, CancellationToken cancellationToken)
     {
-        ValidationResult? validationResult = await _validator.ValidateAsync(query.Request, cancellationToken);
+        var validationResult = await _validator.ValidateAsync(query.Request, cancellationToken);
         if (!validationResult.IsValid)
         {
             return validationResult.ToErrors();
@@ -57,7 +55,7 @@ public class
             key,
             async _ =>
             {
-                Result<PaginationEnvelope<GetDepartmentTreeRootsDto>, Errors> result =
+                var result =
                     await GetDepartmentTreeRoots(query);
                 return result.IsFailure
                     ? new PaginationEnvelope<GetDepartmentTreeRootsDto>([], 0, 0, 0)
@@ -86,7 +84,7 @@ public class
                                                 AND d.is_active = true
                                           ORDER BY d.created_at
                                           LIMIT @RootSize OFFSET @RootPage),
-                           
+
                                 ranked_children AS (SELECT d.id,
                                                            d.parent_id,
                                                            d.name,
@@ -112,7 +110,7 @@ public class
                                   r.created_at,
                                   r.updated_at,
                                   r.total_count,
-                           
+
                                   (EXISTS(SELECT 1
                                           FROM departments d
                                           WHERE d.parent_id = r.id 
@@ -131,7 +129,7 @@ public class
                                   rc.created_at,
                                   rc.updated_at,
                                   rc.total_count,
-                           
+
                                   (EXISTS(SELECT 1
                                           FROM departments d
                                           WHERE d.parent_id = rc.id 
@@ -141,7 +139,7 @@ public class
                            WHERE rc.child_rank <= @Prefetch
                            """;
 
-        DbConnection? dbConnection = _dbConnectionFactory.GetDbConnection();
+        var dbConnection = _dbConnectionFactory.GetDbConnection();
 
         long? totalCount = null;
 
@@ -167,10 +165,10 @@ public class
         var departmentDictionary = departments.ToDictionary(d => d.Id);
         List<GetDepartmentTreeRootsDto> roots = [];
 
-        foreach (GetDepartmentTreeRootsDto? department in departmentDictionary.Values)
+        foreach (var department in departmentDictionary.Values)
         {
             if (department.ParentId.HasValue &&
-                departmentDictionary.TryGetValue(department.ParentId.Value, out GetDepartmentTreeRootsDto? parent))
+                departmentDictionary.TryGetValue(department.ParentId.Value, out var parent))
             {
                 parent.Children.Add(department.Id);
             }

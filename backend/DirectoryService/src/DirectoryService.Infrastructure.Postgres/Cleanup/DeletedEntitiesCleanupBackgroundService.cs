@@ -34,7 +34,7 @@ public class DeletedEntitiesCleanupBackgroundService : BackgroundService
         {
             while (await timer.WaitForNextTickAsync(stoppingToken))
             {
-                UnitResult<Error> result = await DeleteInactiveDepartmentsAsync(stoppingToken);
+                var result = await DeleteInactiveDepartmentsAsync(stoppingToken);
 
                 if (result.IsSuccess)
                 {
@@ -55,9 +55,9 @@ public class DeletedEntitiesCleanupBackgroundService : BackgroundService
 
     private async Task<UnitResult<Error>> DeleteInactiveDepartmentsAsync(CancellationToken stoppingToken)
     {
-        await using AsyncServiceScope scope = _serviceScopeFactory.CreateAsyncScope();
+        await using var scope = _serviceScopeFactory.CreateAsyncScope();
 
-        IDeletedEntitiesCleanupService? deletedRecordsCleanerService =
+        var deletedRecordsCleanerService =
             scope.ServiceProvider.GetRequiredService<IDeletedEntitiesCleanupService>();
 
         return await deletedRecordsCleanerService.Process(stoppingToken);

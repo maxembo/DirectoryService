@@ -28,17 +28,17 @@ public class SoftDeletePositionHandler : ICommandHandler<Guid, SoftDeletePositio
     {
         var positionId = PositionId.Create(command.PositionId);
 
-        Result<Position, Error> positionResult = await _positionRepository.GetByIdAsync(positionId, cancellationToken);
+        var positionResult = await _positionRepository.GetByIdAsync(positionId, cancellationToken);
         if (positionResult.IsFailure)
         {
             return positionResult.Error.ToErrors();
         }
 
-        Position? position = positionResult.Value;
+        var position = positionResult.Value;
 
         position.MarkAsDelete();
 
-        UnitResult<Error> transactionResult = await _transactionManager.SaveChangeAsync(cancellationToken);
+        var transactionResult = await _transactionManager.SaveChangeAsync(cancellationToken);
         if (transactionResult.IsFailure)
         {
             return transactionResult.Error.ToErrors();

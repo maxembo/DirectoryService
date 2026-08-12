@@ -6,7 +6,6 @@ using DirectoryService.Domain.DepartmentLocations;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Locations;
 using FluentValidation;
-using FluentValidation.Results;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
 using SharedService.Core.Abstractions;
@@ -43,24 +42,24 @@ public class UpdateDepartmentLocationIdsHandler : ICommandHandler<Guid, UpdateDe
     public async Task<Result<Guid, Errors>> Handle(
         UpdateDepartmentLocationIdsCommand command, CancellationToken cancellationToken = default)
     {
-        ValidationResult? validationResult = await _validator.ValidateAsync(command.Request, cancellationToken);
+        var validationResult = await _validator.ValidateAsync(command.Request, cancellationToken);
         if (!validationResult.IsValid)
         {
             return validationResult.ToErrors();
         }
 
-        Result<ITransactionScope, Error> transactionResult =
+        var transactionResult =
             await _transactionManager.BeginTransactionAsync(cancellationToken);
         if (transactionResult.IsFailure)
         {
             return transactionResult.Error.ToErrors();
         }
 
-        using ITransactionScope? transaction = transactionResult.Value;
+        using var transaction = transactionResult.Value;
 
         var departmentId = DepartmentId.Create(command.DepartmentId);
 
-        Result<Department, Error> getDepartmentResult =
+        var getDepartmentResult =
             await _departmentsRepository.GetByIdAsync(departmentId, cancellationToken);
         if (getDepartmentResult.IsFailure)
         {
@@ -68,9 +67,9 @@ public class UpdateDepartmentLocationIdsHandler : ICommandHandler<Guid, UpdateDe
             return getDepartmentResult.Error.ToErrors();
         }
 
-        Department? department = getDepartmentResult.Value;
+        var department = getDepartmentResult.Value;
 
-        UnitResult<Errors> checkExistingIdsResult =
+        var checkExistingIdsResult =
             await _locationsRepository.CheckExistingAndActiveIdsAsync(command.Request.LocationIds, cancellationToken);
         if (checkExistingIdsResult.IsFailure)
         {
@@ -78,7 +77,7 @@ public class UpdateDepartmentLocationIdsHandler : ICommandHandler<Guid, UpdateDe
             return checkExistingIdsResult.Error;
         }
 
-        IEnumerable<DepartmentLocation>? locationIds = command.Request.LocationIds
+        var locationIds = command.Request.LocationIds
             .Select(locationId => new DepartmentLocation(
                 DepartmentLocationId.CreateNew(), department.Id, LocationId.Create(locationId)));
 
@@ -88,7 +87,7 @@ public class UpdateDepartmentLocationIdsHandler : ICommandHandler<Guid, UpdateDe
 
         await _transactionManager.SaveChangeAsync(cancellationToken);
 
-        UnitResult<Error> commitedResult = transaction.Commit();
+        var commitedResult = transaction.Commit();
         if (commitedResult.IsFailure)
         {
             return commitedResult.Error.ToErrors();

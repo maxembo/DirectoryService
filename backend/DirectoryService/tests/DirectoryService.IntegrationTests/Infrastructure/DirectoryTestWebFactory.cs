@@ -32,8 +32,8 @@ public class DirectoryTestWebFactory : WebApplicationFactory<Program>, IAsyncLif
     {
         await _dbContainer.StartAsync();
 
-        await using AsyncServiceScope scope = Services.CreateAsyncScope();
-        DirectoryServiceDbContext? dbContext = scope.ServiceProvider.GetRequiredService<DirectoryServiceDbContext>();
+        await using var scope = Services.CreateAsyncScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<DirectoryServiceDbContext>();
 
         await dbContext.Database.EnsureDeletedAsync();
         await dbContext.Database.MigrateAsync();

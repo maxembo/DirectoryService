@@ -48,7 +48,7 @@ public sealed class Position : BaseEntity<PositionId>, ISoftDeletable
 
     private void ApplySoftDelete(DeletionReason reason)
     {
-        DateTime now = DateTime.UtcNow;
+        var now = DateTime.UtcNow;
         IsActive = false;
         DeletedAt = now;
         DeletionReason = reason;

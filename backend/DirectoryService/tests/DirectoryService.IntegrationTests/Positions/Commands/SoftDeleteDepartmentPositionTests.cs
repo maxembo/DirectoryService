@@ -1,8 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Departments.Commands.SoftDeleteDepartments;
-using DirectoryService.Domain.DepartmentPositions;
-using DirectoryService.Domain.Departments;
-using DirectoryService.Domain.Positions;
 using DirectoryService.IntegrationTests.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using SharedService.SharedKernel;
@@ -15,9 +12,9 @@ public class SoftDeleteDepartmentPositionTests(DirectoryTestWebFactory factory) 
     public async Task SoftDeleteDepartment_WhenPositionHasNoOtherActiveDepartment_ShouldDeactivatePosition()
     {
         // arrange
-        Department? department = await SeedActiveDepartment();
+        var department = await SeedActiveDepartment();
 
-        PositionId? positionId = await CreatePosition(
+        var positionId = await CreatePosition(
             "Position without another department",
             "description",
             [department.Id]);
@@ -25,7 +22,7 @@ public class SoftDeleteDepartmentPositionTests(DirectoryTestWebFactory factory) 
         var command = new SoftDeleteDepartmentCommand(department.Id.Value);
 
         // act
-        Result<Guid, Errors> result = await Execute(command);
+        var result = await Execute(command);
 
         // assert
         Assert.True(result.IsSuccess);
@@ -33,20 +30,20 @@ public class SoftDeleteDepartmentPositionTests(DirectoryTestWebFactory factory) 
 
         await ExecuteInDb(async dbContext =>
         {
-            Department? deletedDepartment = await dbContext.Departments
+            var deletedDepartment = await dbContext.Departments
                 .SingleAsync(currentDepartment => currentDepartment.Id == department.Id);
 
             Assert.False(deletedDepartment.IsActive);
             Assert.NotNull(deletedDepartment.DeletedAt);
 
-            Position? position = await dbContext.Positions
+            var position = await dbContext.Positions
                 .Include(currentPosition => currentPosition.Departments)
                 .SingleAsync(currentPosition => currentPosition.Id == positionId);
 
             Assert.False(position.IsActive);
             Assert.NotNull(position.DeletedAt);
 
-            DepartmentPosition? relation = Assert.Single(position.Departments);
+            var relation = Assert.Single(position.Departments);
             Assert.Equal(department.Id, relation.DepartmentId);
             Assert.Equal(positionId, relation.PositionId);
         });
@@ -56,10 +53,10 @@ public class SoftDeleteDepartmentPositionTests(DirectoryTestWebFactory factory) 
     public async Task SoftDeleteDepartment_WhenPositionHasAnotherActiveDepartment_ShouldKeepPositionActive()
     {
         // arrange
-        Department? departmentToDelete = await SeedActiveDepartment("deleted", "deleted-department");
-        Department? remainingDepartment = await SeedActiveDepartment("remaining", "remaining-department");
+        var departmentToDelete = await SeedActiveDepartment("deleted", "deleted-department");
+        var remainingDepartment = await SeedActiveDepartment("remaining", "remaining-department");
 
-        PositionId? positionId = await CreatePosition(
+        var positionId = await CreatePosition(
             "Position with another active department",
             "description",
             [departmentToDelete.Id, remainingDepartment.Id]);
@@ -67,7 +64,7 @@ public class SoftDeleteDepartmentPositionTests(DirectoryTestWebFactory factory) 
         var command = new SoftDeleteDepartmentCommand(departmentToDelete.Id.Value);
 
         // act
-        Result<Guid, Errors> result = await Execute(command);
+        var result = await Execute(command);
 
         // assert
         Assert.True(result.IsSuccess);
@@ -75,10 +72,10 @@ public class SoftDeleteDepartmentPositionTests(DirectoryTestWebFactory factory) 
 
         await ExecuteInDb(async dbContext =>
         {
-            Department? deletedDepartment = await dbContext.Departments
+            var deletedDepartment = await dbContext.Departments
                 .SingleAsync(department => department.Id == departmentToDelete.Id);
 
-            Department? activeDepartment = await dbContext.Departments
+            var activeDepartment = await dbContext.Departments
                 .SingleAsync(department => department.Id == remainingDepartment.Id);
 
             Assert.False(deletedDepartment.IsActive);
@@ -86,7 +83,7 @@ public class SoftDeleteDepartmentPositionTests(DirectoryTestWebFactory factory) 
             Assert.True(activeDepartment.IsActive);
             Assert.Null(activeDepartment.DeletedAt);
 
-            Position? position = await dbContext.Positions
+            var position = await dbContext.Positions
                 .Include(currentPosition => currentPosition.Departments)
                 .SingleAsync(currentPosition => currentPosition.Id == positionId);
 

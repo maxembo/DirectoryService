@@ -1,9 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Departments.Commands.UpdateDepartments;
 using DirectoryService.Contracts.Departments.UpdateDepartment;
-using DirectoryService.Domain.DepartmentLocations;
 using DirectoryService.Domain.Departments;
-using DirectoryService.Domain.Locations;
 using DirectoryService.IntegrationTests.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using SharedService.SharedKernel;
@@ -20,24 +18,24 @@ public class UpdateDepartmentLocationIdsTests : DirectoryBaseTests
     public async Task UpdateDepartmentLocationsWithValidShouldSucceed()
     {
         // arrange
-        LocationId? locationId = await CreateLocation("location 1");
+        var locationId = await CreateLocation("location 1");
 
-        CancellationToken cancellationToken = CancellationToken.None;
+        var cancellationToken = CancellationToken.None;
 
-        Department? parent = await CreateParentDepartment("подразделение", "company", [locationId]);
+        var parent = await CreateParentDepartment("подразделение", "company", [locationId]);
 
         // act
-        Result<Guid, Errors> result = await Execute(
+        var result = await Execute(
             new UpdateDepartmentLocationIdsCommand(
                 parent.Id.Value, new UpdateDepartmentLocationIdsRequest([locationId.Value])));
 
         // assert
         await ExecuteInDb(async dbContext =>
         {
-            Department? department = await dbContext.Departments.FirstAsync(
+            var department = await dbContext.Departments.FirstAsync(
                 d => d.Id == DepartmentId.Create(result.Value), cancellationToken);
 
-            DepartmentLocation? departmentLocations = await dbContext.DepartmentLocations
+            var departmentLocations = await dbContext.DepartmentLocations
                 .FirstAsync(dl => dl.LocationId == locationId, cancellationToken);
 
             Assert.NotNull(department);
@@ -56,7 +54,7 @@ public class UpdateDepartmentLocationIdsTests : DirectoryBaseTests
         var departmentId = DepartmentId.CreateNew();
 
         // act
-        Result<Guid, Errors> result = await Execute(
+        var result = await Execute(
             new UpdateDepartmentLocationIdsCommand(departmentId.Value, new UpdateDepartmentLocationIdsRequest([])));
 
         // assert

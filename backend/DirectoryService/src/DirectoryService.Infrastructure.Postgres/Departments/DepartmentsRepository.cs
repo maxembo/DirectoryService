@@ -1,5 +1,4 @@
-﻿using System.Data.Common;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using CSharpFunctionalExtensions;
 using Dapper;
 using DirectoryService.Application.Departments;
@@ -28,7 +27,7 @@ public class DepartmentsRepository : IDepartmentsRepository
     {
         await _dbContext.AddAsync(department, cancellationToken);
 
-        UnitResult<Error> saveChangesResult = await _dbContext.SaveChangesResultAsync(cancellationToken);
+        var saveChangesResult = await _dbContext.SaveChangesResultAsync(cancellationToken);
         if (saveChangesResult.IsFailure)
         {
             return saveChangesResult.Error;
@@ -40,7 +39,7 @@ public class DepartmentsRepository : IDepartmentsRepository
     public async Task<Result<Department, Error>> GetByIdAsync(
         DepartmentId departmentId, CancellationToken cancellationToken = default)
     {
-        Department? department = await _dbContext.Departments
+        var department = await _dbContext.Departments
             .Where(d => d.IsActive == true)
             .FirstOrDefaultAsync(d => departmentId == d.Id, cancellationToken);
 
@@ -55,9 +54,9 @@ public class DepartmentsRepository : IDepartmentsRepository
     public async Task<UnitResult<Errors>> CheckExistingAndActiveAsync(
         Guid[] ids, CancellationToken cancellationToken = default)
     {
-        DepartmentId[]? departmentIds = DepartmentId.Create(ids);
+        var departmentIds = DepartmentId.Create(ids);
 
-        List<Guid>? existingIds = await _dbContext.Departments
+        var existingIds = await _dbContext.Departments
             .Where(d => departmentIds.Contains(d.Id) && d.IsActive)
             .Select(d => d.Id.Value)
             .ToListAsync(cancellationToken);
@@ -87,7 +86,7 @@ public class DepartmentsRepository : IDepartmentsRepository
     public async Task<Result<Department, Error>> GetActiveByIdWithLock(
         DepartmentId id, CancellationToken cancellationToken = default)
     {
-        Department? department = await _dbContext.Departments
+        var department = await _dbContext.Departments
             .FromSql($"SELECT d.* FROM departments d WHERE d.id = {id.Value} AND d.is_active = TRUE FOR UPDATE")
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -102,7 +101,7 @@ public class DepartmentsRepository : IDepartmentsRepository
     public async Task<Result<Department, Error>> GetByIdWithLock(
         DepartmentId id, CancellationToken cancellationToken = default)
     {
-        Department? department = await _dbContext.Departments
+        var department = await _dbContext.Departments
             .FromSql($"SELECT d.* FROM departments d WHERE d.id = {id.Value} FOR UPDATE")
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -124,7 +123,7 @@ public class DepartmentsRepository : IDepartmentsRepository
                            FOR UPDATE
                            """;
 
-        DbConnection? dbConnection = _dbContext.Database.GetDbConnection();
+        var dbConnection = _dbContext.Database.GetDbConnection();
 
         var sqlParams = new { parentPath = path.Value };
 
@@ -144,7 +143,7 @@ public class DepartmentsRepository : IDepartmentsRepository
                                              WHERE path <@ @departmentPath::ltree
                                              """;
 
-        DbConnection? dbConnection = _dbContext.Database.GetDbConnection();
+        var dbConnection = _dbContext.Database.GetDbConnection();
 
         try
         {
@@ -176,7 +175,7 @@ public class DepartmentsRepository : IDepartmentsRepository
                                              WHERE path <@ @departmentPath::ltree
                                              """;
 
-        DbConnection? dbConnection = _dbContext.Database.GetDbConnection();
+        var dbConnection = _dbContext.Database.GetDbConnection();
 
         try
         {
@@ -202,13 +201,13 @@ public class DepartmentsRepository : IDepartmentsRepository
                            ORDER BY depth
                            """;
 
-        DbConnection? dbConnection = _dbContext.Database.GetDbConnection();
+        var dbConnection = _dbContext.Database.GetDbConnection();
 
         try
         {
             var sqlParams = new { parentPath = parentPath.Value, departmentPath = departmentPath.Value };
 
-            IEnumerable<dynamic>? result = await dbConnection.QueryAsync(sql, sqlParams);
+            var result = await dbConnection.QueryAsync(sql, sqlParams);
 
             if (result.Any())
             {
@@ -228,7 +227,7 @@ public class DepartmentsRepository : IDepartmentsRepository
     public async Task<Result<Department, Error>> GetBy(
         Expression<Func<Department, bool>> predicate, CancellationToken cancellationToken)
     {
-        Department? department = await _dbContext.Departments.FirstOrDefaultAsync(predicate, cancellationToken);
+        var department = await _dbContext.Departments.FirstOrDefaultAsync(predicate, cancellationToken);
 
         if (department is null)
         {
@@ -255,7 +254,7 @@ public class DepartmentsRepository : IDepartmentsRepository
                            WHERE path <@ @departmentPath::ltree
                            """;
 
-        DbConnection? dbConnection = _dbContext.Database.GetDbConnection();
+        var dbConnection = _dbContext.Database.GetDbConnection();
 
         try
         {
@@ -359,9 +358,9 @@ public class DepartmentsRepository : IDepartmentsRepository
                                FROM departments d
                                LEFT JOIN expired e ON e.id = d.id
                                WHERE d.parent_id IS NULL
-                           
+
                                UNION ALL
-                           
+
                                SELECT child.id,
                                       e.id IS NOT NULL AS is_expired,
                                       CASE
@@ -406,7 +405,7 @@ public class DepartmentsRepository : IDepartmentsRepository
                                   OR d.depth IS DISTINCT FROM r.new_depth);
                            """;
 
-        DbConnection? dbConnection = _dbContext.Database.GetDbConnection();
+        var dbConnection = _dbContext.Database.GetDbConnection();
 
         try
         {
@@ -438,7 +437,7 @@ public class DepartmentsRepository : IDepartmentsRepository
                            WHERE path <@ @departmentPath::ltree;
                            """;
 
-        DbConnection? dbConnection = _dbContext.Database.GetDbConnection();
+        var dbConnection = _dbContext.Database.GetDbConnection();
 
         var sqlParams = new { departmentPath = departmentPath.Value, restoredPath = restoredPath.Value };
 

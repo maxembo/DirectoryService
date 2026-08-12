@@ -1,5 +1,4 @@
-﻿using System.Data.Common;
-using CSharpFunctionalExtensions;
+﻿using CSharpFunctionalExtensions;
 using Dapper;
 using DirectoryService.Application.Positions;
 using DirectoryService.Domain;
@@ -27,7 +26,7 @@ public class PositionsRepository : IPositionsRepository
     {
         await _dbContext.AddAsync(position, cancellationToken);
 
-        UnitResult<Error> saveChangesResult = await _dbContext.SaveChangesResultAsync(cancellationToken);
+        var saveChangesResult = await _dbContext.SaveChangesResultAsync(cancellationToken);
         if (saveChangesResult.IsFailure)
         {
             return saveChangesResult.Error;
@@ -57,7 +56,7 @@ public class PositionsRepository : IPositionsRepository
                              AND p.is_active = true
                            """;
 
-        DbConnection? dbConnection = _dbContext.Database.GetDbConnection();
+        var dbConnection = _dbContext.Database.GetDbConnection();
 
         try
         {
@@ -98,7 +97,7 @@ public class PositionsRepository : IPositionsRepository
                              AND p.deletion_reason = @deletionReason
                            """;
 
-        DbConnection? dbConnection = _dbContext.Database.GetDbConnection();
+        var dbConnection = _dbContext.Database.GetDbConnection();
 
         try
         {
@@ -144,7 +143,7 @@ public class PositionsRepository : IPositionsRepository
     public async Task<Result<Position, Error>> GetByIdAsync(
         PositionId positionId, CancellationToken cancellationToken = default)
     {
-        Position? position = await _dbContext.Positions
+        var position = await _dbContext.Positions
             .Where(p => p.IsActive)
             .FirstOrDefaultAsync(p => p.Id == positionId, cancellationToken);
 

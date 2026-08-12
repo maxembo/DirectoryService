@@ -5,7 +5,6 @@ using DirectoryService.Domain.DepartmentPositions;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Positions;
 using FluentValidation;
-using FluentValidation.Results;
 using Microsoft.Extensions.Logging;
 using SharedService.Core.Abstractions;
 using SharedService.Core.Validation;
@@ -35,7 +34,7 @@ public class CreatePositionHandler : ICommandHandler<Guid, CreatePositionCommand
     public async Task<Result<Guid, Errors>> Handle(
         CreatePositionCommand command, CancellationToken cancellationToken = default)
     {
-        ValidationResult? validationResult = await _validator.ValidateAsync(command.Request, cancellationToken);
+        var validationResult = await _validator.ValidateAsync(command.Request, cancellationToken);
         if (!validationResult.IsValid)
         {
             var errors = validationResult.ToErrors();
@@ -45,10 +44,10 @@ public class CreatePositionHandler : ICommandHandler<Guid, CreatePositionCommand
         }
 
         var positionId = PositionId.CreateNew();
-        PositionName? name = PositionName.Create(command.Request.Name).Value;
-        Description? description = Description.Create(command.Request.Description).Value;
+        var name = PositionName.Create(command.Request.Name).Value;
+        var description = Description.Create(command.Request.Description).Value;
 
-        UnitResult<Errors> checkExistingAndActiveResult =
+        var checkExistingAndActiveResult =
             await _departmentsRepository.CheckExistingAndActiveAsync(command.Request.DepartmentIds, cancellationToken);
         if (checkExistingAndActiveResult.IsFailure)
         {
@@ -61,7 +60,7 @@ public class CreatePositionHandler : ICommandHandler<Guid, CreatePositionCommand
 
         var position = new Position(positionId, name, description, departmentIds);
 
-        Result<Guid, Error> addPositionResult = await _positionsRepository.AddAsync(position, cancellationToken);
+        var addPositionResult = await _positionsRepository.AddAsync(position, cancellationToken);
         if (addPositionResult.IsFailure)
         {
             return addPositionResult.Error.ToErrors();

@@ -1,9 +1,7 @@
 ﻿using System.Data;
-using System.Data.Common;
 using CSharpFunctionalExtensions;
 using Dapper;
 using DirectoryService.Contracts.Departments.GetDepartments.Dtos;
-using DirectoryService.Contracts.Departments.GetDepartments.Requests;
 using SharedService.Core.Abstractions;
 using SharedService.Core.Database;
 using SharedService.SharedKernel;
@@ -26,7 +24,7 @@ public class GetDepartmentsHandler : IQueryHandler<PaginationEnvelope<Department
         var parameters = new DynamicParameters();
         var conditions = new List<string>();
 
-        GetDepartmentsRequest? request = query.Request;
+        var request = query.Request;
 
         if (request.LocationsIds is { Length: > 0 } locationsIds)
         {
@@ -83,11 +81,11 @@ public class GetDepartmentsHandler : IQueryHandler<PaginationEnvelope<Department
 
         string orderByClause = $"ORDER BY {sortBy} {sortDirection}, d.id {sortDirection}";
 
-        DbConnection? connection = _dbConnectionFactory.GetDbConnection();
+        var connection = _dbConnectionFactory.GetDbConnection();
 
         long? totalCount = 0;
 
-        IEnumerable<DepartmentShortDto>? departments =
+        var departments =
             await connection.QueryAsync<DepartmentShortDto, long, DepartmentShortDto>(
                 $"""
                  SELECT d.id,

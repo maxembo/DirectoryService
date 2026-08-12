@@ -200,10 +200,10 @@ csharp_space_between_square_brackets = false
 trailing_comma_in_multiline_lists = true
 dotnet_diagnostic.SA1413.severity = warning
 
-# Types: use keywords instead of BCL types, and permit var only when the type is clear
+# Types: keep built-in types explicit and prefer var for custom and compound types
 csharp_style_var_for_built_in_types = false:suggestion
 csharp_style_var_when_type_is_apparent = true:suggestion
-csharp_style_var_elsewhere = false:suggestion
+csharp_style_var_elsewhere = true:suggestion
 
 # Xml project files
 [*.{csproj,vbproj,vcxproj,vcxproj.filters,proj,nativeproj,locproj}]

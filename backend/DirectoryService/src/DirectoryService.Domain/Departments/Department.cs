@@ -82,7 +82,7 @@ public sealed class Department : BaseEntity<DepartmentId>, ISoftDeletable
             return GeneralErrors.Required("locations");
         }
 
-        Path? path = parent.Path.CreateChild(identifier);
+        var path = parent.Path.CreateChild(identifier);
 
         return new Department(
             departmentId ?? DepartmentId.CreateNew(), name, identifier, path, locationsList, parent.Id);
@@ -90,7 +90,7 @@ public sealed class Department : BaseEntity<DepartmentId>, ISoftDeletable
 
     public void MarkAsDelete()
     {
-        DateTime now = DateTime.UtcNow;
+        var now = DateTime.UtcNow;
 
         IsActive = false;
         DeletedAt = now;
@@ -100,7 +100,7 @@ public sealed class Department : BaseEntity<DepartmentId>, ISoftDeletable
 
     public UnitResult<Error> Rename(string name)
     {
-        Result<DepartmentName, Error> nameResult = DepartmentName.Create(name);
+        var nameResult = DepartmentName.Create(name);
 
         if (nameResult.IsFailure)
         {

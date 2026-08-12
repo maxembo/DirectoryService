@@ -1,6 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Locations.Commands.SoftDeleteLocations;
-using DirectoryService.Domain.Locations;
 using DirectoryService.IntegrationTests.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using SharedService.SharedKernel;
@@ -16,7 +15,7 @@ public class SoftDeleteLocationTests(DirectoryTestWebFactory factory) : Director
         var command = new SoftDeleteLocationCommand(Guid.NewGuid());
 
         // act
-        Result<Guid, Errors> result = await Execute(command);
+        var result = await Execute(command);
 
         // assert
         Assert.True(result.IsFailure);
@@ -30,21 +29,21 @@ public class SoftDeleteLocationTests(DirectoryTestWebFactory factory) : Director
         // arrange
         const string alreadyInactiveName = "soft delete name";
 
-        LocationId? locationToDeleteId = await CreateLocation(alreadyInactiveName);
+        var locationToDeleteId = await CreateLocation(alreadyInactiveName);
 
         await MarkLocationAsDeleted(locationToDeleteId);
 
         var command = new SoftDeleteLocationCommand(locationToDeleteId.Value);
 
         // act
-        Result<Guid, Errors> result = await Execute(command);
+        var result = await Execute(command);
 
         // assert
         Assert.True(result.IsFailure);
 
         await ExecuteInDb(async dbContext =>
         {
-            Location? location = await dbContext.Locations
+            var location = await dbContext.Locations
                 .SingleAsync(l => l.Id == locationToDeleteId, CancellationToken.None);
 
             Assert.False(location.IsActive);
@@ -62,12 +61,12 @@ public class SoftDeleteLocationTests(DirectoryTestWebFactory factory) : Director
         // arrange
         const string name = "soft delete name";
 
-        LocationId? locationToDeleteId = await CreateLocation(name);
+        var locationToDeleteId = await CreateLocation(name);
 
         var command = new SoftDeleteLocationCommand(locationToDeleteId.Value);
 
         // act
-        Result<Guid, Errors> result = await Execute(command);
+        var result = await Execute(command);
 
         // assert
         Assert.True(result.IsSuccess);
@@ -75,7 +74,7 @@ public class SoftDeleteLocationTests(DirectoryTestWebFactory factory) : Director
 
         await ExecuteInDb(async dbContext =>
         {
-            Location? location = await dbContext.Locations
+            var location = await dbContext.Locations
                 .SingleAsync(l => l.Id == locationToDeleteId, CancellationToken.None);
 
             Assert.False(location.IsActive);

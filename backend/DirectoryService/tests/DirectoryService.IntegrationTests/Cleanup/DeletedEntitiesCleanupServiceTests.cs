@@ -1,8 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Cleanup;
-using DirectoryService.Domain.Departments;
-using DirectoryService.Domain.Locations;
-using DirectoryService.Domain.Positions;
 using DirectoryService.IntegrationTests.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using SharedService.SharedKernel;
@@ -16,31 +13,31 @@ public class DeletedEntitiesCleanupServiceTests(DirectoryTestWebFactory factory)
     public async Task Process_WhenTwoExpiredDepartmentsHaveActiveChild_ShouldReparentChildAndUpdatePath()
     {
         // arrange
-        LocationId? locationId = await CreateLocation();
+        var locationId = await CreateLocation();
 
-        Department? company =
+        var company =
             await CreateParentDepartment("company", "company", [locationId]);
 
-        Department? development =
+        var development =
             await CreateChildDepartment("development", "development", company, [locationId]);
 
-        Department? backend =
+        var backend =
             await CreateChildDepartment("backend", "backend", development, [locationId]);
 
-        Department? team = await CreateChildDepartment("team", "team", backend, [locationId]);
+        var team = await CreateChildDepartment("team", "team", backend, [locationId]);
 
         await MarkDepartmentAsDeletedAt(development.Id, DateTime.UtcNow.AddMonths(-2));
         await MarkDepartmentAsDeletedAt(backend.Id, DateTime.UtcNow.AddMonths(-1));
 
         // act
-        UnitResult<Error> result = await ExecuteCleanup();
+        var result = await ExecuteCleanup();
 
         // assert
         Assert.True(result.IsSuccess);
 
         await ExecuteInDb(async dbContext =>
         {
-            Department? updatedTeam = await dbContext.Departments
+            var updatedTeam = await dbContext.Departments
                 .SingleAsync(d => d.Id == team.Id);
 
             Assert.True(await dbContext.Departments.AnyAsync(d => d.Id == company.Id));
@@ -63,28 +60,28 @@ public class DeletedEntitiesCleanupServiceTests(DirectoryTestWebFactory factory)
     public async Task Process_WhenExpiredDepartmentHasActiveChild_ShouldReparentChildAndUpdatePath()
     {
         // arrange
-        LocationId? locationId = await CreateLocation();
+        var locationId = await CreateLocation();
 
-        Department? company =
+        var company =
             await CreateParentDepartment("company", "company", [locationId]);
 
-        Department? development =
+        var development =
             await CreateChildDepartment("development", "development", company, [locationId]);
 
-        Department? backend =
+        var backend =
             await CreateChildDepartment("backend", "backend", development, [locationId]);
 
         await MarkDepartmentAsDeletedAt(development.Id, DateTime.UtcNow.AddMonths(-2));
 
         // act
-        UnitResult<Error> result = await ExecuteCleanup();
+        var result = await ExecuteCleanup();
 
         // assert
         Assert.True(result.IsSuccess);
 
         await ExecuteInDb(async dbContext =>
         {
-            Department? updateBackend = await dbContext.Departments
+            var updateBackend = await dbContext.Departments
                 .SingleAsync(d => d.Id == backend.Id);
 
             Assert.True(await dbContext.Departments.AnyAsync(d => d.Id == company.Id));
@@ -103,21 +100,21 @@ public class DeletedEntitiesCleanupServiceTests(DirectoryTestWebFactory factory)
     public async Task Process_WithExpiredAndRecentPositions_ShouldDeleteOnlyExpiredPosition()
     {
         // arrange
-        LocationId? locationId = await CreateLocation();
+        var locationId = await CreateLocation();
 
-        Department? department =
+        var department =
             await CreateParentDepartment("department", "department", [locationId]);
 
-        PositionId? expiredPositionId =
+        var expiredPositionId =
             await CreatePosition("developer", "description", [department.Id]);
 
-        PositionId? recentPositionId = await CreatePosition("recent", "recent", [department.Id]);
+        var recentPositionId = await CreatePosition("recent", "recent", [department.Id]);
 
         await MarkPositionAsDeletedAt(expiredPositionId, DateTime.UtcNow.AddDays(-31));
         await MarkPositionAsDeletedAt(recentPositionId, DateTime.UtcNow.AddDays(-14));
 
         // act
-        UnitResult<Error> result = await ExecuteCleanup();
+        var result = await ExecuteCleanup();
 
         // assert
         Assert.True(result.IsSuccess);
@@ -138,17 +135,17 @@ public class DeletedEntitiesCleanupServiceTests(DirectoryTestWebFactory factory)
     public async Task Process_WithExpiredAndRecentLocations_ShouldDeleteOnlyExpiredLocation()
     {
         // arrange
-        LocationId? expiredLocationId = await CreateLocation();
-        LocationId? recentLocationId = await CreateLocation("expired", country: "expired");
+        var expiredLocationId = await CreateLocation();
+        var recentLocationId = await CreateLocation("expired", country: "expired");
 
-        Department? department = await CreateParentDepartment(
+        var department = await CreateParentDepartment(
             "department", "department", [expiredLocationId, recentLocationId]);
 
         await MarkLocationAsDeletedAt(expiredLocationId, DateTime.UtcNow.AddMonths(-1).AddDays(-1));
         await MarkLocationAsDeletedAt(recentLocationId, DateTime.UtcNow.AddDays(-5));
 
         // act
-        UnitResult<Error> result = await ExecuteCleanup();
+        var result = await ExecuteCleanup();
 
         // assert
         Assert.True(result.IsSuccess);
@@ -169,16 +166,16 @@ public class DeletedEntitiesCleanupServiceTests(DirectoryTestWebFactory factory)
     public async Task Process_WhenCalledTwice_ShouldBeIdempotent()
     {
         // arrange
-        LocationId? locationId = await CreateLocation();
+        var locationId = await CreateLocation();
 
-        Department? department =
+        var department =
             await CreateParentDepartment("first-department", "first-department", [locationId]);
 
         await MarkDepartmentAsDeletedAt(department.Id, DateTime.UtcNow.AddMonths(-1).AddDays(-1));
 
         // act
-        UnitResult<Error> firstResult = await ExecuteCleanup();
-        UnitResult<Error> secondResult = await ExecuteCleanup();
+        var firstResult = await ExecuteCleanup();
+        var secondResult = await ExecuteCleanup();
 
         // assert
         Assert.True(firstResult.IsSuccess);
@@ -198,25 +195,25 @@ public class DeletedEntitiesCleanupServiceTests(DirectoryTestWebFactory factory)
     public async Task Process_WithExpiredAndRecentDepartments_ShouldDeleteOnlyExpiredDepartment()
     {
         // arrange
-        LocationId? locationId = await CreateLocation();
+        var locationId = await CreateLocation();
 
-        Department? expiredDepartment = await CreateParentDepartment("expired", "expired", [locationId]);
+        var expiredDepartment = await CreateParentDepartment("expired", "expired", [locationId]);
 
-        Department? recentDepartment = await CreateParentDepartment("recent", "recent", [locationId]);
+        var recentDepartment = await CreateParentDepartment("recent", "recent", [locationId]);
 
         await MarkDepartmentAsDeletedAt(expiredDepartment.Id, DateTime.UtcNow.AddMonths(-1).AddDays(-1));
 
         await MarkDepartmentAsDeletedAt(recentDepartment.Id, DateTime.UtcNow.AddDays(-10));
 
         // act
-        UnitResult<Error> result = await ExecuteCleanup();
+        var result = await ExecuteCleanup();
 
         // assert
         Assert.True(result.IsSuccess);
 
         await ExecuteInDb(async dbContext =>
         {
-            Department? deletedDepartment = await dbContext.Departments
+            var deletedDepartment = await dbContext.Departments
                 .SingleAsync(d => d.Id == recentDepartment.Id);
 
             Assert.False(await dbContext.Departments.AnyAsync(d => d.Id == expiredDepartment.Id));
@@ -237,15 +234,15 @@ public class DeletedEntitiesCleanupServiceTests(DirectoryTestWebFactory factory)
     public async Task Process_WhenDepartmentIsExpired_ShouldDeleteItsRelations()
     {
         // arrange
-        LocationId? locationId = await CreateLocation();
+        var locationId = await CreateLocation();
 
-        Department? expiredDepartment =
+        var expiredDepartment =
             await CreateParentDepartment("Expired", "expired", [locationId]);
 
-        Department? activeDepartment =
+        var activeDepartment =
             await CreateParentDepartment("active", "active", [locationId]);
 
-        PositionId? positionId =
+        var positionId =
             await CreatePosition("developer", "description", [expiredDepartment.Id, activeDepartment.Id]);
 
         await MarkDepartmentAsDeletedAt(
@@ -253,7 +250,7 @@ public class DeletedEntitiesCleanupServiceTests(DirectoryTestWebFactory factory)
             DateTime.UtcNow.AddMonths(-2));
 
         // act
-        UnitResult<Error> result = await ExecuteCleanup();
+        var result = await ExecuteCleanup();
 
         // assert
         Assert.True(result.IsSuccess);
@@ -278,19 +275,19 @@ public class DeletedEntitiesCleanupServiceTests(DirectoryTestWebFactory factory)
     public async Task Process_WhenDepartmentIsActive_ShouldKeepDepartment()
     {
         // arrange
-        LocationId? locationId = await CreateLocation();
+        var locationId = await CreateLocation();
 
-        Department? activeDepartment = await CreateParentDepartment("active", "active", [locationId]);
+        var activeDepartment = await CreateParentDepartment("active", "active", [locationId]);
 
         // act
-        UnitResult<Error> result = await ExecuteCleanup();
+        var result = await ExecuteCleanup();
 
         // assert
         Assert.True(result.IsSuccess);
 
         await ExecuteInDb(async dbContext =>
         {
-            Department? department = await dbContext.Departments
+            var department = await dbContext.Departments
                 .SingleAsync(d => d.Id == activeDepartment.Id);
 
             Assert.True(department.IsActive);
@@ -304,22 +301,22 @@ public class DeletedEntitiesCleanupServiceTests(DirectoryTestWebFactory factory)
     public async Task Process_WhenDepartmentDeletedRecently_ShouldKeepDepartment()
     {
         // arrange
-        LocationId? locationId = await CreateLocation();
+        var locationId = await CreateLocation();
 
-        Department? recentDepartment =
+        var recentDepartment =
             await CreateParentDepartment("department", "department", [locationId]);
 
         await MarkDepartmentAsDeletedAt(recentDepartment.Id, DateTime.UtcNow.AddDays(-20));
 
         // act
-        UnitResult<Error> result = await ExecuteCleanup();
+        var result = await ExecuteCleanup();
 
         // assert
         Assert.True(result.IsSuccess);
 
         await ExecuteInDb(async dbContext =>
         {
-            Department? department = await dbContext.Departments
+            var department = await dbContext.Departments
                 .SingleAsync(d => d.Id == recentDepartment.Id);
 
             Assert.False(department.IsActive);
@@ -332,20 +329,20 @@ public class DeletedEntitiesCleanupServiceTests(DirectoryTestWebFactory factory)
     public async Task Process_WhenDepartmentDeletedMoreThanMonthAgo_ShouldPhysicallyDeleteDepartment()
     {
         // arrange
-        LocationId? locationId = await CreateLocation();
+        var locationId = await CreateLocation();
 
-        Department? department = await CreateParentDepartment("department", "department", [locationId]);
+        var department = await CreateParentDepartment("department", "department", [locationId]);
 
-        DateTime oldDeletedAt = DateTime.UtcNow
+        var oldDeletedAt = DateTime.UtcNow
             .AddMonths(-1)
             .AddDays(-1);
 
-        PositionId? positionId = await CreatePosition("position", "description", [department.Id]);
+        var positionId = await CreatePosition("position", "description", [department.Id]);
 
         await MarkDepartmentAsDeletedAt(department.Id, oldDeletedAt);
 
         // act
-        UnitResult<Error> result = await ExecuteCleanup();
+        var result = await ExecuteCleanup();
 
         // assert
         Assert.True(result.IsSuccess);

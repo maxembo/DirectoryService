@@ -17,10 +17,10 @@ public class CreateLocationTests(DirectoryTestWebFactory factory) : DirectoryBas
     public async Task CreateLocation_WhenNameIsEmptyAfterNormalization_ShouldFail(string name)
     {
         // arrange
-        CreateLocationCommand? command = CreateCommand(name);
+        var command = CreateCommand(name);
 
         // act
-        Result<Guid, Errors> result = await Execute(command);
+        var result = await Execute(command);
 
         // assert
         Assert.True(result.IsFailure);
@@ -36,10 +36,10 @@ public class CreateLocationTests(DirectoryTestWebFactory factory) : DirectoryBas
     public async Task CreateLocation_WhenNameLengthIsOutOfRange_ShouldFail(int count)
     {
         // arrange
-        CreateLocationCommand? command = CreateCommand(new string('l', count));
+        var command = CreateCommand(new string('l', count));
 
         // act
-        Result<Guid, Errors> result = await Execute(command);
+        var result = await Execute(command);
 
         // assert
         Assert.True(result.IsFailure);
@@ -58,19 +58,19 @@ public class CreateLocationTests(DirectoryTestWebFactory factory) : DirectoryBas
         // arrange
         const string conflictingName = "test name";
 
-        LocationId? locationId = await CreateLocation(conflictingName);
+        var locationId = await CreateLocation(conflictingName);
 
-        CreateLocationCommand? command = CreateCommand(name);
+        var command = CreateCommand(name);
 
         // act
-        Result<Guid, Errors> result = await Execute(command);
+        var result = await Execute(command);
 
         // assert
         Assert.True(result.IsFailure);
 
         await ExecuteInDb(async dbContext =>
         {
-            Location? location = await dbContext.Locations
+            var location = await dbContext.Locations
                 .SingleAsync(l => l.Id == locationId, CancellationToken.None);
 
             Assert.Equal(conflictingName, location.Name.Value);
@@ -96,14 +96,14 @@ public class CreateLocationTests(DirectoryTestWebFactory factory) : DirectoryBas
             "test street",
             "10 test house");
 
-        LocationId? existingLocationId = await CreateLocation(
+        var existingLocationId = await CreateLocation(
             existingName,
             conflictingAddress.City,
             conflictingAddress.Country,
             conflictingAddress.Street,
             conflictingAddress.House);
 
-        CreateLocationCommand? command = CreateCommand(
+        var command = CreateCommand(
             "test name",
             city,
             country,
@@ -111,14 +111,14 @@ public class CreateLocationTests(DirectoryTestWebFactory factory) : DirectoryBas
             house);
 
         // act
-        Result<Guid, Errors> result = await Execute(command);
+        var result = await Execute(command);
 
         // assert
         Assert.True(result.IsFailure);
 
         await ExecuteInDb(async dbContext =>
         {
-            Location? location = await dbContext.Locations
+            var location = await dbContext.Locations
                 .SingleAsync(l => l.Id == existingLocationId, CancellationToken.None);
 
             Assert.Equal(existingName, location.Name.Value);
@@ -139,10 +139,10 @@ public class CreateLocationTests(DirectoryTestWebFactory factory) : DirectoryBas
     public async Task CreateLocation_WhenAddressEmptyAfterNormalization_ShouldFail(string value)
     {
         // arrange
-        CreateLocationCommand? command = CreateCommand(city: value, country: value, street: value, house: value);
+        var command = CreateCommand(city: value, country: value, street: value, house: value);
 
         // act
-        Result<Guid, Errors> result = await Execute(command);
+        var result = await Execute(command);
 
         // assert
         Assert.True(result.IsFailure);
@@ -167,14 +167,14 @@ public class CreateLocationTests(DirectoryTestWebFactory factory) : DirectoryBas
         // arrange
         string tooLongValue = new('l', Constants.MAX_LOCATION_ADDRESS_LENGTH + 1);
 
-        CreateLocationCommand? command = CreateCommand(
+        var command = CreateCommand(
             city: tooLongValue,
             country: tooLongValue,
             street: tooLongValue,
             house: tooLongValue);
 
         // act
-        Result<Guid, Errors> result = await Execute(command);
+        var result = await Execute(command);
 
         // assert
         Assert.True(result.IsFailure);
@@ -197,10 +197,10 @@ public class CreateLocationTests(DirectoryTestWebFactory factory) : DirectoryBas
     public async Task CreateLocation_WhenAddressHouseIsInvalid_ShouldFail()
     {
         // arrange
-        CreateLocationCommand? command = CreateCommand(house: "test house");
+        var command = CreateCommand(house: "test house");
 
         // act
-        Result<Guid, Errors> result = await Execute(command);
+        var result = await Execute(command);
 
         // assert
         Assert.True(result.IsFailure);
@@ -215,10 +215,10 @@ public class CreateLocationTests(DirectoryTestWebFactory factory) : DirectoryBas
     public async Task CreateLocation_WhenTimezoneIsEmptyAfterNormalization_ShouldFail(string timezone)
     {
         // arrange
-        CreateLocationCommand? command = CreateCommand(timezone: timezone);
+        var command = CreateCommand(timezone: timezone);
 
         // act
-        Result<Guid, Errors> result = await Execute(command);
+        var result = await Execute(command);
 
         // assert
         Assert.True(result.IsFailure);
@@ -230,10 +230,10 @@ public class CreateLocationTests(DirectoryTestWebFactory factory) : DirectoryBas
     public async Task CreateLocation_WhenTimezoneIsInvalid_ShouldFail()
     {
         // arrange
-        CreateLocationCommand? command = CreateCommand(timezone: "test timezone");
+        var command = CreateCommand(timezone: "test timezone");
 
         // act
-        Result<Guid, Errors> result = await Execute(command);
+        var result = await Execute(command);
 
         // assert
         Assert.True(result.IsFailure);
@@ -245,11 +245,11 @@ public class CreateLocationTests(DirectoryTestWebFactory factory) : DirectoryBas
     public async Task CreateLocation_WhenTimezoneIsTooLong_ShouldFail()
     {
         // arrange
-        CreateLocationCommand? command =
+        var command =
             CreateCommand(timezone: new string('c', Constants.MAX_LOCATION_TIMEZONE_LENGTH + 1));
 
         // act
-        Result<Guid, Errors> result = await Execute(command);
+        var result = await Execute(command);
 
         // assert
         Assert.True(result.IsFailure);
@@ -270,7 +270,7 @@ public class CreateLocationTests(DirectoryTestWebFactory factory) : DirectoryBas
         string name, string city, string country, string street, string house, string timezone)
     {
         // arrange
-        CreateLocationCommand? command = CreateCommand(
+        var command = CreateCommand(
             name,
             city,
             country,
@@ -279,7 +279,7 @@ public class CreateLocationTests(DirectoryTestWebFactory factory) : DirectoryBas
             timezone);
 
         // act
-        Result<Guid, Errors> result = await Execute(command);
+        var result = await Execute(command);
 
         // assert
         Assert.True(result.IsSuccess);
@@ -287,7 +287,7 @@ public class CreateLocationTests(DirectoryTestWebFactory factory) : DirectoryBas
 
         await ExecuteInDb(async dbContext =>
         {
-            Location? location = await dbContext.Locations.SingleAsync(
+            var location = await dbContext.Locations.SingleAsync(
                 l => l.Id == LocationId.Create(result.Value), CancellationToken.None);
 
             Assert.Equal(result.Value, location.Id.Value);
@@ -309,10 +309,10 @@ public class CreateLocationTests(DirectoryTestWebFactory factory) : DirectoryBas
         // arrange
         string inRangeLengthName = new('l', count);
 
-        CreateLocationCommand? command = CreateCommand(inRangeLengthName);
+        var command = CreateCommand(inRangeLengthName);
 
         // act
-        Result<Guid, Errors> result = await Execute(command);
+        var result = await Execute(command);
 
         // assert
         Assert.True(result.IsSuccess);
@@ -320,7 +320,7 @@ public class CreateLocationTests(DirectoryTestWebFactory factory) : DirectoryBas
 
         await ExecuteInDb(async dbContext =>
         {
-            Location? location = await dbContext.Locations.SingleAsync(
+            var location = await dbContext.Locations.SingleAsync(
                 l => l.Id == LocationId.Create(result.Value), CancellationToken.None);
 
             Assert.Equal(result.Value, location.Id.Value);

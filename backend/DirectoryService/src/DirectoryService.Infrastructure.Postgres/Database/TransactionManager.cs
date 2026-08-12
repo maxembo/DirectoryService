@@ -27,8 +27,8 @@ public class TransactionManager : ITransactionManager
     {
         try
         {
-            IDbContextTransaction? transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
-            ILogger<TransactionScope>? transactionCreateLogger = _loggerFactory.CreateLogger<TransactionScope>();
+            var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+            var transactionCreateLogger = _loggerFactory.CreateLogger<TransactionScope>();
 
             var transactionScope = new TransactionScope(transaction.GetDbTransaction(), transactionCreateLogger);
 
@@ -43,7 +43,7 @@ public class TransactionManager : ITransactionManager
 
     public async Task<UnitResult<Error>> SaveChangeAsync(CancellationToken cancellationToken = default)
     {
-        UnitResult<Error> saveChangesResultAsync = await _dbContext.SaveChangesResultAsync(cancellationToken);
+        var saveChangesResultAsync = await _dbContext.SaveChangesResultAsync(cancellationToken);
         if (saveChangesResultAsync.IsFailure)
         {
             return saveChangesResultAsync.Error;

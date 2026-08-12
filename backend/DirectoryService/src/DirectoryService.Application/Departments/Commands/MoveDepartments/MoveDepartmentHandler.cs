@@ -2,7 +2,6 @@
 using DirectoryService.Application.Constants;
 using DirectoryService.Domain.Departments;
 using FluentValidation;
-using FluentValidation.Results;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
 using SharedService.Core.Abstractions;
@@ -37,7 +36,7 @@ public class MoveDepartmentHandler : ICommandHandler<Guid, MoveDepartmentCommand
     public async Task<Result<Guid, Errors>> Handle(
         MoveDepartmentCommand command, CancellationToken cancellationToken = default)
     {
-        ValidationResult? validationResult = await _validator.ValidateAsync(command, cancellationToken);
+        var validationResult = await _validator.ValidateAsync(command, cancellationToken);
         if (!validationResult.IsValid)
         {
             var errors = validationResult.ToErrors();
@@ -46,31 +45,31 @@ public class MoveDepartmentHandler : ICommandHandler<Guid, MoveDepartmentCommand
         }
 
         var departmentId = DepartmentId.Create(command.DepartmentId);
-        Guid? parentId = command.Request.ParentId;
+        var parentId = command.Request.ParentId;
 
-        Result<ITransactionScope, Error> transactionResult =
+        var transactionResult =
             await _transactionManager.BeginTransactionAsync(cancellationToken);
         if (transactionResult.IsFailure)
         {
             return transactionResult.Error.ToErrors();
         }
 
-        using ITransactionScope? transaction = transactionResult.Value;
+        using var transaction = transactionResult.Value;
 
-        Result<Department, Error> departmentResult =
+        var departmentResult =
             await _departmentsRepository.GetActiveByIdWithLock(departmentId, cancellationToken);
         if (departmentResult.IsFailure)
         {
             return departmentResult.Error.ToErrors();
         }
 
-        Department? department = departmentResult.Value;
+        var department = departmentResult.Value;
 
         await _departmentsRepository.LockDescendants(department.Path, cancellationToken);
 
         if (parentId != null)
         {
-            Result<Department, Error> parentResult = await _departmentsRepository.GetActiveByIdWithLock(
+            var parentResult = await _departmentsRepository.GetActiveByIdWithLock(
                 DepartmentId.Create(parentId.Value), cancellationToken);
             if (parentResult.IsFailure)
             {
@@ -78,9 +77,9 @@ public class MoveDepartmentHandler : ICommandHandler<Guid, MoveDepartmentCommand
                 return parentResult.Error.ToErrors();
             }
 
-            Department? parent = parentResult.Value;
+            var parent = parentResult.Value;
 
-            UnitResult<Error> checkParentIsChildResult = await _departmentsRepository.CheckParentIsChild(
+            var checkParentIsChildResult = await _departmentsRepository.CheckParentIsChild(
                 parent.Path, department.Path, cancellationToken);
             if (checkParentIsChildResult.IsFailure)
             {
@@ -88,7 +87,7 @@ public class MoveDepartmentHandler : ICommandHandler<Guid, MoveDepartmentCommand
                 return checkParentIsChildResult.Error.ToErrors();
             }
 
-            UnitResult<Error> moveDepartmentResult = await _departmentsRepository.MoveDepartments(
+            var moveDepartmentResult = await _departmentsRepository.MoveDepartments(
                 DepartmentId.Create(parentId.Value),
                 parent.Path, department.Path, cancellationToken);
             if (moveDepartmentResult.IsFailure)
@@ -101,7 +100,7 @@ public class MoveDepartmentHandler : ICommandHandler<Guid, MoveDepartmentCommand
         }
         else
         {
-            UnitResult<Error> moveDepartmentResult =
+            var moveDepartmentResult =
                 await _departmentsRepository.MoveDepartments(department.Path, cancellationToken);
             if (moveDepartmentResult.IsFailure)
             {
@@ -114,7 +113,7 @@ public class MoveDepartmentHandler : ICommandHandler<Guid, MoveDepartmentCommand
 
         await _transactionManager.SaveChangeAsync(cancellationToken);
 
-        UnitResult<Error> commitedResult = transaction.Commit();
+        var commitedResult = transaction.Commit();
         if (commitedResult.IsFailure)
         {
             transaction.Rollback();

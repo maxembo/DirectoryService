@@ -2,8 +2,6 @@ using CSharpFunctionalExtensions;
 using DirectoryService.Application.Departments.Commands.SoftDeleteDepartments;
 using DirectoryService.Domain;
 using DirectoryService.Domain.Departments;
-using DirectoryService.Domain.Locations;
-using DirectoryService.Domain.Positions;
 using DirectoryService.IntegrationTests.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using SharedService.SharedKernel;
@@ -16,21 +14,21 @@ public class SoftDeleteDepartmentTests(DirectoryTestWebFactory factory) : Direct
     public async Task SoftDeleteDepartment_WhenPositionHasAnotherActiveDepartment_ShouldKeepPositionActive()
     {
         // arrange
-        LocationId? locationId = await CreateLocation();
+        var locationId = await CreateLocation();
 
-        Department? firstCompany =
+        var firstCompany =
             await CreateParentDepartment("firstCompany", "first-company", [locationId]);
 
-        Department? secondCompany =
+        var secondCompany =
             await CreateParentDepartment("secondCompany", "second-company", [locationId]);
 
-        PositionId? positionId =
+        var positionId =
             await CreatePosition("name", null, [firstCompany.Id, secondCompany.Id]);
 
         var command = new SoftDeleteDepartmentCommand(firstCompany.Id.Value);
 
         // act
-        Result<Guid, Errors> result = await Execute(command);
+        var result = await Execute(command);
 
         // assert
         Assert.True(result.IsSuccess);
@@ -38,7 +36,7 @@ public class SoftDeleteDepartmentTests(DirectoryTestWebFactory factory) : Direct
 
         await ExecuteInDb(async dbContext =>
         {
-            Position? position = await dbContext.Positions
+            var position = await dbContext.Positions
                 .SingleAsync(l => l.Id == positionId, CancellationToken.None);
 
             Assert.True(position.IsActive);
@@ -52,9 +50,9 @@ public class SoftDeleteDepartmentTests(DirectoryTestWebFactory factory) : Direct
     public async Task SoftDeleteDepartment_WhenLocationHasAnotherActiveDepartment_ShouldKeepLocationActive()
     {
         // arrange
-        LocationId? locationId = await CreateLocation();
+        var locationId = await CreateLocation();
 
-        Department? company =
+        var company =
             await CreateParentDepartment("firstCompany", "first-company", [locationId]);
 
         await CreateParentDepartment("secondCompany", "second-company", [locationId]);
@@ -62,7 +60,7 @@ public class SoftDeleteDepartmentTests(DirectoryTestWebFactory factory) : Direct
         var command = new SoftDeleteDepartmentCommand(company.Id.Value);
 
         // act
-        Result<Guid, Errors> result = await Execute(command);
+        var result = await Execute(command);
 
         // assert
         Assert.True(result.IsSuccess);
@@ -70,7 +68,7 @@ public class SoftDeleteDepartmentTests(DirectoryTestWebFactory factory) : Direct
 
         await ExecuteInDb(async dbContext =>
         {
-            Location? location = await dbContext.Locations
+            var location = await dbContext.Locations
                 .SingleAsync(l => l.Id == locationId, CancellationToken.None);
 
             Assert.True(location.IsActive);
@@ -84,17 +82,17 @@ public class SoftDeleteDepartmentTests(DirectoryTestWebFactory factory) : Direct
     public async Task SoftDeleteDepartment_WhenPositionHasNoOtherActiveDepartments_ShouldArchivePositionAutomatically()
     {
         // arrange
-        LocationId? locationId = await CreateLocation();
+        var locationId = await CreateLocation();
 
-        Department? company =
+        var company =
             await CreateParentDepartment("company", "company", [locationId]);
 
-        PositionId? positionId = await CreatePosition("position", null, [company.Id]);
+        var positionId = await CreatePosition("position", null, [company.Id]);
 
         var command = new SoftDeleteDepartmentCommand(company.Id.Value);
 
         // act
-        Result<Guid, Errors> result = await Execute(command);
+        var result = await Execute(command);
 
         // assert
         Assert.True(result.IsSuccess);
@@ -102,7 +100,7 @@ public class SoftDeleteDepartmentTests(DirectoryTestWebFactory factory) : Direct
 
         await ExecuteInDb(async dbContext =>
         {
-            Position? position = await dbContext.Positions
+            var position = await dbContext.Positions
                 .SingleAsync(l => l.Id == positionId, CancellationToken.None);
 
             Assert.False(position.IsActive);
@@ -116,15 +114,15 @@ public class SoftDeleteDepartmentTests(DirectoryTestWebFactory factory) : Direct
     public async Task SoftDeleteDepartment_WhenLocationHasNoOtherActiveDepartments_ShouldArchiveLocationAutomatically()
     {
         // arrange
-        LocationId? locationId = await CreateLocation();
+        var locationId = await CreateLocation();
 
-        Department? company =
+        var company =
             await CreateParentDepartment("company", "company", [locationId]);
 
         var command = new SoftDeleteDepartmentCommand(company.Id.Value);
 
         // act
-        Result<Guid, Errors> result = await Execute(command);
+        var result = await Execute(command);
 
         // assert
         Assert.True(result.IsSuccess);
@@ -132,7 +130,7 @@ public class SoftDeleteDepartmentTests(DirectoryTestWebFactory factory) : Direct
 
         await ExecuteInDb(async dbContext =>
         {
-            Location? location = await dbContext.Locations
+            var location = await dbContext.Locations
                 .SingleAsync(l => l.Id == locationId, CancellationToken.None);
 
             Assert.False(location.IsActive);
@@ -146,20 +144,20 @@ public class SoftDeleteDepartmentTests(DirectoryTestWebFactory factory) : Direct
     public async Task SoftDeleteDepartment_WhenDepartmentHasDescendants_ShouldUpdateSubtreePaths()
     {
         // arrange
-        LocationId? locationId = await CreateLocation();
+        var locationId = await CreateLocation();
 
-        Department? company =
+        var company =
             await CreateParentDepartment("company", "company", [locationId]);
 
-        Department? backend =
+        var backend =
             await CreateChildDepartment("backend", "backend", company, [locationId]);
 
-        Department? team = await CreateChildDepartment("team", "team", backend, [locationId]);
+        var team = await CreateChildDepartment("team", "team", backend, [locationId]);
 
         var command = new SoftDeleteDepartmentCommand(backend.Id.Value);
 
         // act
-        Result<Guid, Errors> result = await Execute(command);
+        var result = await Execute(command);
 
         // assert
         Assert.True(result.IsSuccess);
@@ -167,14 +165,14 @@ public class SoftDeleteDepartmentTests(DirectoryTestWebFactory factory) : Direct
 
         await ExecuteInDb(async dbContext =>
         {
-            Department? companyDepartment = await dbContext.Departments
+            var companyDepartment = await dbContext.Departments
                 .SingleAsync(d => d.Id == company.Id);
 
             Assert.Equal("company", companyDepartment.Path.Value);
             Assert.True(companyDepartment.IsActive);
             Assert.Null(companyDepartment.DeletedAt);
 
-            Department? archivedDepartment =
+            var archivedDepartment =
                 await dbContext.Departments.SingleAsync(
                     l => l.Id == DepartmentId.Create(result.Value), CancellationToken.None);
 
@@ -182,7 +180,7 @@ public class SoftDeleteDepartmentTests(DirectoryTestWebFactory factory) : Direct
             Assert.False(archivedDepartment.IsActive);
             Assert.NotNull(archivedDepartment.DeletedAt);
 
-            Department? teamDepartment = await dbContext.Departments
+            var teamDepartment = await dbContext.Departments
                 .SingleAsync(l => l.Id == team.Id, CancellationToken.None);
 
             Assert.Equal("company.delete-backend.team", teamDepartment.Path.Value);
@@ -200,7 +198,7 @@ public class SoftDeleteDepartmentTests(DirectoryTestWebFactory factory) : Direct
         var command = new SoftDeleteDepartmentCommand(notExistDepartmentId);
 
         // act
-        Result<Guid, Errors> result = await Execute(command);
+        var result = await Execute(command);
 
         // assert
         Assert.True(result.IsFailure);
@@ -212,15 +210,15 @@ public class SoftDeleteDepartmentTests(DirectoryTestWebFactory factory) : Direct
     public async Task SoftDeleteDepartment_WhenDepartmentIsAlreadyInactive_ShouldFail()
     {
         // arrange
-        LocationId? locationId = await CreateLocation();
+        var locationId = await CreateLocation();
 
-        Department? company =
+        var company =
             await CreateParentDepartment("company", "company", [locationId]);
 
         var command = new SoftDeleteDepartmentCommand(company.Id.Value);
 
         // act 1
-        Result<Guid, Errors> firstResult = await Execute(command);
+        var firstResult = await Execute(command);
 
         // assert 1
         Assert.True(firstResult.IsSuccess);
@@ -229,7 +227,7 @@ public class SoftDeleteDepartmentTests(DirectoryTestWebFactory factory) : Direct
 
         await ExecuteInDb(async dbContext =>
         {
-            Department? department = await dbContext.Departments
+            var department = await dbContext.Departments
                 .SingleAsync(l => l.Id == DepartmentId.Create(firstResult.Value));
 
             Assert.False(department.IsActive);
@@ -241,7 +239,7 @@ public class SoftDeleteDepartmentTests(DirectoryTestWebFactory factory) : Direct
         });
 
         // act 2
-        Result<Guid, Errors> secondResult = await Execute(command);
+        var secondResult = await Execute(command);
 
         // assert 2
         Assert.True(secondResult.IsFailure);
@@ -250,7 +248,7 @@ public class SoftDeleteDepartmentTests(DirectoryTestWebFactory factory) : Direct
 
         await ExecuteInDb(async dbContext =>
         {
-            Department? department = await dbContext.Departments
+            var department = await dbContext.Departments
                 .SingleAsync(l => l.Id == company.Id);
 
             Assert.False(department.IsActive);
@@ -264,14 +262,14 @@ public class SoftDeleteDepartmentTests(DirectoryTestWebFactory factory) : Direct
     public async Task SoftDeleteDepartment_WhenDepartmentIsActive_ShouldSucceed()
     {
         // arrange
-        LocationId? locationId = await CreateLocation();
+        var locationId = await CreateLocation();
 
-        Department? company = await CreateParentDepartment("company", "company", [locationId]);
+        var company = await CreateParentDepartment("company", "company", [locationId]);
 
         var command = new SoftDeleteDepartmentCommand(company.Id.Value);
 
         // act
-        Result<Guid, Errors> result = await Execute(command);
+        var result = await Execute(command);
 
         // assert
         Assert.True(result.IsSuccess);
@@ -279,7 +277,7 @@ public class SoftDeleteDepartmentTests(DirectoryTestWebFactory factory) : Direct
 
         await ExecuteInDb(async dbContext =>
         {
-            Department? deleteDepartment = await dbContext.Departments
+            var deleteDepartment = await dbContext.Departments
                 .SingleAsync(p => p.Id == DepartmentId.Create(result.Value));
 
             Assert.Equal("delete-company", deleteDepartment.Path.Value);

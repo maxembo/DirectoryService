@@ -3,7 +3,6 @@ using DirectoryService.Application.Locations.Queries.GetLocations;
 using DirectoryService.Contracts.Locations.GetLocations.Dtos;
 using DirectoryService.Contracts.Locations.GetLocations.Requests;
 using DirectoryService.Domain.Departments;
-using DirectoryService.Domain.Locations;
 using DirectoryService.IntegrationTests.Infrastructure;
 using SharedService.SharedKernel;
 using SharedService.SharedKernel.Response;
@@ -16,18 +15,18 @@ public class GetLocationsDapperTests(DirectoryTestWebFactory factory) : Director
     public async Task GetLocations_WhenFilteredByDepartmentIds_ShouldReturnOnlyDepartmentLocations()
     {
         // arrange
-        LocationId? locationId = await CreateLocation("location name");
-        LocationId? nonDepartmentLocationId
+        var locationId = await CreateLocation("location name");
+        var nonDepartmentLocationId
             = await CreateLocation("location name 1", "city", "country", "street", "1");
 
-        Department? department =
+        var department =
             await CreateParentDepartment("department name", "department", [locationId]);
 
-        GetLocationsQuery? query =
+        var query =
             CreateQuery([department.Id.Value], null, null, null, null);
 
         // act
-        Result<PaginationEnvelope<GetLocationsDto>, Errors> result = await Execute(query);
+        var result = await Execute(query);
 
         // assert
         Assert.True(result.IsSuccess);
@@ -45,11 +44,11 @@ public class GetLocationsDapperTests(DirectoryTestWebFactory factory) : Director
 
         var departmentId = DepartmentId.Create(Guid.NewGuid());
 
-        GetLocationsQuery? query =
+        var query =
             CreateQuery([departmentId.Value], null, null, null, null);
 
         // act
-        Result<PaginationEnvelope<GetLocationsDto>, Errors> result = await Execute(query);
+        var result = await Execute(query);
 
         // assert
         Assert.True(result.IsSuccess);
@@ -61,23 +60,23 @@ public class GetLocationsDapperTests(DirectoryTestWebFactory factory) : Director
     public async Task GetLocations_WhenDepartmentIdsAndIsActiveTrue_ShouldReturnOnlyActiveLocations()
     {
         // arrange
-        LocationId? activeLocationId = await CreateLocation("location name");
-        LocationId? activeLocationId1 =
+        var activeLocationId = await CreateLocation("location name");
+        var activeLocationId1 =
             await CreateLocation("location name 1", "city", "country", "street", "1");
-        LocationId? inactiveLocationId =
+        var inactiveLocationId =
             await CreateLocation("location name 2", "city", "country", "street", "2");
 
         await MarkLocationAsDeleted(inactiveLocationId);
 
-        Department? department =
+        var department =
             await CreateParentDepartment(
                 "department name", "department", [activeLocationId, activeLocationId1, inactiveLocationId]);
 
-        GetLocationsQuery? query =
+        var query =
             CreateQuery([department.Id.Value], null, true, null, null);
 
         // act
-        Result<PaginationEnvelope<GetLocationsDto>, Errors> result = await Execute(query);
+        var result = await Execute(query);
 
         // assert
         Assert.True(result.IsSuccess);
@@ -96,23 +95,23 @@ public class GetLocationsDapperTests(DirectoryTestWebFactory factory) : Director
     public async Task GetLocations_WhenDepartmentIdsAndIsActiveFalse_ShouldReturnOnlyActiveLocations()
     {
         // arrange
-        LocationId? activeLocationId = await CreateLocation("location name");
-        LocationId? activeLocationId1 =
+        var activeLocationId = await CreateLocation("location name");
+        var activeLocationId1 =
             await CreateLocation("location name 1", "city", "country", "street", "1");
-        LocationId? inactiveLocationId =
+        var inactiveLocationId =
             await CreateLocation("location name 2", "city", "country", "street", "2");
 
         await MarkLocationAsDeleted(inactiveLocationId);
 
-        Department? department =
+        var department =
             await CreateParentDepartment(
                 "department name", "department", [activeLocationId, activeLocationId1, inactiveLocationId]);
 
-        GetLocationsQuery? query =
+        var query =
             CreateQuery([department.Id.Value], null, false, null, null);
 
         // act
-        Result<PaginationEnvelope<GetLocationsDto>, Errors> result = await Execute(query);
+        var result = await Execute(query);
 
         // assert
         Assert.True(result.IsSuccess);
@@ -136,10 +135,10 @@ public class GetLocationsDapperTests(DirectoryTestWebFactory factory) : Director
         await CreateLocation(matchedName);
         await CreateLocation("another location", "city", "country", "street", "1 house");
 
-        GetLocationsQuery? query = CreateQuery([], matchedName, null, null, null);
+        var query = CreateQuery([], matchedName, null, null, null);
 
         // act
-        Result<PaginationEnvelope<GetLocationsDto>, Errors> result = await Execute(query);
+        var result = await Execute(query);
 
         // assert
         Assert.True(result.IsSuccess);
@@ -154,10 +153,10 @@ public class GetLocationsDapperTests(DirectoryTestWebFactory factory) : Director
         // arrange
         const string nonExistingName = "location not exists 34233";
 
-        GetLocationsQuery? query = CreateQuery([], nonExistingName, null, null, null);
+        var query = CreateQuery([], nonExistingName, null, null, null);
 
         // act
-        Result<PaginationEnvelope<GetLocationsDto>, Errors> result = await Execute(query);
+        var result = await Execute(query);
 
         // assert
         Assert.True(result.IsSuccess);
@@ -180,10 +179,10 @@ public class GetLocationsDapperTests(DirectoryTestWebFactory factory) : Director
         await CreateLocation(name1, "city", "country", "street", "1 house");
         await CreateLocation(name2, "city", "country", "street", "2 house");
 
-        GetLocationsQuery? query = CreateQuery([], matchedName, null, null, null);
+        var query = CreateQuery([], matchedName, null, null, null);
 
         // act
-        Result<PaginationEnvelope<GetLocationsDto>, Errors> result = await Execute(query);
+        var result = await Execute(query);
 
         // assert
         Assert.True(result.IsSuccess);
@@ -214,10 +213,10 @@ public class GetLocationsDapperTests(DirectoryTestWebFactory factory) : Director
         await CreateLocation(name1, "city", "country", "street", "1 house");
         await CreateLocation(name2, "city", "country", "street", "2 house");
 
-        GetLocationsQuery? query = CreateQuery([], string.Empty, null, null, null);
+        var query = CreateQuery([], string.Empty, null, null, null);
 
         // act
-        Result<PaginationEnvelope<GetLocationsDto>, Errors> result = await Execute(query);
+        var result = await Execute(query);
 
         // assert
         Assert.True(result.IsSuccess);
@@ -243,10 +242,10 @@ public class GetLocationsDapperTests(DirectoryTestWebFactory factory) : Director
         await CreateLocation(name1, "city", "country", "street", "1 house");
         await CreateLocation(name2, "city", "country", "street", "2 house");
 
-        GetLocationsQuery? query = CreateQuery([], "  location  ", null, null, null);
+        var query = CreateQuery([], "  location  ", null, null, null);
 
         // act
-        Result<PaginationEnvelope<GetLocationsDto>, Errors> result = await Execute(query);
+        var result = await Execute(query);
 
         // assert
         Assert.True(result.IsSuccess);
@@ -267,15 +266,15 @@ public class GetLocationsDapperTests(DirectoryTestWebFactory factory) : Director
     public async Task GetLocations_WhenIsActiveIsTrue_ShouldReturnOnlyActiveLocations()
     {
         // arrange
-        LocationId? activeLocationId = await CreateLocation("active location");
-        LocationId? inactiveLocationId = await CreateLocation("inactive location", "city", "country", "street", "1");
+        var activeLocationId = await CreateLocation("active location");
+        var inactiveLocationId = await CreateLocation("inactive location", "city", "country", "street", "1");
 
         await MarkLocationAsDeleted(inactiveLocationId);
 
-        GetLocationsQuery? query = CreateQuery([], null, true, null, null);
+        var query = CreateQuery([], null, true, null, null);
 
         // act
-        Result<PaginationEnvelope<GetLocationsDto>, Errors> result = await Execute(query);
+        var result = await Execute(query);
 
         // assert
         Assert.True(result.IsSuccess);
@@ -288,15 +287,15 @@ public class GetLocationsDapperTests(DirectoryTestWebFactory factory) : Director
     public async Task GetLocations_WhenIsActiveIsFalse_ShouldReturnOnlyInactiveLocations()
     {
         // arrange
-        LocationId? activeLocationId = await CreateLocation("active location");
-        LocationId? inactiveLocationId = await CreateLocation("inactive location", "city", "country", "street", "1");
+        var activeLocationId = await CreateLocation("active location");
+        var inactiveLocationId = await CreateLocation("inactive location", "city", "country", "street", "1");
 
         await MarkLocationAsDeleted(inactiveLocationId);
 
-        GetLocationsQuery? query = CreateQuery([], null, false, null, null);
+        var query = CreateQuery([], null, false, null, null);
 
         // act
-        Result<PaginationEnvelope<GetLocationsDto>, Errors> result = await Execute(query);
+        var result = await Execute(query);
 
         // assert
         Assert.True(result.IsSuccess);
@@ -317,10 +316,10 @@ public class GetLocationsDapperTests(DirectoryTestWebFactory factory) : Director
         await CreateLocation(name1, "city", "country", "street", "1");
         await CreateLocation(name2, "city", "country", "street", "2");
 
-        GetLocationsQuery? query = CreateQuery([], null, null, "name", "asc");
+        var query = CreateQuery([], null, null, "name", "asc");
 
         // act
-        Result<PaginationEnvelope<GetLocationsDto>, Errors> result = await Execute(query);
+        var result = await Execute(query);
 
         // assert
         Assert.True(result.IsSuccess);
@@ -342,10 +341,10 @@ public class GetLocationsDapperTests(DirectoryTestWebFactory factory) : Director
         await CreateLocation(name1, "city", "country", "street", "1");
         await CreateLocation(name2, "city", "country", "street", "2");
 
-        GetLocationsQuery? query = CreateQuery([], null, null, "name", "desc");
+        var query = CreateQuery([], null, null, "name", "desc");
 
         // act
-        Result<PaginationEnvelope<GetLocationsDto>, Errors> result = await Execute(query);
+        var result = await Execute(query);
 
         // assert
         Assert.True(result.IsSuccess);

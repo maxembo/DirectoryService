@@ -30,25 +30,25 @@ public sealed partial record Address
     {
         var errors = new List<Error>();
 
-        Result<string, Error> cityResult = ValidateAndTrim(city, "location.address.city");
+        var cityResult = ValidateAndTrim(city, "location.address.city");
         if (cityResult.IsFailure)
         {
             errors.Add(cityResult.Error);
         }
 
-        Result<string, Error> countryResult = ValidateAndTrim(country, "location.address.country");
+        var countryResult = ValidateAndTrim(country, "location.address.country");
         if (countryResult.IsFailure)
         {
             errors.Add(countryResult.Error);
         }
 
-        Result<string, Error> streetResult = ValidateAndTrim(street, "location.address.street");
+        var streetResult = ValidateAndTrim(street, "location.address.street");
         if (streetResult.IsFailure)
         {
             errors.Add(streetResult.Error);
         }
 
-        Result<string, Error> houseResult = ValidateHouse(house);
+        var houseResult = ValidateHouse(house);
         if (houseResult.IsFailure)
         {
             errors.Add(houseResult.Error);
@@ -83,7 +83,7 @@ public sealed partial record Address
     {
         const string fieldName = "location.address.house";
 
-        Result<string, Error> baseValidationResult = ValidateAndTrim(value, fieldName);
+        var baseValidationResult = ValidateAndTrim(value, fieldName);
         if (baseValidationResult.IsFailure)
         {
             return baseValidationResult.Error;

@@ -1,7 +1,6 @@
 ﻿using DirectoryService.Application.Constants;
 using DirectoryService.Application.Database;
 using DirectoryService.Contracts.Departments.GetTopFiveDepartmentsWithMostPositions.Dtos;
-using DirectoryService.Domain.Departments;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;
 using SharedService.Core.Abstractions;
@@ -38,9 +37,9 @@ public class GetTopFiveDepartmentsWithMostPositionsHandler : IQueryHandler<GetDe
 
     private async Task<GetDepartmentDto[]> GetTopFiveDepartmentsWithPositions(CancellationToken cancellationToken)
     {
-        IQueryable<Department>? departmentsQuery = _readDbContext.DepartmentsRead;
+        var departmentsQuery = _readDbContext.DepartmentsRead;
 
-        List<GetDepartmentDto>? departments = await departmentsQuery
+        var departments = await departmentsQuery
             .Select(d => new GetDepartmentDto
             {
                 Id = d.Id.Value,

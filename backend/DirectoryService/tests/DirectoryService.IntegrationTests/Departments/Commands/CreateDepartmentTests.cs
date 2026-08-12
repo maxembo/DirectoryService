@@ -2,7 +2,6 @@
 using DirectoryService.Application.Departments.Commands.CreateDepartments;
 using DirectoryService.Contracts.Departments.CreateDepartment;
 using DirectoryService.Domain.Departments;
-using DirectoryService.Domain.Locations;
 using DirectoryService.IntegrationTests.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using SharedService.SharedKernel;
@@ -19,10 +18,10 @@ public class CreateDepartmentTests : DirectoryBaseTests
     public async Task CreateDepartmentWithoutLocationShouldFailed()
     {
         // arrange
-        CancellationToken cancellationToken = CancellationToken.None;
+        var cancellationToken = CancellationToken.None;
 
         // act
-        Result<Guid, Errors> result = await Execute(
+        var result = await Execute(
             new CreateDepartmentCommand(new CreateDepartmentRequest("подразделение", "company", null, [])));
 
         // assert
@@ -34,14 +33,14 @@ public class CreateDepartmentTests : DirectoryBaseTests
     public async Task CreateDepartmentDuplicateShouldFailed()
     {
         // arrange
-        LocationId? locationId = await CreateLocation("локация 1");
+        var locationId = await CreateLocation("локация 1");
 
-        CancellationToken cancellationToken = CancellationToken.None;
+        var cancellationToken = CancellationToken.None;
 
         await CreateParentDepartment("подразделение", "company", [locationId]);
 
         // act
-        Result<Guid, Errors> result = await Execute(
+        var result = await Execute(
             new CreateDepartmentCommand(
                 new CreateDepartmentRequest("подразделение", "company", null, [locationId.Value])));
 
@@ -54,12 +53,12 @@ public class CreateDepartmentTests : DirectoryBaseTests
     public async Task CreateDepartmentInvalidDataShouldFailed()
     {
         // arrange
-        LocationId? locationId = await CreateLocation("локация");
+        var locationId = await CreateLocation("локация");
 
-        CancellationToken cancellationToken = CancellationToken.None;
+        var cancellationToken = CancellationToken.None;
 
         // act
-        Result<Guid, Errors> result = await Execute(
+        var result = await Execute(
             new CreateDepartmentCommand(
                 new CreateDepartmentRequest(string.Empty, "company", null, [locationId.Value])));
 
@@ -72,21 +71,21 @@ public class CreateDepartmentTests : DirectoryBaseTests
     public async Task CreateDepartmentWithParentAndChildShouldSucceed()
     {
         // arrange
-        LocationId? locationId = await CreateLocation("Location 1");
+        var locationId = await CreateLocation("Location 1");
 
-        CancellationToken cancellationToken = CancellationToken.None;
+        var cancellationToken = CancellationToken.None;
 
-        Department? parent = await CreateParentDepartment("подразделение", "company", [locationId]);
+        var parent = await CreateParentDepartment("подразделение", "company", [locationId]);
 
         // act
-        Result<Guid, Errors> result = await Execute(
+        var result = await Execute(
             new CreateDepartmentCommand(
                 new CreateDepartmentRequest("подразделение 1", "sales", parent.Id.Value, [locationId.Value])));
 
         // assert
         await ExecuteInDb(async dbContext =>
         {
-            Department? department = await dbContext.Departments.FirstAsync(
+            var department = await dbContext.Departments.FirstAsync(
                 d => d.Id == DepartmentId.Create(result.Value), cancellationToken);
 
             Assert.NotNull(department);
@@ -101,19 +100,19 @@ public class CreateDepartmentTests : DirectoryBaseTests
     public async Task CreateDepartmentWithoutParentShouldSucceed()
     {
         // arrange
-        LocationId? locationId = await CreateLocation("Location 1");
+        var locationId = await CreateLocation("Location 1");
 
-        CancellationToken cancellationToken = CancellationToken.None;
+        var cancellationToken = CancellationToken.None;
 
         // act
-        Result<Guid, Errors> result = await Execute(
+        var result = await Execute(
             new CreateDepartmentCommand(
                 new CreateDepartmentRequest("подразделение", "company", null, [locationId.Value])));
 
         // assert
         await ExecuteInDb(async dbContext =>
         {
-            Department? department = await dbContext.Departments.FirstAsync(
+            var department = await dbContext.Departments.FirstAsync(
                 d => d.Id == DepartmentId.Create(result.Value), cancellationToken);
 
             Assert.NotNull(department);

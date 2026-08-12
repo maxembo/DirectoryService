@@ -27,14 +27,14 @@ public class RestoreLocationHandler : ICommandHandler<Guid, RestoreLocationComma
     {
         var locationId = LocationId.Create(command.LocationId);
 
-        Result<Location, Error> locationResult =
+        var locationResult =
             await _locationsRepository.GetByIdIncludingInactiveAsync(locationId, cancellationToken);
         if (locationResult.IsFailure)
         {
             return locationResult.Error.ToErrors();
         }
 
-        Location? location = locationResult.Value;
+        var location = locationResult.Value;
 
         if (location.IsActive)
         {
@@ -47,7 +47,7 @@ public class RestoreLocationHandler : ICommandHandler<Guid, RestoreLocationComma
 
         location.Restore();
 
-        UnitResult<Error> saveResult = await _transactionManager.SaveChangeAsync(cancellationToken);
+        var saveResult = await _transactionManager.SaveChangeAsync(cancellationToken);
         if (saveResult.IsFailure)
         {
             return saveResult.Error.ToErrors();

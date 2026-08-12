@@ -1,8 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Positions.Queries.GetPositions;
 using DirectoryService.Contracts.Positions.GetPositions;
-using DirectoryService.Domain.Departments;
-using DirectoryService.Domain.Positions;
 using DirectoryService.IntegrationTests.Infrastructure;
 using SharedService.SharedKernel;
 using SharedService.SharedKernel.Response;
@@ -15,24 +13,24 @@ public class GetPositionsTests(DirectoryTestWebFactory factory) : PositionBaseTe
     public async Task GetPositions_WithoutFilters_ShouldReturnAllPositions()
     {
         // arrange
-        Department? department = await SeedActiveDepartment();
+        var department = await SeedActiveDepartment();
 
-        PositionId? activePositionId = await CreatePosition(
+        var activePositionId = await CreatePosition(
             "Active position",
             "Active position description",
             [department.Id]);
 
-        PositionId? inactivePositionId = await CreatePosition(
+        var inactivePositionId = await CreatePosition(
             "Inactive position",
             "Inactive position description",
             [department.Id]);
 
         await MarkPositionAsDeleted(inactivePositionId);
 
-        GetPositionsQuery? query = CreateQuery(sortBy: "name", sortDirection: "asc");
+        var query = CreateQuery(sortBy: "name", sortDirection: "asc");
 
         // act
-        Result<PaginationEnvelope<GetPositionsDto>, Errors> result = await Execute(query);
+        var result = await Execute(query);
 
         // assert
         Assert.True(result.IsSuccess);
@@ -41,7 +39,7 @@ public class GetPositionsTests(DirectoryTestWebFactory factory) : PositionBaseTe
         Assert.Equal(1, result.Value.Page);
         Assert.Equal(20, result.Value.PageSize);
 
-        GetPositionsDto? activePosition = Assert.Single(
+        var activePosition = Assert.Single(
             result.Value.Items,
             position => position.Id == activePositionId.Value);
 
@@ -52,7 +50,7 @@ public class GetPositionsTests(DirectoryTestWebFactory factory) : PositionBaseTe
         Assert.NotEqual(default, activePosition.CreatedAt);
         Assert.NotEqual(default, activePosition.UpdatedAt);
 
-        GetPositionsDto? inactivePosition = Assert.Single(
+        var inactivePosition = Assert.Single(
             result.Value.Items,
             position => position.Id == inactivePositionId.Value);
 
@@ -64,25 +62,25 @@ public class GetPositionsTests(DirectoryTestWebFactory factory) : PositionBaseTe
     public async Task GetPositions_WhenSearchMatchesName_ShouldReturnMatchingPositions()
     {
         // arrange
-        Department? department = await SeedActiveDepartment();
+        var department = await SeedActiveDepartment();
 
-        PositionId? seniorDeveloperId = await CreatePosition("Senior Developer", "description", [department.Id]);
+        var seniorDeveloperId = await CreatePosition("Senior Developer", "description", [department.Id]);
 
-        PositionId? juniorDeveloperId = await CreatePosition("Junior developer", "description", [department.Id]);
+        var juniorDeveloperId = await CreatePosition("Junior developer", "description", [department.Id]);
 
         await CreatePosition("Accountant", "description", [department.Id]);
 
-        GetPositionsQuery? query = CreateQuery(search: "DEVELOPER", sortBy: "name", sortDirection: "asc");
+        var query = CreateQuery(search: "DEVELOPER", sortBy: "name", sortDirection: "asc");
 
         // act
-        Result<PaginationEnvelope<GetPositionsDto>, Errors> result = await Execute(query);
+        var result = await Execute(query);
 
         // assert
         Assert.True(result.IsSuccess);
         Assert.Equal(2, result.Value.TotalCount);
         Assert.Equal(2, result.Value.Items.Length);
 
-        Guid[]? positionIds = result.Value.Items.Select(position => position.Id).ToArray();
+        var positionIds = result.Value.Items.Select(position => position.Id).ToArray();
 
         Assert.Contains(seniorDeveloperId.Value, positionIds);
         Assert.Contains(juniorDeveloperId.Value, positionIds);
@@ -95,14 +93,14 @@ public class GetPositionsTests(DirectoryTestWebFactory factory) : PositionBaseTe
     public async Task GetPositions_WhenSearchDoesNotMatch_ShouldReturnEmptyResult()
     {
         // arrange
-        Department? department = await SeedActiveDepartment();
+        var department = await SeedActiveDepartment();
 
         await CreatePosition("Developer", "description", [department.Id]);
 
-        GetPositionsQuery? query = CreateQuery(search: "non-existing-position");
+        var query = CreateQuery(search: "non-existing-position");
 
         // act
-        Result<PaginationEnvelope<GetPositionsDto>, Errors> result = await Execute(query);
+        var result = await Execute(query);
 
         // assert
         Assert.True(result.IsSuccess);
@@ -115,29 +113,29 @@ public class GetPositionsTests(DirectoryTestWebFactory factory) : PositionBaseTe
     public async Task GetPositions_WhenFilteredByDepartmentIds_ShouldReturnRelatedPositions()
     {
         // arrange
-        Department? firstDepartment = await SeedActiveDepartment("first", "first-department");
-        Department? secondDepartment = await SeedActiveDepartment("second", "second-department");
+        var firstDepartment = await SeedActiveDepartment("first", "first-department");
+        var secondDepartment = await SeedActiveDepartment("second", "second-department");
 
-        PositionId? firstPositionId =
+        var firstPositionId =
             await CreatePosition("First department position", "description", [firstDepartment.Id]);
 
-        PositionId? sharedPositionId = await CreatePosition(
+        var sharedPositionId = await CreatePosition(
             "Shared position", "description", [firstDepartment.Id, secondDepartment.Id]);
 
-        PositionId? secondPositionId =
+        var secondPositionId =
             await CreatePosition("Second department position", "description", [secondDepartment.Id]);
 
-        GetPositionsQuery? query = CreateQuery([firstDepartment.Id.Value]);
+        var query = CreateQuery([firstDepartment.Id.Value]);
 
         // act
-        Result<PaginationEnvelope<GetPositionsDto>, Errors> result = await Execute(query);
+        var result = await Execute(query);
 
         // assert
         Assert.True(result.IsSuccess);
         Assert.Equal(2, result.Value.TotalCount);
         Assert.Equal(2, result.Value.Items.Length);
 
-        Guid[]? positionIds = result.Value.Items.Select(position => position.Id).ToArray();
+        var positionIds = result.Value.Items.Select(position => position.Id).ToArray();
 
         Assert.Contains(firstPositionId.Value, positionIds);
         Assert.Contains(sharedPositionId.Value, positionIds);
@@ -148,24 +146,24 @@ public class GetPositionsTests(DirectoryTestWebFactory factory) : PositionBaseTe
     public async Task GetPositions_WhenPositionMatchesSeveralDepartmentIds_ShouldReturnItOnlyOnce()
     {
         // arrange
-        Department? firstDepartment = await SeedActiveDepartment("first", "first-department");
-        Department? secondDepartment = await SeedActiveDepartment("second", "second-department");
+        var firstDepartment = await SeedActiveDepartment("first", "first-department");
+        var secondDepartment = await SeedActiveDepartment("second", "second-department");
 
-        PositionId? positionId = await CreatePosition(
+        var positionId = await CreatePosition(
             "Shared position",
             "description",
             [firstDepartment.Id, secondDepartment.Id]);
 
-        GetPositionsQuery? query = CreateQuery([firstDepartment.Id.Value, secondDepartment.Id.Value]);
+        var query = CreateQuery([firstDepartment.Id.Value, secondDepartment.Id.Value]);
 
         // act
-        Result<PaginationEnvelope<GetPositionsDto>, Errors> result = await Execute(query);
+        var result = await Execute(query);
 
         // assert
         Assert.True(result.IsSuccess);
         Assert.Equal(1, result.Value.TotalCount);
 
-        GetPositionsDto? position = Assert.Single(result.Value.Items);
+        var position = Assert.Single(result.Value.Items);
         Assert.Equal(positionId.Value, position.Id);
     }
 
@@ -176,24 +174,24 @@ public class GetPositionsTests(DirectoryTestWebFactory factory) : PositionBaseTe
         bool requestedActivity)
     {
         // arrange
-        Department? department = await SeedActiveDepartment();
+        var department = await SeedActiveDepartment();
 
-        PositionId? activePositionId = await CreatePosition("Active position", "description", [department.Id]);
+        var activePositionId = await CreatePosition("Active position", "description", [department.Id]);
 
-        PositionId? inactivePositionId = await CreatePosition("Inactive position", "description", [department.Id]);
+        var inactivePositionId = await CreatePosition("Inactive position", "description", [department.Id]);
 
         await MarkPositionAsDeleted(inactivePositionId);
 
-        GetPositionsQuery? query = CreateQuery(isActive: requestedActivity);
+        var query = CreateQuery(isActive: requestedActivity);
 
         // act
-        Result<PaginationEnvelope<GetPositionsDto>, Errors> result = await Execute(query);
+        var result = await Execute(query);
 
         // assert
         Assert.True(result.IsSuccess);
         Assert.Equal(1, result.Value.TotalCount);
 
-        GetPositionsDto? position = Assert.Single(result.Value.Items);
+        var position = Assert.Single(result.Value.Items);
 
         Assert.Equal(requestedActivity, position.IsActive);
         Assert.Equal(
@@ -205,12 +203,12 @@ public class GetPositionsTests(DirectoryTestWebFactory factory) : PositionBaseTe
     public async Task GetPositions_WithCombinedFilters_ShouldReturnMatchingPositions()
     {
         // arrange
-        Department? firstDepartment = await SeedActiveDepartment("first", "first-department");
-        Department? secondDepartment = await SeedActiveDepartment("second", "second-department");
+        var firstDepartment = await SeedActiveDepartment("first", "first-department");
+        var secondDepartment = await SeedActiveDepartment("second", "second-department");
 
-        PositionId? expectedPositionId = await CreatePosition("Senior Developer", "description", [firstDepartment.Id]);
+        var expectedPositionId = await CreatePosition("Senior Developer", "description", [firstDepartment.Id]);
 
-        PositionId? inactivePositionId =
+        var inactivePositionId =
             await CreatePosition("Inactive Developer", "description", [firstDepartment.Id]);
 
         await MarkPositionAsDeleted(inactivePositionId);
@@ -218,19 +216,19 @@ public class GetPositionsTests(DirectoryTestWebFactory factory) : PositionBaseTe
         await CreatePosition("Accountant", "description", [firstDepartment.Id]);
         await CreatePosition("Developer from another department", "description", [secondDepartment.Id]);
 
-        GetPositionsQuery? query = CreateQuery(
+        var query = CreateQuery(
             [firstDepartment.Id.Value],
             "developer",
             isActive: true);
 
         // act
-        Result<PaginationEnvelope<GetPositionsDto>, Errors> result = await Execute(query);
+        var result = await Execute(query);
 
         // assert
         Assert.True(result.IsSuccess);
         Assert.Equal(1, result.Value.TotalCount);
 
-        GetPositionsDto? position = Assert.Single(result.Value.Items);
+        var position = Assert.Single(result.Value.Items);
         Assert.Equal(expectedPositionId.Value, position.Id);
         Assert.True(position.IsActive);
     }
@@ -241,16 +239,16 @@ public class GetPositionsTests(DirectoryTestWebFactory factory) : PositionBaseTe
     public async Task GetPositions_WhenSortedByName_ShouldReturnExpectedOrder(string sortDirection)
     {
         // arrange
-        Department? department = await SeedActiveDepartment();
+        var department = await SeedActiveDepartment();
 
         await CreatePosition("Bravo position", "description", [department.Id]);
         await CreatePosition("Alpha position", "description", [department.Id]);
         await CreatePosition("Charlie position", "description", [department.Id]);
 
-        GetPositionsQuery? query = CreateQuery(sortBy: "name", sortDirection: sortDirection);
+        var query = CreateQuery(sortBy: "name", sortDirection: sortDirection);
 
         // act
-        Result<PaginationEnvelope<GetPositionsDto>, Errors> result = await Execute(query);
+        var result = await Execute(query);
 
         // assert
         Assert.True(result.IsSuccess);
@@ -270,9 +268,9 @@ public class GetPositionsTests(DirectoryTestWebFactory factory) : PositionBaseTe
     public async Task GetPositions_WhenSortedByDepartmentCount_ShouldReturnExpectedOrder(string sortDirection)
     {
         // arrange
-        Department? firstDepartment = await SeedActiveDepartment("first", "first-department");
-        Department? secondDepartment = await SeedActiveDepartment("second", "second-department");
-        Department? thirdDepartment = await SeedActiveDepartment("third", "third-department");
+        var firstDepartment = await SeedActiveDepartment("first", "first-department");
+        var secondDepartment = await SeedActiveDepartment("second", "second-department");
+        var thirdDepartment = await SeedActiveDepartment("third", "third-department");
 
         await CreatePosition("One department", "description", [firstDepartment.Id]);
         await CreatePosition("Two departments", "description", [firstDepartment.Id, secondDepartment.Id]);
@@ -281,10 +279,10 @@ public class GetPositionsTests(DirectoryTestWebFactory factory) : PositionBaseTe
             "description",
             [firstDepartment.Id, secondDepartment.Id, thirdDepartment.Id]);
 
-        GetPositionsQuery? query = CreateQuery(sortBy: "department_count", sortDirection: sortDirection);
+        var query = CreateQuery(sortBy: "department_count", sortDirection: sortDirection);
 
         // act
-        Result<PaginationEnvelope<GetPositionsDto>, Errors> result = await Execute(query);
+        var result = await Execute(query);
 
         // assert
         Assert.True(result.IsSuccess);
@@ -304,23 +302,23 @@ public class GetPositionsTests(DirectoryTestWebFactory factory) : PositionBaseTe
     public async Task GetPositions_WhenSortedByStatus_ShouldReturnExpectedOrder(string sortDirection)
     {
         // arrange
-        Department? department = await SeedActiveDepartment();
+        var department = await SeedActiveDepartment();
 
-        PositionId? activePositionId = await CreatePosition("Active position", "description", [department.Id]);
+        var activePositionId = await CreatePosition("Active position", "description", [department.Id]);
 
-        PositionId? inactivePositionId = await CreatePosition("Inactive position", "description", [department.Id]);
+        var inactivePositionId = await CreatePosition("Inactive position", "description", [department.Id]);
 
         await MarkPositionAsDeleted(inactivePositionId);
 
-        GetPositionsQuery? query = CreateQuery(sortBy: "status", sortDirection: sortDirection);
+        var query = CreateQuery(sortBy: "status", sortDirection: sortDirection);
 
         // act
-        Result<PaginationEnvelope<GetPositionsDto>, Errors> result = await Execute(query);
+        var result = await Execute(query);
 
         // assert
         Assert.True(result.IsSuccess);
 
-        Guid[]? actualIds = result.Value.Items.Select(position => position.Id).ToArray();
+        var actualIds = result.Value.Items.Select(position => position.Id).ToArray();
 
         Guid[] expectedIds = sortDirection == "asc"
             ? [inactivePositionId.Value, activePositionId.Value]
@@ -333,7 +331,7 @@ public class GetPositionsTests(DirectoryTestWebFactory factory) : PositionBaseTe
     public async Task GetPositions_WhenPageRequested_ShouldReturnRequestedPageAndTotalCount()
     {
         // arrange
-        Department? department = await SeedActiveDepartment();
+        var department = await SeedActiveDepartment();
 
         await CreatePosition("Alpha position", "description", [department.Id]);
         await CreatePosition("Bravo position", "description", [department.Id]);
@@ -341,14 +339,14 @@ public class GetPositionsTests(DirectoryTestWebFactory factory) : PositionBaseTe
         await CreatePosition("Delta position", "description", [department.Id]);
         await CreatePosition("Echo position", "description", [department.Id]);
 
-        GetPositionsQuery? query = CreateQuery(
+        var query = CreateQuery(
             sortBy: "name",
             sortDirection: "asc",
             page: 2,
             pageSize: 2);
 
         // act
-        Result<PaginationEnvelope<GetPositionsDto>, Errors> result = await Execute(query);
+        var result = await Execute(query);
 
         // assert
         Assert.True(result.IsSuccess);
@@ -366,7 +364,7 @@ public class GetPositionsTests(DirectoryTestWebFactory factory) : PositionBaseTe
     public async Task GetPositions_WhenRequestedPageIsEmpty_ShouldReturnCorrectTotalCount()
     {
         // arrange
-        Department? department = await SeedActiveDepartment();
+        var department = await SeedActiveDepartment();
 
         await CreatePosition("Alpha position", "description", [department.Id]);
         await CreatePosition("Bravo position", "description", [department.Id]);
@@ -374,14 +372,14 @@ public class GetPositionsTests(DirectoryTestWebFactory factory) : PositionBaseTe
         await CreatePosition("Delta position", "description", [department.Id]);
         await CreatePosition("Echo position", "description", [department.Id]);
 
-        GetPositionsQuery? query = CreateQuery(
+        var query = CreateQuery(
             sortBy: "name",
             sortDirection: "asc",
             page: 4,
             pageSize: 2);
 
         // act
-        Result<PaginationEnvelope<GetPositionsDto>, Errors> result = await Execute(query);
+        var result = await Execute(query);
 
         // assert
         Assert.True(result.IsSuccess);
@@ -402,16 +400,16 @@ public class GetPositionsTests(DirectoryTestWebFactory factory) : PositionBaseTe
         string invalidField)
     {
         // arrange
-        GetPositionsQuery? query = CreateQuery(page: page, pageSize: pageSize);
+        var query = CreateQuery(page: page, pageSize: pageSize);
 
         // act
-        Result<PaginationEnvelope<GetPositionsDto>, Errors> result = await Execute(query);
+        var result = await Execute(query);
 
         // assert
         Assert.True(result.IsFailure);
 
-        Error? error = Assert.Single(result.Error);
-        Error? expectedError = GeneralErrors.Invalid(invalidField);
+        var error = Assert.Single(result.Error);
+        var expectedError = GeneralErrors.Invalid(invalidField);
 
         Assert.Equal(expectedError.Code, error.Code);
         Assert.Equal(expectedError.Type, error.Type);
@@ -423,16 +421,16 @@ public class GetPositionsTests(DirectoryTestWebFactory factory) : PositionBaseTe
     {
         // arrange
         string search = new('s', 1001);
-        GetPositionsQuery? query = CreateQuery(search: search);
+        var query = CreateQuery(search: search);
 
         // act
-        Result<PaginationEnvelope<GetPositionsDto>, Errors> result = await Execute(query);
+        var result = await Execute(query);
 
         // assert
         Assert.True(result.IsFailure);
 
-        Error? error = Assert.Single(result.Error);
-        Error? expectedError = GeneralErrors.Invalid("search");
+        var error = Assert.Single(result.Error);
+        var expectedError = GeneralErrors.Invalid("search");
 
         Assert.Equal(expectedError.Code, error.Code);
         Assert.Equal(expectedError.Type, error.Type);

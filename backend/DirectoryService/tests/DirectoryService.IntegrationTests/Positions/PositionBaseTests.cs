@@ -1,6 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Domain.Departments;
-using DirectoryService.Domain.Locations;
 using DirectoryService.IntegrationTests.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using SharedService.SharedKernel;
@@ -13,7 +12,7 @@ public class PositionBaseTests(DirectoryTestWebFactory factory) : DirectoryBaseT
     {
         Assert.True(result.IsFailure);
 
-        Error? actualError = Assert.Single(result.Error);
+        var actualError = Assert.Single(result.Error);
 
         Assert.Equal(expectedError.Code, actualError.Code);
         Assert.Equal(expectedError.Type, actualError.Type);
@@ -24,7 +23,7 @@ public class PositionBaseTests(DirectoryTestWebFactory factory) : DirectoryBaseT
         string suffix = "default",
         string departmentIdentifier = "department-default")
     {
-        LocationId? locationId = await CreateLocation(
+        var locationId = await CreateLocation(
             $"test location {suffix}",
             suffix,
             suffix,

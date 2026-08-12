@@ -1,8 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Departments.Commands.MoveDepartments;
 using DirectoryService.Contracts.Departments.MoveDepartments;
-using DirectoryService.Domain.Departments;
-using DirectoryService.Domain.Locations;
 using DirectoryService.IntegrationTests.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using SharedService.SharedKernel;
@@ -19,12 +17,12 @@ public class MoveDepartmentTests : DirectoryBaseTests
     public async Task MoveDepartmentToSelfShouldFailed()
     {
         // arrange
-        LocationId? locationId = await CreateLocation("Location 1");
+        var locationId = await CreateLocation("Location 1");
 
-        Department? company = await CreateParentDepartment("компания it", "company", [locationId]);
+        var company = await CreateParentDepartment("компания it", "company", [locationId]);
 
         // act
-        Result<Guid, Errors> result = await Execute(
+        var result = await Execute(
             new MoveDepartmentCommand(company.Id.Value, new MoveDepartmentRequest(company.Id.Value)));
 
         // assert
@@ -36,14 +34,14 @@ public class MoveDepartmentTests : DirectoryBaseTests
     public async Task MoveDepartmentToChildShouldFailed()
     {
         // arrange
-        LocationId? locationId = await CreateLocation("Location 1");
+        var locationId = await CreateLocation("Location 1");
 
-        Department? company = await CreateParentDepartment("компания it", "company", [locationId]);
+        var company = await CreateParentDepartment("компания it", "company", [locationId]);
 
-        Department? dev = await CreateChildDepartment("разработка", "dev", company, [locationId]);
+        var dev = await CreateChildDepartment("разработка", "dev", company, [locationId]);
 
         // act
-        Result<Guid, Errors> result = await Execute(
+        var result = await Execute(
             new MoveDepartmentCommand(company.Id.Value, new MoveDepartmentRequest(dev.Id.Value)));
 
         // assert
@@ -58,7 +56,7 @@ public class MoveDepartmentTests : DirectoryBaseTests
         var nonExistingId = Guid.NewGuid();
 
         // act
-        Result<Guid, Errors> result =
+        var result =
             await Execute(new MoveDepartmentCommand(nonExistingId, new MoveDepartmentRequest(null)));
 
         // assert
@@ -70,16 +68,16 @@ public class MoveDepartmentTests : DirectoryBaseTests
     public async Task MoveDepartmentParentNotFoundShouldFailed()
     {
         // arrange
-        LocationId? locationId = await CreateLocation("location 1");
+        var locationId = await CreateLocation("location 1");
 
-        Department? company = await CreateParentDepartment("компания it", "company", [locationId]);
+        var company = await CreateParentDepartment("компания it", "company", [locationId]);
 
-        Department? dev = await CreateChildDepartment("разработка", "dev", company, [locationId]);
+        var dev = await CreateChildDepartment("разработка", "dev", company, [locationId]);
 
         var nonExistingParentId = Guid.NewGuid();
 
         // act
-        Result<Guid, Errors> result = await Execute(
+        var result = await Execute(
             new MoveDepartmentCommand(dev.Id.Value, new MoveDepartmentRequest(nonExistingParentId)));
 
         // assert
@@ -91,31 +89,31 @@ public class MoveDepartmentTests : DirectoryBaseTests
     public async Task MoveDepartmentWithoutParentShouldSucceed()
     {
         // arrange
-        LocationId? locationId = await CreateLocation("Location 1");
+        var locationId = await CreateLocation("Location 1");
 
-        Department? company = await CreateParentDepartment("компания it", "company", [locationId]);
+        var company = await CreateParentDepartment("компания it", "company", [locationId]);
 
-        Department? dev = await CreateChildDepartment("разработка", "dev", company, [locationId]);
+        var dev = await CreateChildDepartment("разработка", "dev", company, [locationId]);
 
-        Department? fronted = await CreateChildDepartment("фротендеры", "frontend", dev, [locationId]);
+        var fronted = await CreateChildDepartment("фротендеры", "frontend", dev, [locationId]);
 
-        CancellationToken cancellationToken = CancellationToken.None;
+        var cancellationToken = CancellationToken.None;
 
         // act
-        Result<Guid, Errors> result =
+        var result =
             await Execute(new MoveDepartmentCommand(dev.Id.Value, new MoveDepartmentRequest(null)));
 
         // assert
         await ExecuteInDb(async dbContext =>
         {
-            Department? departmentDev = await dbContext.Departments.FirstAsync(d => d.Id == dev.Id, cancellationToken);
+            var departmentDev = await dbContext.Departments.FirstAsync(d => d.Id == dev.Id, cancellationToken);
 
             Assert.NotNull(departmentDev);
             Assert.Equal("dev", departmentDev.Path.Value);
             Assert.Equal(0, departmentDev.Path.Depth);
             Assert.Null(departmentDev.ParentId);
 
-            Department? departmentFronted =
+            var departmentFronted =
                 await dbContext.Departments.FirstAsync(d => d.Id == fronted.Id, cancellationToken);
 
             Assert.NotNull(departmentFronted);
@@ -132,28 +130,28 @@ public class MoveDepartmentTests : DirectoryBaseTests
     public async Task MoveDepartmentWithValidDataShouldSucceed()
     {
         // arrange
-        LocationId? locationId = await CreateLocation("Location 1");
+        var locationId = await CreateLocation("Location 1");
 
-        Department? company = await CreateParentDepartment("компания it", "company", [locationId]);
+        var company = await CreateParentDepartment("компания it", "company", [locationId]);
 
-        Department? dev = await CreateChildDepartment("разработка", "dev", company, [locationId]);
+        var dev = await CreateChildDepartment("разработка", "dev", company, [locationId]);
 
-        Department? fronted = await CreateChildDepartment("фронтендеры", "fronted", dev, [locationId]);
+        var fronted = await CreateChildDepartment("фронтендеры", "fronted", dev, [locationId]);
 
-        Department? backend = await CreateChildDepartment("бекендеры", "backend", dev, [locationId]);
+        var backend = await CreateChildDepartment("бекендеры", "backend", dev, [locationId]);
 
-        Department? team = await CreateChildDepartment("команда 1", "team", fronted, [locationId]);
+        var team = await CreateChildDepartment("команда 1", "team", fronted, [locationId]);
 
-        CancellationToken cancellationToken = CancellationToken.None;
+        var cancellationToken = CancellationToken.None;
 
         // act
-        Result<Guid, Errors> result = await Execute(
+        var result = await Execute(
             new MoveDepartmentCommand(fronted.Id.Value, new MoveDepartmentRequest(company.Id.Value)));
 
         // assert
         await ExecuteInDb(async dbContext =>
         {
-            Department? departmentFronted =
+            var departmentFronted =
                 await dbContext.Departments.FirstAsync(d => d.Id == fronted.Id, cancellationToken);
 
             Assert.NotNull(departmentFronted);
@@ -161,7 +159,7 @@ public class MoveDepartmentTests : DirectoryBaseTests
             Assert.Equal(1, departmentFronted.Path.Depth);
             Assert.Equal(company.Id.Value, departmentFronted.ParentId!.Value);
 
-            Department? departmentTeam =
+            var departmentTeam =
                 await dbContext.Departments.FirstAsync(d => d.Id == team.Id, cancellationToken);
 
             Assert.NotNull(departmentTeam);

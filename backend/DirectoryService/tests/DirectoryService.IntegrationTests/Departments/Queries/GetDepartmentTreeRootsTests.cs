@@ -3,8 +3,6 @@ using DirectoryService.Application.Departments.Commands.SoftDeleteDepartments;
 using DirectoryService.Application.Departments.Queries.GetDepartmentTreeRoots;
 using DirectoryService.Contracts.Departments.GetDepartments.Dtos;
 using DirectoryService.Contracts.Departments.GetDepartments.Requests;
-using DirectoryService.Domain.Departments;
-using DirectoryService.Domain.Locations;
 using DirectoryService.IntegrationTests.Infrastructure;
 using SharedService.SharedKernel;
 using SharedService.SharedKernel.Response;
@@ -17,32 +15,32 @@ public class GetDepartmentTreeRootsTests(DirectoryTestWebFactory factory) : Dire
     public async Task GetDepartmentTreeRoots_WhenRootHasActiveAndArchivedChildren_ShouldReturnOnlyActiveChildren()
     {
         // arrange
-        LocationId? locationId = await CreateLocation();
+        var locationId = await CreateLocation();
 
-        Department? company =
+        var company =
             await CreateParentDepartment("company", "company", [locationId]);
 
-        Department? backend =
+        var backend =
             await CreateChildDepartment("backend", "backend", company, [locationId]);
 
-        Department? frontend =
+        var frontend =
             await CreateChildDepartment("frontend", "frontend", company, [locationId]);
 
         var query = new GetDepartmentTreeRootsQuery(new GetDepartmentTreeRootsRequest());
 
         // soft delete
-        Result<Guid, Errors> deleteFrontendResult =
+        var deleteFrontendResult =
             await ExecuteSoftDelete(new SoftDeleteDepartmentCommand(frontend.Id.Value));
 
         Assert.True(deleteFrontendResult.IsSuccess);
 
         // act
-        Result<PaginationEnvelope<GetDepartmentTreeRootsDto>, Errors> result = await Execute(query);
+        var result = await Execute(query);
 
         // assert
         Assert.True(result.IsSuccess);
 
-        GetDepartmentTreeRootsDto? root = Assert.Single(result.Value.Items);
+        var root = Assert.Single(result.Value.Items);
 
         Assert.Equal(company.Id.Value, root.Id);
         Assert.True(root.IsActive);
@@ -59,23 +57,23 @@ public class GetDepartmentTreeRootsTests(DirectoryTestWebFactory factory) : Dire
     public async Task GetDepartmentTreeRoots_WhenRootHasActiveChild_ShouldSetHasChildrenToTrue()
     {
         // arrange
-        LocationId? locationId = await CreateLocation();
+        var locationId = await CreateLocation();
 
-        Department? company = await CreateParentDepartment("company", "company", [locationId]);
+        var company = await CreateParentDepartment("company", "company", [locationId]);
 
-        Department? backend = await CreateChildDepartment("backend", "backend", company, [locationId]);
+        var backend = await CreateChildDepartment("backend", "backend", company, [locationId]);
 
         await ClearDepartmentCache();
 
         var query = new GetDepartmentTreeRootsQuery(new GetDepartmentTreeRootsRequest());
 
         // act
-        Result<PaginationEnvelope<GetDepartmentTreeRootsDto>, Errors> result = await Execute(query);
+        var result = await Execute(query);
 
         // assert
         Assert.True(result.IsSuccess);
 
-        GetDepartmentTreeRootsDto? root = Assert.Single(result.Value.Items);
+        var root = Assert.Single(result.Value.Items);
 
         Assert.Equal(company.Id.Value, root.Id);
         Assert.True(root.IsActive);
@@ -89,29 +87,29 @@ public class GetDepartmentTreeRootsTests(DirectoryTestWebFactory factory) : Dire
     public async Task GetDepartmentTreeRoots_WhenRootHasOnlyArchivedChildren_ShouldSetHasChildrenToFalse()
     {
         // arrange
-        LocationId? locationId = await CreateLocation();
+        var locationId = await CreateLocation();
 
-        Department? company =
+        var company =
             await CreateParentDepartment("company", "company", [locationId]);
 
-        Department? backend =
+        var backend =
             await CreateChildDepartment("backend", "backend", company, [locationId]);
 
         var query = new GetDepartmentTreeRootsQuery(new GetDepartmentTreeRootsRequest());
 
         // soft delete
-        Result<Guid, Errors> deleteBackendResult =
+        var deleteBackendResult =
             await ExecuteSoftDelete(new SoftDeleteDepartmentCommand(backend.Id.Value));
 
         Assert.True(deleteBackendResult.IsSuccess);
 
         // act
-        Result<PaginationEnvelope<GetDepartmentTreeRootsDto>, Errors> result = await Execute(query);
+        var result = await Execute(query);
 
         // assert
         Assert.True(result.IsSuccess);
 
-        GetDepartmentTreeRootsDto? root = Assert.Single(result.Value.Items);
+        var root = Assert.Single(result.Value.Items);
 
         Assert.Equal(company.Id.Value, root.Id);
         Assert.True(root.IsActive);
@@ -125,21 +123,21 @@ public class GetDepartmentTreeRootsTests(DirectoryTestWebFactory factory) : Dire
     public async Task GetDepartmentTreeRoots_WhenRootDepartmentIsArchived_ShouldNotReturnArchivedDepartment()
     {
         // arrange
-        LocationId? locationId = await CreateLocation();
+        var locationId = await CreateLocation();
 
-        Department? company =
+        var company =
             await CreateParentDepartment("company", "company", [locationId]);
 
         var query = new GetDepartmentTreeRootsQuery(new GetDepartmentTreeRootsRequest());
 
         // soft delete
-        Result<Guid, Errors> deleteCompanyResult =
+        var deleteCompanyResult =
             await ExecuteSoftDelete(new SoftDeleteDepartmentCommand(company.Id.Value));
 
         Assert.True(deleteCompanyResult.IsSuccess);
 
         // act
-        Result<PaginationEnvelope<GetDepartmentTreeRootsDto>, Errors> result = await Execute(query);
+        var result = await Execute(query);
 
         // assert
         Assert.True(result.IsSuccess);

@@ -28,17 +28,17 @@ public class SoftDeleteLocationHandler : ICommandHandler<Guid, SoftDeleteLocatio
     {
         var locationId = LocationId.Create(command.LocationId);
 
-        Result<Location, Error> locationResult = await _locationRepository.GetByIdAsync(locationId, cancellationToken);
+        var locationResult = await _locationRepository.GetByIdAsync(locationId, cancellationToken);
         if (locationResult.IsFailure)
         {
             return locationResult.Error.ToErrors();
         }
 
-        Location? location = locationResult.Value;
+        var location = locationResult.Value;
 
         location.MarkAsDelete();
 
-        UnitResult<Error> transactionResult = await _transactionManager.SaveChangeAsync(cancellationToken);
+        var transactionResult = await _transactionManager.SaveChangeAsync(cancellationToken);
         if (transactionResult.IsFailure)
         {
             return transactionResult.Error.ToErrors();

@@ -11,11 +11,11 @@ try
 {
     Log.Information("Starting DirectoryService.Web");
 
-    WebApplicationBuilder? builder = WebApplication.CreateBuilder(args);
+    var builder = WebApplication.CreateBuilder(args);
 
     builder.Services.AddProgramDependencies(builder.Configuration);
 
-    WebApplication? app = builder.Build();
+    var app = builder.Build();
 
     app.Configure();
 

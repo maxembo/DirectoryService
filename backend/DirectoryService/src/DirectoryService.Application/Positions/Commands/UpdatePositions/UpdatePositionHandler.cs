@@ -2,7 +2,6 @@
 using DirectoryService.Contracts.Positions.UpdatePositions;
 using DirectoryService.Domain.Positions;
 using FluentValidation;
-using FluentValidation.Results;
 using Microsoft.Extensions.Logging;
 using SharedService.Core.Abstractions;
 using SharedService.Core.Database;
@@ -34,25 +33,25 @@ public class UpdatePositionHandler : ICommandHandler<Guid, UpdatePositionCommand
         UpdatePositionCommand command, CancellationToken cancellationToken = default)
     {
         var positionId = PositionId.Create(command.PositionId);
-        UpdatePositionRequest? request = command.Request;
+        var request = command.Request;
 
-        ValidationResult? validationResult = await _validator.ValidateAsync(command.Request, cancellationToken);
+        var validationResult = await _validator.ValidateAsync(command.Request, cancellationToken);
         if (!validationResult.IsValid)
         {
             return validationResult.ToErrors();
         }
 
-        Result<Position, Error> positionResult = await _positionsRepository.GetByIdAsync(positionId, cancellationToken);
+        var positionResult = await _positionsRepository.GetByIdAsync(positionId, cancellationToken);
         if (positionResult.IsFailure)
         {
             return positionResult.Error.ToErrors();
         }
 
-        Position? position = positionResult.Value;
+        var position = positionResult.Value;
 
         position.Update(PositionName.Create(request.Name).Value, Description.Create(request.Description).Value);
 
-        UnitResult<Error> transactionResult = await _transactionManager.SaveChangeAsync(cancellationToken);
+        var transactionResult = await _transactionManager.SaveChangeAsync(cancellationToken);
         if (transactionResult.IsFailure)
         {
             return transactionResult.Error.ToErrors();

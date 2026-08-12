@@ -1,5 +1,4 @@
-﻿using System.Data.Common;
-using Dapper;
+﻿using Dapper;
 using DirectoryService.Application.Constants;
 using DirectoryService.Contracts.Departments.GetTopFiveDepartmentsWithMostPositions.Dtos;
 using Microsoft.Extensions.Caching.Hybrid;
@@ -36,7 +35,7 @@ public class GetTopFiveDepartmentsWithMostPositionsHandlerDapper : IQueryHandler
 
     private async Task<GetDepartmentDto[]> GetTopFiveDepartmentsWithPositions(CancellationToken cancellationToken)
     {
-        DbConnection? dbConnection = _dbConnectionFactory.GetDbConnection();
+        var dbConnection = _dbConnectionFactory.GetDbConnection();
 
         const string sql = """
                            SELECT d.id,
@@ -61,7 +60,7 @@ public class GetTopFiveDepartmentsWithMostPositionsHandlerDapper : IQueryHandler
                            ORDER BY t.positions_count DESC;
                            """;
 
-        IEnumerable<GetDepartmentDto>? departments = await dbConnection
+        var departments = await dbConnection
             .QueryAsync<GetDepartmentDto, long, Guid[], GetDepartmentDto>(
                 sql, splitOn: "positions_count, locations", map:
                 (department, count, locations)
