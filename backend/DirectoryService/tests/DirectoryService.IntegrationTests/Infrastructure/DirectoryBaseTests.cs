@@ -13,9 +13,8 @@ namespace DirectoryService.IntegrationTests.Infrastructure;
 
 public abstract class DirectoryBaseTests : IClassFixture<DirectoryTestWebFactory>, IAsyncLifetime
 {
-    private readonly IServiceProvider _services;
-
     private readonly Func<Task> _resetDatabaseAsync;
+    private readonly IServiceProvider _services;
 
     protected DirectoryBaseTests(DirectoryTestWebFactory factory)
     {
@@ -29,18 +28,18 @@ public abstract class DirectoryBaseTests : IClassFixture<DirectoryTestWebFactory
 
     protected async Task<T> ExecuteInDb<T>(Func<DirectoryServiceDbContext, Task<T>> action)
     {
-        await using var scope = _services.CreateAsyncScope();
+        await using AsyncServiceScope scope = _services.CreateAsyncScope();
 
-        var dbContext = scope.ServiceProvider.GetRequiredService<DirectoryServiceDbContext>();
+        DirectoryServiceDbContext? dbContext = scope.ServiceProvider.GetRequiredService<DirectoryServiceDbContext>();
 
         return await action(dbContext);
     }
 
     protected async Task ExecuteInDb(Func<DirectoryServiceDbContext, Task> action)
     {
-        await using var scope = _services.CreateAsyncScope();
+        await using AsyncServiceScope scope = _services.CreateAsyncScope();
 
-        var dbContext = scope.ServiceProvider.GetRequiredService<DirectoryServiceDbContext>();
+        DirectoryServiceDbContext? dbContext = scope.ServiceProvider.GetRequiredService<DirectoryServiceDbContext>();
 
         await action(dbContext);
     }
@@ -48,9 +47,9 @@ public abstract class DirectoryBaseTests : IClassFixture<DirectoryTestWebFactory
     protected async Task<TResult> Execute<TResult, TService>(Func<TService, Task<TResult>> action)
         where TService : notnull
     {
-        await using var scope = _services.CreateAsyncScope();
+        await using AsyncServiceScope scope = _services.CreateAsyncScope();
 
-        var handler = scope.ServiceProvider.GetRequiredService<TService>();
+        TService? handler = scope.ServiceProvider.GetRequiredService<TService>();
 
         return await action(handler);
     }
@@ -81,7 +80,7 @@ public abstract class DirectoryBaseTests : IClassFixture<DirectoryTestWebFactory
     {
         await ExecuteInDb(async dbContext =>
         {
-            var location = await dbContext.Locations
+            Location? location = await dbContext.Locations
                 .SingleAsync(l => l.Id == locationId, CancellationToken.None);
 
             location.MarkAsDelete();
@@ -95,10 +94,10 @@ public abstract class DirectoryBaseTests : IClassFixture<DirectoryTestWebFactory
     {
         var departmentId = DepartmentId.CreateNew();
 
-        var departmentLocations = locationIds.Select(locationId =>
+        IEnumerable<DepartmentLocation>? departmentLocations = locationIds.Select(locationId =>
             new DepartmentLocation(DepartmentLocationId.CreateNew(), departmentId, locationId));
 
-        var parent = Department.CreateParent(
+        Department? parent = Department.CreateParent(
                 DepartmentName.Create(name).Value, Identifier.Create(identifier).Value, departmentLocations,
                 departmentId)
             .Value;
@@ -117,10 +116,10 @@ public abstract class DirectoryBaseTests : IClassFixture<DirectoryTestWebFactory
     {
         var departmentId = DepartmentId.CreateNew();
 
-        var departmentLocations = locationIds.Select(locationId =>
+        IEnumerable<DepartmentLocation>? departmentLocations = locationIds.Select(locationId =>
             new DepartmentLocation(DepartmentLocationId.CreateNew(), departmentId, locationId));
 
-        var child = Department.CreateChild(
+        Department? child = Department.CreateChild(
                 DepartmentName.Create(name).Value, Identifier.Create(identifier).Value, parent, departmentLocations,
                 departmentId)
             .Value;
@@ -138,7 +137,7 @@ public abstract class DirectoryBaseTests : IClassFixture<DirectoryTestWebFactory
     {
         await ExecuteInDb(async dbContext =>
         {
-            var department = await dbContext.Departments.SingleAsync(d => d.Id == departmentId);
+            Department? department = await dbContext.Departments.SingleAsync(d => d.Id == departmentId);
 
             department.MarkAsDelete();
 
@@ -151,7 +150,7 @@ public abstract class DirectoryBaseTests : IClassFixture<DirectoryTestWebFactory
     {
         var positionId = PositionId.CreateNew();
 
-        var departmentPositions = departmentIds.Select(departmentId =>
+        IEnumerable<DepartmentPosition>? departmentPositions = departmentIds.Select(departmentId =>
             new DepartmentPosition(DepartmentPositionId.CreateNew(), departmentId, positionId));
 
         var position = new Position(
@@ -171,7 +170,7 @@ public abstract class DirectoryBaseTests : IClassFixture<DirectoryTestWebFactory
     {
         await ExecuteInDb(async dbContext =>
         {
-            var position = await dbContext.Positions
+            Position? position = await dbContext.Positions
                 .SingleAsync(p => p.Id == positionId);
 
             position.MarkAsDelete();
@@ -184,7 +183,7 @@ public abstract class DirectoryBaseTests : IClassFixture<DirectoryTestWebFactory
     {
         await ExecuteInDb(async dbContext =>
         {
-            var department = await dbContext.Departments.SingleAsync(d => d.Id == departmentId);
+            Department? department = await dbContext.Departments.SingleAsync(d => d.Id == departmentId);
 
             department.MarkAsDelete();
 
@@ -200,7 +199,7 @@ public abstract class DirectoryBaseTests : IClassFixture<DirectoryTestWebFactory
     {
         await ExecuteInDb(async dbContext =>
         {
-            var department = await dbContext.Locations.SingleAsync(d => d.Id == departmentId);
+            Location? department = await dbContext.Locations.SingleAsync(d => d.Id == departmentId);
 
             department.MarkAsDelete();
 
@@ -216,7 +215,7 @@ public abstract class DirectoryBaseTests : IClassFixture<DirectoryTestWebFactory
     {
         await ExecuteInDb(async dbContext =>
         {
-            var position = await dbContext.Positions.SingleAsync(p => p.Id == positionId);
+            Position? position = await dbContext.Positions.SingleAsync(p => p.Id == positionId);
 
             position.MarkAsDelete();
 
@@ -230,9 +229,9 @@ public abstract class DirectoryBaseTests : IClassFixture<DirectoryTestWebFactory
 
     protected async Task ClearDepartmentCache()
     {
-        await using var scope = _services.CreateAsyncScope();
+        await using AsyncServiceScope scope = _services.CreateAsyncScope();
 
-        var cache = scope.ServiceProvider.GetRequiredService<HybridCache>();
+        HybridCache? cache = scope.ServiceProvider.GetRequiredService<HybridCache>();
 
         await cache.RemoveByTagAsync(CacheKeys.DEPARTMENT_KEY, CancellationToken.None);
     }

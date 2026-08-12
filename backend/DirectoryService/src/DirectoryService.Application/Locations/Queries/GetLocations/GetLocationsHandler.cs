@@ -3,7 +3,9 @@ using DirectoryService.Application.Database;
 using DirectoryService.Contracts.Locations.GetLocations.Dtos;
 using DirectoryService.Contracts.Locations.GetLocations.Requests;
 using DirectoryService.Domain.Departments;
+using DirectoryService.Domain.Locations;
 using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.EntityFrameworkCore;
 using SharedService.Core.Abstractions;
 using SharedService.Core.Validation;
@@ -26,17 +28,17 @@ public class GetLocationsHandler : IQueryHandler<PaginationEnvelope<GetLocations
     public async Task<Result<PaginationEnvelope<GetLocationsDto>, Errors>> Handle(
         GetLocationsQuery query, CancellationToken cancellationToken)
     {
-        var validationResult = await _validator.ValidateAsync(query.Request, cancellationToken);
+        ValidationResult? validationResult = await _validator.ValidateAsync(query.Request, cancellationToken);
         if (!validationResult.IsValid)
         {
             return validationResult.ToErrors();
         }
 
-        var locationQuery = _readDbContext.LocationsRead;
+        IQueryable<Location>? locationQuery = _readDbContext.LocationsRead;
 
         if (query.Request.DepartmentIds is { Length: > 0 } deptIds)
         {
-            var deptIdsVo = deptIds.Select(DepartmentId.Create).ToArray();
+            DepartmentId[]? deptIdsVo = deptIds.Select(DepartmentId.Create).ToArray();
 
             locationQuery = locationQuery.Where(l =>
                 l.Departments.Any(dl => deptIdsVo.Contains(dl.DepartmentId)));
@@ -75,7 +77,7 @@ public class GetLocationsHandler : IQueryHandler<PaginationEnvelope<GetLocations
             .Skip((query.Request.Page - 1) * query.Request.PageSize)
             .Take(query.Request.PageSize);
 
-        var locations = await locationQuery.Select(l => new GetLocationsDto()
+        List<GetLocationsDto>? locations = await locationQuery.Select(l => new GetLocationsDto
             {
                 Id = l.Id.Value,
                 Name = l.Name.Value,

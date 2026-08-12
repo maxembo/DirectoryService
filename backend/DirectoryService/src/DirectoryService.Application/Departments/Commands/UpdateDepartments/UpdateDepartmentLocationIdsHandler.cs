@@ -6,6 +6,7 @@ using DirectoryService.Domain.DepartmentLocations;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Locations;
 using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
 using SharedService.Core.Abstractions;
@@ -17,12 +18,12 @@ namespace DirectoryService.Application.Departments.Commands.UpdateDepartments;
 
 public class UpdateDepartmentLocationIdsHandler : ICommandHandler<Guid, UpdateDepartmentLocationIdsCommand>
 {
+    private readonly HybridCache _cache;
     private readonly IDepartmentsRepository _departmentsRepository;
     private readonly ILocationsRepository _locationsRepository;
-    private readonly IValidator<UpdateDepartmentLocationIdsRequest> _validator;
-    private readonly ITransactionManager _transactionManager;
     private readonly ILogger<UpdateDepartmentLocationIdsHandler> _logger;
-    private readonly HybridCache _cache;
+    private readonly ITransactionManager _transactionManager;
+    private readonly IValidator<UpdateDepartmentLocationIdsRequest> _validator;
 
     public UpdateDepartmentLocationIdsHandler(
         IDepartmentsRepository departmentsRepository,
@@ -42,28 +43,34 @@ public class UpdateDepartmentLocationIdsHandler : ICommandHandler<Guid, UpdateDe
     public async Task<Result<Guid, Errors>> Handle(
         UpdateDepartmentLocationIdsCommand command, CancellationToken cancellationToken = default)
     {
-        var validationResult = await _validator.ValidateAsync(command.Request, cancellationToken);
+        ValidationResult? validationResult = await _validator.ValidateAsync(command.Request, cancellationToken);
         if (!validationResult.IsValid)
+        {
             return validationResult.ToErrors();
+        }
 
-        var transactionResult = await _transactionManager.BeginTransactionAsync(cancellationToken);
+        Result<ITransactionScope, Error> transactionResult =
+            await _transactionManager.BeginTransactionAsync(cancellationToken);
         if (transactionResult.IsFailure)
+        {
             return transactionResult.Error.ToErrors();
+        }
 
-        using var transaction = transactionResult.Value;
+        using ITransactionScope? transaction = transactionResult.Value;
 
         var departmentId = DepartmentId.Create(command.DepartmentId);
 
-        var getDepartmentResult = await _departmentsRepository.GetByIdAsync(departmentId, cancellationToken);
+        Result<Department, Error> getDepartmentResult =
+            await _departmentsRepository.GetByIdAsync(departmentId, cancellationToken);
         if (getDepartmentResult.IsFailure)
         {
             transaction.Rollback();
             return getDepartmentResult.Error.ToErrors();
         }
 
-        var department = getDepartmentResult.Value;
+        Department? department = getDepartmentResult.Value;
 
-        var checkExistingIdsResult =
+        UnitResult<Errors> checkExistingIdsResult =
             await _locationsRepository.CheckExistingAndActiveIdsAsync(command.Request.LocationIds, cancellationToken);
         if (checkExistingIdsResult.IsFailure)
         {
@@ -71,10 +78,9 @@ public class UpdateDepartmentLocationIdsHandler : ICommandHandler<Guid, UpdateDe
             return checkExistingIdsResult.Error;
         }
 
-        var locationIds = command.Request.LocationIds
-            .Select(
-                locationId => new DepartmentLocation(
-                    DepartmentLocationId.CreateNew(), department.Id, LocationId.Create(locationId)));
+        IEnumerable<DepartmentLocation>? locationIds = command.Request.LocationIds
+            .Select(locationId => new DepartmentLocation(
+                DepartmentLocationId.CreateNew(), department.Id, LocationId.Create(locationId)));
 
         department.UpdateLocationIds(locationIds);
 
@@ -82,9 +88,11 @@ public class UpdateDepartmentLocationIdsHandler : ICommandHandler<Guid, UpdateDe
 
         await _transactionManager.SaveChangeAsync(cancellationToken);
 
-        var commitedResult = transaction.Commit();
+        UnitResult<Error> commitedResult = transaction.Commit();
         if (commitedResult.IsFailure)
+        {
             return commitedResult.Error.ToErrors();
+        }
 
         await _cache.RemoveByTagAsync(CacheKeys.DEPARTMENT_KEY, cancellationToken);
 

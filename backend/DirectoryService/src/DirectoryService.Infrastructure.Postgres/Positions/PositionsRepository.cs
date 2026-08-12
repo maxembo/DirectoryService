@@ -1,4 +1,5 @@
-﻿using CSharpFunctionalExtensions;
+﻿using System.Data.Common;
+using CSharpFunctionalExtensions;
 using Dapper;
 using DirectoryService.Application.Positions;
 using DirectoryService.Domain;
@@ -26,9 +27,11 @@ public class PositionsRepository : IPositionsRepository
     {
         await _dbContext.AddAsync(position, cancellationToken);
 
-        var saveChangesResult = await _dbContext.SaveChangesResultAsync(cancellationToken);
+        UnitResult<Error> saveChangesResult = await _dbContext.SaveChangesResultAsync(cancellationToken);
         if (saveChangesResult.IsFailure)
+        {
             return saveChangesResult.Error;
+        }
 
         return position.Id.Value;
     }
@@ -54,13 +57,13 @@ public class PositionsRepository : IPositionsRepository
                              AND p.is_active = true
                            """;
 
-        var dbConnection = _dbContext.Database.GetDbConnection();
+        DbConnection? dbConnection = _dbContext.Database.GetDbConnection();
 
         try
         {
             await dbConnection.ExecuteAsync(
                 sql,
-                param: new
+                new
                 {
                     departmentId = departmentId.Value,
                     deletionReason = DeletionReason.NO_ACTIVE_DEPARTMENTS.ToString(),
@@ -95,13 +98,13 @@ public class PositionsRepository : IPositionsRepository
                              AND p.deletion_reason = @deletionReason
                            """;
 
-        var dbConnection = _dbContext.Database.GetDbConnection();
+        DbConnection? dbConnection = _dbContext.Database.GetDbConnection();
 
         try
         {
             await dbConnection.ExecuteAsync(
                 sql,
-                param: new
+                new
                 {
                     departmentId = departmentId.Value,
                     deletionReason = DeletionReason.NO_ACTIVE_DEPARTMENTS.ToString(),
@@ -141,7 +144,7 @@ public class PositionsRepository : IPositionsRepository
     public async Task<Result<Position, Error>> GetByIdAsync(
         PositionId positionId, CancellationToken cancellationToken = default)
     {
-        var position = await _dbContext.Positions
+        Position? position = await _dbContext.Positions
             .Where(p => p.IsActive)
             .FirstOrDefaultAsync(p => p.Id == positionId, cancellationToken);
 

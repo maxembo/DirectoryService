@@ -1,8 +1,10 @@
 ﻿using System.Data;
+using System.Data.Common;
 using CSharpFunctionalExtensions;
 using Dapper;
 using DirectoryService.Contracts.Positions.GetPositions;
 using FluentValidation;
+using FluentValidation.Results;
 using SharedService.Core.Abstractions;
 using SharedService.Core.Database;
 using SharedService.Core.Validation;
@@ -27,9 +29,9 @@ public class GetPositionsHandler : IQueryHandler<PaginationEnvelope<GetPositions
     public async Task<Result<PaginationEnvelope<GetPositionsDto>, Errors>> Handle(
         GetPositionsQuery query, CancellationToken cancellationToken)
     {
-        var request = query.Request;
+        GetPositionsRequest? request = query.Request;
 
-        var validationResult = await _validator.ValidateAsync(request, cancellationToken);
+        ValidationResult? validationResult = await _validator.ValidateAsync(request, cancellationToken);
         if (!validationResult.IsValid)
         {
             return validationResult.ToErrors();
@@ -87,7 +89,7 @@ public class GetPositionsHandler : IQueryHandler<PaginationEnvelope<GetPositions
 
         string orderClause = $"ORDER BY {sortBy} {sortDirection}, p.id {sortDirection}";
 
-        var connection = _dbConnectionFactory.GetDbConnection();
+        DbConnection? connection = _dbConnectionFactory.GetDbConnection();
 
         var command = new CommandDefinition(
             $"""
@@ -115,10 +117,10 @@ public class GetPositionsHandler : IQueryHandler<PaginationEnvelope<GetPositions
             parameters,
             cancellationToken: cancellationToken);
 
-        await using var result = await connection.QueryMultipleAsync(command);
+        await using SqlMapper.GridReader? result = await connection.QueryMultipleAsync(command);
 
         long totalCount = await result.ReadSingleAsync<long>();
-        var positions = await result.ReadAsync<GetPositionsDto>();
+        IEnumerable<GetPositionsDto>? positions = await result.ReadAsync<GetPositionsDto>();
 
         return new PaginationEnvelope<GetPositionsDto>(positions.ToList(), totalCount, request.Page, request.PageSize);
     }

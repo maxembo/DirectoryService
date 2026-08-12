@@ -1,5 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Positions.Commands.SoftDeletePositions;
+using DirectoryService.Domain.Departments;
+using DirectoryService.Domain.Positions;
 using DirectoryService.IntegrationTests.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using SharedService.SharedKernel;
@@ -17,7 +19,7 @@ public class SoftDeletePositionTests(DirectoryTestWebFactory factory) : Position
         var command = new SoftDeletePositionCommand(notExistPositionId);
 
         // act
-        var result = await Execute(command);
+        Result<Guid, Errors> result = await Execute(command);
 
         // assert
         Assert.True(result.IsFailure);
@@ -31,9 +33,9 @@ public class SoftDeletePositionTests(DirectoryTestWebFactory factory) : Position
         // arrange
         const string alreadyInactiveName = "soft delete name name";
 
-        var department = await SeedActiveDepartment();
+        Department? department = await SeedActiveDepartment();
 
-        var positionToDeleteId = await CreatePosition(
+        PositionId? positionToDeleteId = await CreatePosition(
             alreadyInactiveName, "description test position", [department.Id]);
 
         await MarkPositionAsDeleted(positionToDeleteId);
@@ -41,14 +43,14 @@ public class SoftDeletePositionTests(DirectoryTestWebFactory factory) : Position
         var command = new SoftDeletePositionCommand(positionToDeleteId.Value);
 
         // act
-        var result = await Execute(command);
+        Result<Guid, Errors> result = await Execute(command);
 
         // assert
         Assert.True(result.IsFailure);
 
         await ExecuteInDb(async dbContext =>
         {
-            var position = await dbContext.Positions
+            Position? position = await dbContext.Positions
                 .SingleAsync(l => l.Id == positionToDeleteId);
 
             Assert.False(position.IsActive);
@@ -66,15 +68,15 @@ public class SoftDeletePositionTests(DirectoryTestWebFactory factory) : Position
         // arrange
         const string name = "soft delete name position";
 
-        var department = await SeedActiveDepartment();
+        Department? department = await SeedActiveDepartment();
 
-        var positionToDeleteId =
+        PositionId? positionToDeleteId =
             await CreatePosition(name, "description test position", [department.Id]);
 
         var command = new SoftDeletePositionCommand(positionToDeleteId.Value);
 
         // act
-        var result = await Execute(command);
+        Result<Guid, Errors> result = await Execute(command);
 
         // assert
         Assert.True(result.IsSuccess);
@@ -82,7 +84,7 @@ public class SoftDeletePositionTests(DirectoryTestWebFactory factory) : Position
 
         await ExecuteInDb(async dbContext =>
         {
-            var position = await dbContext.Positions
+            Position? position = await dbContext.Positions
                 .SingleAsync(p => p.Id == positionToDeleteId);
 
             Assert.False(position.IsActive);
@@ -93,6 +95,5 @@ public class SoftDeletePositionTests(DirectoryTestWebFactory factory) : Position
     }
 
     private Task<Result<Guid, Errors>> Execute(SoftDeletePositionCommand command) =>
-        Execute<Result<Guid, Errors>, SoftDeletePositionHandler>(
-            handler => handler.Handle(command));
+        Execute<Result<Guid, Errors>, SoftDeletePositionHandler>(handler => handler.Handle(command));
 }

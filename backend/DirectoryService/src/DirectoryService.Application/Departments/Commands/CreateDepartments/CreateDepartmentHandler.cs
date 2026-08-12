@@ -6,6 +6,7 @@ using DirectoryService.Domain.DepartmentLocations;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Locations;
 using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
 using SharedService.Core.Abstractions;
@@ -16,11 +17,11 @@ namespace DirectoryService.Application.Departments.Commands.CreateDepartments;
 
 public class CreateDepartmentHandler : ICommandHandler<Guid, CreateDepartmentCommand>
 {
-    private readonly ILocationsRepository _locationsRepository;
-    private readonly IDepartmentsRepository _departmentsRepository;
-    private readonly IValidator<CreateDepartmentRequest> _validator;
-    private readonly ILogger<CreateDepartmentHandler> _logger;
     private readonly HybridCache _cache;
+    private readonly IDepartmentsRepository _departmentsRepository;
+    private readonly ILocationsRepository _locationsRepository;
+    private readonly ILogger<CreateDepartmentHandler> _logger;
+    private readonly IValidator<CreateDepartmentRequest> _validator;
 
     public CreateDepartmentHandler(
         ILocationsRepository locationsRepository,
@@ -38,7 +39,7 @@ public class CreateDepartmentHandler : ICommandHandler<Guid, CreateDepartmentCom
     public async Task<Result<Guid, Errors>> Handle(
         CreateDepartmentCommand command, CancellationToken cancellationToken = default)
     {
-        var validationResult = await _validator.ValidateAsync(command.Request, cancellationToken);
+        ValidationResult? validationResult = await _validator.ValidateAsync(command.Request, cancellationToken);
         if (!validationResult.IsValid)
         {
             var errors = validationResult.ToErrors();
@@ -48,27 +49,32 @@ public class CreateDepartmentHandler : ICommandHandler<Guid, CreateDepartmentCom
         }
 
         var departmentId = DepartmentId.CreateNew();
-        var name = DepartmentName.Create(command.Request.Name).Value;
-        var identifier = Identifier.Create(command.Request.Identifier).Value;
+        DepartmentName? name = DepartmentName.Create(command.Request.Name).Value;
+        Identifier? identifier = Identifier.Create(command.Request.Identifier).Value;
 
-        var parentId = command.Request.ParentId;
+        Guid? parentId = command.Request.ParentId;
 
-        var checkExistingIdsResult = await _locationsRepository.CheckExistingAndActiveIdsAsync(
+        UnitResult<Errors> checkExistingIdsResult = await _locationsRepository.CheckExistingAndActiveIdsAsync(
             command.Request.LocationsIds, cancellationToken);
         if (checkExistingIdsResult.IsFailure)
+        {
             return checkExistingIdsResult.Error;
+        }
 
         var locationIds =
-            command.Request.LocationsIds.Select(
-                    l => new DepartmentLocation(DepartmentLocationId.CreateNew(), departmentId, LocationId.Create(l)))
+            command.Request.LocationsIds.Select(l => new DepartmentLocation(
+                    DepartmentLocationId.CreateNew(), departmentId, LocationId.Create(l)))
                 .ToList();
 
         Department department;
         if (parentId == null)
         {
-            var createParentDepartmentResult = Department.CreateParent(name, identifier, locationIds, departmentId);
+            Result<Department, Error> createParentDepartmentResult =
+                Department.CreateParent(name, identifier, locationIds, departmentId);
             if (createParentDepartmentResult.IsFailure)
+            {
                 return createParentDepartmentResult.Error.ToErrors();
+            }
 
             department = createParentDepartmentResult.Value;
         }
@@ -76,20 +82,24 @@ public class CreateDepartmentHandler : ICommandHandler<Guid, CreateDepartmentCom
         {
             var parentDepartmentId = DepartmentId.Create(parentId.Value);
 
-            var getParentDepartmentResult =
+            Result<Department, Error> getParentDepartmentResult =
                 await _departmentsRepository.GetByIdAsync(parentDepartmentId, cancellationToken);
             if (getParentDepartmentResult.IsFailure)
+            {
                 return getParentDepartmentResult.Error.ToErrors();
+            }
 
-            var childParentDepartmentResult = Department.CreateChild(
+            Result<Department, Error> childParentDepartmentResult = Department.CreateChild(
                 name, identifier, getParentDepartmentResult.Value, locationIds, departmentId);
             if (childParentDepartmentResult.IsFailure)
+            {
                 return childParentDepartmentResult.Error.ToErrors();
+            }
 
             department = childParentDepartmentResult.Value;
         }
 
-        var repositoryResult = await _departmentsRepository.AddAsync(department, cancellationToken);
+        Result<Guid, Error> repositoryResult = await _departmentsRepository.AddAsync(department, cancellationToken);
         if (repositoryResult.IsFailure)
         {
             return Error.Failure(null, repositoryResult.Error.Message)

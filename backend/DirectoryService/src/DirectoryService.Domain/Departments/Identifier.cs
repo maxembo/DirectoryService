@@ -10,7 +10,10 @@ public sealed record Identifier
     private static readonly Regex _identifierRegex =
         new("^[A-Za-z-]+$", RegexOptions.Compiled);
 
-    private Identifier(string value) => Value = value;
+    private Identifier(string value)
+    {
+        Value = value;
+    }
 
     public string Value { get; }
 

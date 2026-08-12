@@ -6,7 +6,10 @@ namespace DirectoryService.Domain.Departments;
 
 public sealed record DepartmentName
 {
-    private DepartmentName(string value) => Value = value;
+    private DepartmentName(string value)
+    {
+        Value = value;
+    }
 
     public string Value { get; }
 

@@ -13,11 +13,11 @@ public class RestoreLocationTests(DirectoryTestWebFactory factory) : DirectoryBa
     public async Task RestoreLocation_WhenLocationIsAlreadyActive_ShouldSucceedWithoutChanges()
     {
         // arrange
-        var activeLocationId = await CreateLocation(name: "active location");
+        LocationId? activeLocationId = await CreateLocation("active location");
 
-        var updatedAtBeforeRestore = await ExecuteInDb(async dbContext =>
+        DateTime updatedAtBeforeRestore = await ExecuteInDb(async dbContext =>
         {
-            var location = await dbContext.Locations
+            Location? location = await dbContext.Locations
                 .SingleAsync(l => l.Id == activeLocationId);
 
             return location.UpdatedAt;
@@ -26,7 +26,7 @@ public class RestoreLocationTests(DirectoryTestWebFactory factory) : DirectoryBa
         var command = new RestoreLocationCommand(activeLocationId.Value);
 
         // act
-        var result = await Execute(command);
+        Result<Guid, Errors> result = await Execute(command);
 
         // assert
         Assert.True(result.IsSuccess);
@@ -34,7 +34,7 @@ public class RestoreLocationTests(DirectoryTestWebFactory factory) : DirectoryBa
 
         await ExecuteInDb(async dbContext =>
         {
-            var location = await dbContext.Locations
+            Location? location = await dbContext.Locations
                 .SingleAsync(l => l.Id == LocationId.Create(result.Value));
 
             Assert.True(location.IsActive);
@@ -52,7 +52,7 @@ public class RestoreLocationTests(DirectoryTestWebFactory factory) : DirectoryBa
         var command = new RestoreLocationCommand(notExistingLocationId);
 
         // act
-        var result = await Execute(command);
+        Result<Guid, Errors> result = await Execute(command);
 
         // assert
         Assert.True(result.IsFailure);
@@ -66,13 +66,13 @@ public class RestoreLocationTests(DirectoryTestWebFactory factory) : DirectoryBa
         // arrange
         const string name = "restore location";
 
-        var locationId = await CreateLocation(name: name);
+        LocationId? locationId = await CreateLocation(name);
 
         await MarkLocationAsDeleted(locationId);
 
-        var updatedAtBeforeRestore = await ExecuteInDb(async dbContext =>
+        DateTime updatedAtBeforeRestore = await ExecuteInDb(async dbContext =>
         {
-            var location = await dbContext.Locations
+            Location? location = await dbContext.Locations
                 .SingleAsync(l => l.Id == locationId);
 
             Assert.False(location.IsActive);
@@ -84,7 +84,7 @@ public class RestoreLocationTests(DirectoryTestWebFactory factory) : DirectoryBa
         var command = new RestoreLocationCommand(locationId.Value);
 
         // act
-        var result = await Execute(command);
+        Result<Guid, Errors> result = await Execute(command);
 
         // assert
         Assert.True(result.IsSuccess);
@@ -92,7 +92,7 @@ public class RestoreLocationTests(DirectoryTestWebFactory factory) : DirectoryBa
 
         await ExecuteInDb(async dbContext =>
         {
-            var location = await dbContext.Locations
+            Location? location = await dbContext.Locations
                 .SingleAsync(l => l.Id == LocationId.Create(result.Value), CancellationToken.None);
 
             Assert.True(location.IsActive);
@@ -106,7 +106,7 @@ public class RestoreLocationTests(DirectoryTestWebFactory factory) : DirectoryBa
     {
         Assert.True(result.IsFailure);
 
-        var actualError = Assert.Single(result.Error);
+        Error? actualError = Assert.Single(result.Error);
 
         Assert.Equal(expectedError.Code, actualError.Code);
         Assert.Equal(expectedError.Type, actualError.Type);

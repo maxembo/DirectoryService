@@ -10,9 +10,9 @@ namespace DirectoryService.Infrastructure.Postgres.Cleanup;
 
 public class DeletedEntitiesCleanupBackgroundService : BackgroundService
 {
-    private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly ILogger<DeletedEntitiesCleanupBackgroundService> _logger;
     private readonly DeletedEntitiesCleanupOptions _options;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
 
     public DeletedEntitiesCleanupBackgroundService(
         IOptions<DeletedEntitiesCleanupOptions> options,
@@ -34,10 +34,12 @@ public class DeletedEntitiesCleanupBackgroundService : BackgroundService
         {
             while (await timer.WaitForNextTickAsync(stoppingToken))
             {
-                var result = await DeleteInactiveDepartmentsAsync(stoppingToken);
+                UnitResult<Error> result = await DeleteInactiveDepartmentsAsync(stoppingToken);
 
                 if (result.IsSuccess)
+                {
                     _logger.LogInformation("Deleted records have been deleted.");
+                }
             }
         }
         catch (OperationCanceledException)
@@ -53,9 +55,9 @@ public class DeletedEntitiesCleanupBackgroundService : BackgroundService
 
     private async Task<UnitResult<Error>> DeleteInactiveDepartmentsAsync(CancellationToken stoppingToken)
     {
-        await using var scope = _serviceScopeFactory.CreateAsyncScope();
+        await using AsyncServiceScope scope = _serviceScopeFactory.CreateAsyncScope();
 
-        var deletedRecordsCleanerService =
+        IDeletedEntitiesCleanupService? deletedRecordsCleanerService =
             scope.ServiceProvider.GetRequiredService<IDeletedEntitiesCleanupService>();
 
         return await deletedRecordsCleanerService.Process(stoppingToken);

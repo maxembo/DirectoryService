@@ -1,5 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Locations.Commands.SoftDeleteLocations;
+using DirectoryService.Domain.Locations;
 using DirectoryService.IntegrationTests.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using SharedService.SharedKernel;
@@ -15,7 +16,7 @@ public class SoftDeleteLocationTests(DirectoryTestWebFactory factory) : Director
         var command = new SoftDeleteLocationCommand(Guid.NewGuid());
 
         // act
-        var result = await Execute(command);
+        Result<Guid, Errors> result = await Execute(command);
 
         // assert
         Assert.True(result.IsFailure);
@@ -29,29 +30,28 @@ public class SoftDeleteLocationTests(DirectoryTestWebFactory factory) : Director
         // arrange
         const string alreadyInactiveName = "soft delete name";
 
-        var locationToDeleteId = await CreateLocation(name: alreadyInactiveName);
+        LocationId? locationToDeleteId = await CreateLocation(alreadyInactiveName);
 
         await MarkLocationAsDeleted(locationToDeleteId);
 
         var command = new SoftDeleteLocationCommand(locationToDeleteId.Value);
 
         // act
-        var result = await Execute(command);
+        Result<Guid, Errors> result = await Execute(command);
 
         // assert
         Assert.True(result.IsFailure);
 
-        await ExecuteInDb(
-            async dbContext =>
-            {
-                var location = await dbContext.Locations
-                    .SingleAsync(l => l.Id == locationToDeleteId, CancellationToken.None);
+        await ExecuteInDb(async dbContext =>
+        {
+            Location? location = await dbContext.Locations
+                .SingleAsync(l => l.Id == locationToDeleteId, CancellationToken.None);
 
-                Assert.False(location.IsActive);
-                Assert.NotNull(location.DeletedAt);
+            Assert.False(location.IsActive);
+            Assert.NotNull(location.DeletedAt);
 
-                Assert.Equal(alreadyInactiveName, location.Name.Value);
-            });
+            Assert.Equal(alreadyInactiveName, location.Name.Value);
+        });
 
         Assert.Contains(result.Error, e => e is { Code: "value.not.found", Type: ErrorType.NOT_FOUND });
     }
@@ -62,33 +62,31 @@ public class SoftDeleteLocationTests(DirectoryTestWebFactory factory) : Director
         // arrange
         const string name = "soft delete name";
 
-        var locationToDeleteId = await CreateLocation(name: name);
+        LocationId? locationToDeleteId = await CreateLocation(name);
 
         var command = new SoftDeleteLocationCommand(locationToDeleteId.Value);
 
         // act
-        var result = await Execute(command);
+        Result<Guid, Errors> result = await Execute(command);
 
         // assert
         Assert.True(result.IsSuccess);
         Assert.Equal(locationToDeleteId.Value, result.Value);
 
-        await ExecuteInDb(
-            async dbContext =>
-            {
-                var location = await dbContext.Locations
-                    .SingleAsync(l => l.Id == locationToDeleteId, CancellationToken.None);
+        await ExecuteInDb(async dbContext =>
+        {
+            Location? location = await dbContext.Locations
+                .SingleAsync(l => l.Id == locationToDeleteId, CancellationToken.None);
 
-                Assert.False(location.IsActive);
-                Assert.NotNull(location.DeletedAt);
+            Assert.False(location.IsActive);
+            Assert.NotNull(location.DeletedAt);
 
-                Assert.Equal(name, location.Name.Value);
-            });
+            Assert.Equal(name, location.Name.Value);
+        });
     }
 
     private Task<Result<Guid, Errors>> Execute(SoftDeleteLocationCommand command)
         =>
-            Execute<Result<Guid, Errors>, SoftDeleteLocationHandler>(
-                handler
-                    => handler.Handle(command, CancellationToken.None));
+            Execute<Result<Guid, Errors>, SoftDeleteLocationHandler>(handler
+                => handler.Handle(command, CancellationToken.None));
 }

@@ -10,8 +10,8 @@ namespace DirectoryService.Application.Locations.Commands.SoftDeleteLocations;
 public class SoftDeleteLocationHandler : ICommandHandler<Guid, SoftDeleteLocationCommand>
 {
     private readonly ILocationsRepository _locationRepository;
-    private readonly ITransactionManager _transactionManager;
     private readonly ILogger<SoftDeleteLocationHandler> _logger;
+    private readonly ITransactionManager _transactionManager;
 
     public SoftDeleteLocationHandler(
         ILocationsRepository locationRepository,
@@ -28,17 +28,17 @@ public class SoftDeleteLocationHandler : ICommandHandler<Guid, SoftDeleteLocatio
     {
         var locationId = LocationId.Create(command.LocationId);
 
-        var locationResult = await _locationRepository.GetByIdAsync(locationId, cancellationToken);
+        Result<Location, Error> locationResult = await _locationRepository.GetByIdAsync(locationId, cancellationToken);
         if (locationResult.IsFailure)
         {
             return locationResult.Error.ToErrors();
         }
 
-        var location = locationResult.Value;
+        Location? location = locationResult.Value;
 
         location.MarkAsDelete();
 
-        var transactionResult = await _transactionManager.SaveChangeAsync(cancellationToken);
+        UnitResult<Error> transactionResult = await _transactionManager.SaveChangeAsync(cancellationToken);
         if (transactionResult.IsFailure)
         {
             return transactionResult.Error.ToErrors();

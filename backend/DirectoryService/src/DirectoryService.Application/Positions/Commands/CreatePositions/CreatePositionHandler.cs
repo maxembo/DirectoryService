@@ -5,6 +5,7 @@ using DirectoryService.Domain.DepartmentPositions;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Positions;
 using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.Extensions.Logging;
 using SharedService.Core.Abstractions;
 using SharedService.Core.Validation;
@@ -14,10 +15,10 @@ namespace DirectoryService.Application.Positions.Commands.CreatePositions;
 
 public class CreatePositionHandler : ICommandHandler<Guid, CreatePositionCommand>
 {
-    private readonly IPositionsRepository _positionsRepository;
     private readonly IDepartmentsRepository _departmentsRepository;
-    private readonly IValidator<CreatePositionRequest> _validator;
     private readonly ILogger<CreatePositionHandler> _logger;
+    private readonly IPositionsRepository _positionsRepository;
+    private readonly IValidator<CreatePositionRequest> _validator;
 
     public CreatePositionHandler(
         IPositionsRepository positionsRepository,
@@ -34,7 +35,7 @@ public class CreatePositionHandler : ICommandHandler<Guid, CreatePositionCommand
     public async Task<Result<Guid, Errors>> Handle(
         CreatePositionCommand command, CancellationToken cancellationToken = default)
     {
-        var validationResult = await _validator.ValidateAsync(command.Request, cancellationToken);
+        ValidationResult? validationResult = await _validator.ValidateAsync(command.Request, cancellationToken);
         if (!validationResult.IsValid)
         {
             var errors = validationResult.ToErrors();
@@ -44,21 +45,23 @@ public class CreatePositionHandler : ICommandHandler<Guid, CreatePositionCommand
         }
 
         var positionId = PositionId.CreateNew();
-        var name = PositionName.Create(command.Request.Name).Value;
-        var description = Description.Create(command.Request.Description).Value;
+        PositionName? name = PositionName.Create(command.Request.Name).Value;
+        Description? description = Description.Create(command.Request.Description).Value;
 
-        var checkExistingAndActiveResult =
+        UnitResult<Errors> checkExistingAndActiveResult =
             await _departmentsRepository.CheckExistingAndActiveAsync(command.Request.DepartmentIds, cancellationToken);
         if (checkExistingAndActiveResult.IsFailure)
+        {
             return checkExistingAndActiveResult.Error;
+        }
 
-        var departmentIds = command.Request.DepartmentIds.Select(
-                id => new DepartmentPosition(DepartmentPositionId.CreateNew(), DepartmentId.Create(id), positionId))
+        var departmentIds = command.Request.DepartmentIds.Select(id =>
+                new DepartmentPosition(DepartmentPositionId.CreateNew(), DepartmentId.Create(id), positionId))
             .ToList();
 
         var position = new Position(positionId, name, description, departmentIds);
 
-        var addPositionResult = await _positionsRepository.AddAsync(position, cancellationToken);
+        Result<Guid, Error> addPositionResult = await _positionsRepository.AddAsync(position, cancellationToken);
         if (addPositionResult.IsFailure)
         {
             return addPositionResult.Error.ToErrors();

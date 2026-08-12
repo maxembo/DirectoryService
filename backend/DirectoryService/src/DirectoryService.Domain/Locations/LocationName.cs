@@ -6,7 +6,10 @@ namespace DirectoryService.Domain.Locations;
 
 public sealed record LocationName
 {
-    private LocationName(string value) => Value = value;
+    private LocationName(string value)
+    {
+        Value = value;
+    }
 
     public string Value { get; }
 

@@ -1,9 +1,11 @@
 ﻿using System.Data;
+using System.Data.Common;
 using CSharpFunctionalExtensions;
 using Dapper;
 using DirectoryService.Contracts.Locations.GetLocations.Dtos;
 using DirectoryService.Contracts.Locations.GetLocations.Requests;
 using FluentValidation;
+using FluentValidation.Results;
 using SharedService.Core.Abstractions;
 using SharedService.Core.Database;
 using SharedService.Core.Validation;
@@ -27,7 +29,7 @@ public class GetLocationsHandlerDapper : IQueryHandler<PaginationEnvelope<GetLoc
     public async Task<Result<PaginationEnvelope<GetLocationsDto>, Errors>> Handle(
         GetLocationsQuery query, CancellationToken cancellationToken)
     {
-        var validationResult = await _validator.ValidateAsync(query.Request, cancellationToken);
+        ValidationResult? validationResult = await _validator.ValidateAsync(query.Request, cancellationToken);
         if (!validationResult.IsValid)
         {
             return validationResult.ToErrors();
@@ -71,7 +73,7 @@ public class GetLocationsHandlerDapper : IQueryHandler<PaginationEnvelope<GetLoc
         {
             "name" => "l.name",
             "created" => "l.created_at",
-            _ => "l.name"
+            _ => "l.name",
         };
 
         string sortDirection = query.Request.SortDirection?.ToLower() == "asc"
@@ -80,10 +82,10 @@ public class GetLocationsHandlerDapper : IQueryHandler<PaginationEnvelope<GetLoc
 
         string orderByClause = $"ORDER BY {sortBy} {sortDirection}, l.id {sortDirection}";
 
-        var connection = _dbConnectionFactory.GetDbConnection();
+        DbConnection? connection = _dbConnectionFactory.GetDbConnection();
 
         long? totalCount = 0;
-        var locations = await connection.QueryAsync<GetLocationsDto, long, GetLocationsDto>(
+        IEnumerable<GetLocationsDto>? locations = await connection.QueryAsync<GetLocationsDto, long, GetLocationsDto>(
             $"""
              SELECT 
                  l.id,

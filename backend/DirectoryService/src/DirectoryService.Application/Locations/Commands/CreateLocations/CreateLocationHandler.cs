@@ -2,6 +2,7 @@ using CSharpFunctionalExtensions;
 using DirectoryService.Contracts.Locations.CreateLocations;
 using DirectoryService.Domain.Locations;
 using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.Extensions.Logging;
 using SharedService.Core.Abstractions;
 using SharedService.Core.Validation;
@@ -12,8 +13,8 @@ namespace DirectoryService.Application.Locations.Commands.CreateLocations;
 public class CreateLocationHandler : ICommandHandler<Guid, CreateLocationCommand>
 {
     private readonly ILocationsRepository _locationsRepository;
-    private readonly IValidator<CreateLocationRequest> _validator;
     private readonly ILogger<CreateLocationHandler> _logger;
+    private readonly IValidator<CreateLocationRequest> _validator;
 
     public CreateLocationHandler(
         ILocationsRepository locationsRepository,
@@ -28,7 +29,7 @@ public class CreateLocationHandler : ICommandHandler<Guid, CreateLocationCommand
     public async Task<Result<Guid, Errors>> Handle(
         CreateLocationCommand command, CancellationToken cancellationToken = default)
     {
-        var validationResult = await _validator.ValidateAsync(command.LocationRequest, cancellationToken);
+        ValidationResult? validationResult = await _validator.ValidateAsync(command.LocationRequest, cancellationToken);
         if (!validationResult.IsValid)
         {
             var errors = validationResult.ToErrors();
@@ -46,7 +47,7 @@ public class CreateLocationHandler : ICommandHandler<Guid, CreateLocationCommand
                 command.LocationRequest.Address.Street,
                 command.LocationRequest.Address.House).Value);
 
-        var repositoryResult = await _locationsRepository.AddAsync(location, cancellationToken);
+        Result<Guid, Error> repositoryResult = await _locationsRepository.AddAsync(location, cancellationToken);
         if (repositoryResult.IsFailure)
         {
             return repositoryResult.Error.ToErrors();

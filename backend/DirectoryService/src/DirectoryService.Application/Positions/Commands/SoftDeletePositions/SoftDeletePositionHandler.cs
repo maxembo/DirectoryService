@@ -9,9 +9,9 @@ namespace DirectoryService.Application.Positions.Commands.SoftDeletePositions;
 
 public class SoftDeletePositionHandler : ICommandHandler<Guid, SoftDeletePositionCommand>
 {
+    private readonly ILogger<SoftDeletePositionHandler> _logger;
     private readonly IPositionsRepository _positionRepository;
     private readonly ITransactionManager _transactionManager;
-    private readonly ILogger<SoftDeletePositionHandler> _logger;
 
     public SoftDeletePositionHandler(
         IPositionsRepository positionRepository,
@@ -28,17 +28,17 @@ public class SoftDeletePositionHandler : ICommandHandler<Guid, SoftDeletePositio
     {
         var positionId = PositionId.Create(command.PositionId);
 
-        var positionResult = await _positionRepository.GetByIdAsync(positionId, cancellationToken);
+        Result<Position, Error> positionResult = await _positionRepository.GetByIdAsync(positionId, cancellationToken);
         if (positionResult.IsFailure)
         {
             return positionResult.Error.ToErrors();
         }
 
-        var position = positionResult.Value;
+        Position? position = positionResult.Value;
 
         position.MarkAsDelete();
 
-        var transactionResult = await _transactionManager.SaveChangeAsync(cancellationToken);
+        UnitResult<Error> transactionResult = await _transactionManager.SaveChangeAsync(cancellationToken);
         if (transactionResult.IsFailure)
         {
             return transactionResult.Error.ToErrors();

@@ -10,8 +10,8 @@ namespace DirectoryService.Application.Locations.Commands.RestoreLocations;
 public class RestoreLocationHandler : ICommandHandler<Guid, RestoreLocationCommand>
 {
     private readonly ILocationsRepository _locationsRepository;
-    private readonly ITransactionManager _transactionManager;
     private readonly ILogger<RestoreLocationHandler> _logger;
+    private readonly ITransactionManager _transactionManager;
 
     public RestoreLocationHandler(
         ILocationsRepository locationsRepository,
@@ -27,13 +27,14 @@ public class RestoreLocationHandler : ICommandHandler<Guid, RestoreLocationComma
     {
         var locationId = LocationId.Create(command.LocationId);
 
-        var locationResult = await _locationsRepository.GetByIdIncludingInactiveAsync(locationId, cancellationToken);
+        Result<Location, Error> locationResult =
+            await _locationsRepository.GetByIdIncludingInactiveAsync(locationId, cancellationToken);
         if (locationResult.IsFailure)
         {
             return locationResult.Error.ToErrors();
         }
 
-        var location = locationResult.Value;
+        Location? location = locationResult.Value;
 
         if (location.IsActive)
         {
@@ -46,7 +47,7 @@ public class RestoreLocationHandler : ICommandHandler<Guid, RestoreLocationComma
 
         location.Restore();
 
-        var saveResult = await _transactionManager.SaveChangeAsync(cancellationToken);
+        UnitResult<Error> saveResult = await _transactionManager.SaveChangeAsync(cancellationToken);
         if (saveResult.IsFailure)
         {
             return saveResult.Error.ToErrors();

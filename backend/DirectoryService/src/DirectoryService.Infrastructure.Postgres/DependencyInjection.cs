@@ -1,6 +1,5 @@
 ﻿using System.Reflection;
 using Dapper;
-using DirectoryService.Application;
 using DirectoryService.Application.Cleanup;
 using DirectoryService.Application.Database;
 using DirectoryService.Application.Departments;
@@ -42,11 +41,11 @@ public static class DependencyInjection
 
     private static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddScoped<DirectoryServiceDbContext>(
-            _ => new DirectoryServiceDbContext(configuration.GetConnectionString(DATABASE)!));
+        services.AddScoped<DirectoryServiceDbContext>(_ =>
+            new DirectoryServiceDbContext(configuration.GetConnectionString(DATABASE)!));
 
-        services.AddScoped<IReadDbContext, DirectoryServiceDbContext>(
-            _ => new DirectoryServiceDbContext(configuration.GetConnectionString(DATABASE)!));
+        services.AddScoped<IReadDbContext, DirectoryServiceDbContext>(_ =>
+            new DirectoryServiceDbContext(configuration.GetConnectionString(DATABASE)!));
 
         services.AddDapper(configuration);
 
@@ -55,8 +54,8 @@ public static class DependencyInjection
 
     private static IServiceCollection AddDapper(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddScoped<IDbConnectionFactory, DirectoryServiceDbContext>(
-            _ => new DirectoryServiceDbContext(configuration.GetConnectionString("DirectoryServiceDb")!));
+        services.AddScoped<IDbConnectionFactory, DirectoryServiceDbContext>(_ =>
+            new DirectoryServiceDbContext(configuration.GetConnectionString("DirectoryServiceDb")!));
 
         DefaultTypeMap.MatchNamesWithUnderscores = true;
 
@@ -68,9 +67,9 @@ public static class DependencyInjection
                 .Where(t => t.IsClass && typeof(IDapperJson).IsAssignableFrom(t))
                 .ToList();
 
-            foreach (var type in jsonTypes)
+            foreach (Type? type in jsonTypes)
             {
-                var handlerType = typeof(JsonTypeHandler<>).MakeGenericType(type);
+                Type? handlerType = typeof(JsonTypeHandler<>).MakeGenericType(type);
                 object? handler = Activator.CreateInstance(handlerType);
                 SqlMapper.AddTypeHandler(
                     type, handler as SqlMapper.ITypeHandler ?? throw new InvalidOperationException());

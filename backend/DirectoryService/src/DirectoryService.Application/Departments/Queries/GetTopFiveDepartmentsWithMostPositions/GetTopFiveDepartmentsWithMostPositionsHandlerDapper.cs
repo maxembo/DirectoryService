@@ -1,4 +1,5 @@
-﻿using Dapper;
+﻿using System.Data.Common;
+using Dapper;
 using DirectoryService.Application.Constants;
 using DirectoryService.Contracts.Departments.GetTopFiveDepartmentsWithMostPositions.Dtos;
 using Microsoft.Extensions.Caching.Hybrid;
@@ -9,8 +10,8 @@ namespace DirectoryService.Application.Departments.Queries.GetTopFiveDepartments
 
 public class GetTopFiveDepartmentsWithMostPositionsHandlerDapper : IQueryHandler<GetDepartmentDto[]>
 {
-    private readonly IDbConnectionFactory _dbConnectionFactory;
     private readonly HybridCache _cache;
+    private readonly IDbConnectionFactory _dbConnectionFactory;
 
     public GetTopFiveDepartmentsWithMostPositionsHandlerDapper(
         IDbConnectionFactory dbConnectionFactory, HybridCache cache)
@@ -19,10 +20,8 @@ public class GetTopFiveDepartmentsWithMostPositionsHandlerDapper : IQueryHandler
         _cache = cache;
     }
 
-    public async Task<GetDepartmentDto[]> Handle(CancellationToken cancellationToken)
-    {
-        return await GetPresignedTopFiveDepartmentsWithPositionsFromCache(cancellationToken);
-    }
+    public async Task<GetDepartmentDto[]> Handle(CancellationToken cancellationToken) =>
+        await GetPresignedTopFiveDepartmentsWithPositionsFromCache(cancellationToken);
 
     private async Task<GetDepartmentDto[]> GetPresignedTopFiveDepartmentsWithPositionsFromCache(
         CancellationToken cancellationToken)
@@ -31,13 +30,13 @@ public class GetTopFiveDepartmentsWithMostPositionsHandlerDapper : IQueryHandler
 
         return await _cache.GetOrCreateAsync(
             key,
-            factory: async ct => await GetTopFiveDepartmentsWithPositions(ct),
+            async ct => await GetTopFiveDepartmentsWithPositions(ct),
             cancellationToken: cancellationToken);
     }
 
     private async Task<GetDepartmentDto[]> GetTopFiveDepartmentsWithPositions(CancellationToken cancellationToken)
     {
-        var dbConnection = _dbConnectionFactory.GetDbConnection();
+        DbConnection? dbConnection = _dbConnectionFactory.GetDbConnection();
 
         const string sql = """
                            SELECT d.id,
@@ -62,7 +61,7 @@ public class GetTopFiveDepartmentsWithMostPositionsHandlerDapper : IQueryHandler
                            ORDER BY t.positions_count DESC;
                            """;
 
-        var departments = await dbConnection
+        IEnumerable<GetDepartmentDto>? departments = await dbConnection
             .QueryAsync<GetDepartmentDto, long, Guid[], GetDepartmentDto>(
                 sql, splitOn: "positions_count, locations", map:
                 (department, count, locations)

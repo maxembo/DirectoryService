@@ -10,10 +10,10 @@ namespace DirectoryService.Infrastructure.Postgres.Cleanup;
 
 public class DeletedEntitiesCleanupService : IDeletedEntitiesCleanupService
 {
-    private readonly ITransactionManager _transactionManager;
     private readonly IDepartmentsRepository _departmentsRepository;
-    private readonly IPositionsRepository _positionsRepository;
     private readonly ILocationsRepository _locationsRepository;
+    private readonly IPositionsRepository _positionsRepository;
+    private readonly ITransactionManager _transactionManager;
 
     public DeletedEntitiesCleanupService(
         ITransactionManager transactionManager,
@@ -29,15 +29,16 @@ public class DeletedEntitiesCleanupService : IDeletedEntitiesCleanupService
 
     public async Task<UnitResult<Error>> Process(CancellationToken cancellationToken = default)
     {
-        var transactionResult = await _transactionManager.BeginTransactionAsync(cancellationToken);
+        Result<ITransactionScope, Error> transactionResult =
+            await _transactionManager.BeginTransactionAsync(cancellationToken);
         if (transactionResult.IsFailure)
         {
             return transactionResult.Error;
         }
 
-        using var transaction = transactionResult.Value;
+        using ITransactionScope? transaction = transactionResult.Value;
 
-        var deleteDepartmentLocationsResult =
+        UnitResult<Error> deleteDepartmentLocationsResult =
             await _departmentsRepository.DeleteDepartmentLocationsMarkDelete(cancellationToken);
         if (deleteDepartmentLocationsResult.IsFailure)
         {
@@ -45,7 +46,7 @@ public class DeletedEntitiesCleanupService : IDeletedEntitiesCleanupService
             return deleteDepartmentLocationsResult.Error;
         }
 
-        var deleteDepartmentPositionsResult =
+        UnitResult<Error> deleteDepartmentPositionsResult =
             await _departmentsRepository.DeleteDepartmentPositionsMarkDelete(cancellationToken);
         if (deleteDepartmentPositionsResult.IsFailure)
         {
@@ -53,35 +54,39 @@ public class DeletedEntitiesCleanupService : IDeletedEntitiesCleanupService
             return deleteDepartmentPositionsResult.Error;
         }
 
-        var updatePathsDeleteResult = await _departmentsRepository.UpdatePathsAfterDelete(cancellationToken);
+        UnitResult<Error> updatePathsDeleteResult =
+            await _departmentsRepository.UpdatePathsAfterDelete(cancellationToken);
         if (updatePathsDeleteResult.IsFailure)
         {
             transaction.Rollback();
             return updatePathsDeleteResult.Error;
         }
 
-        var deleteDepartmentsResult = await _departmentsRepository.DeleteDepartmentsMarkDelete(cancellationToken);
+        UnitResult<Error> deleteDepartmentsResult =
+            await _departmentsRepository.DeleteDepartmentsMarkDelete(cancellationToken);
         if (deleteDepartmentsResult.IsFailure)
         {
             transaction.Rollback();
             return deleteDepartmentsResult.Error;
         }
 
-        var deleteLocationsResult = await _locationsRepository.DeleteLocationsMarkDelete(cancellationToken);
+        UnitResult<Error> deleteLocationsResult =
+            await _locationsRepository.DeleteLocationsMarkDelete(cancellationToken);
         if (deleteLocationsResult.IsFailure)
         {
             transaction.Rollback();
             return deleteLocationsResult.Error;
         }
 
-        var deletePositionsResult = await _positionsRepository.DeletePositionsMarkDelete(cancellationToken);
+        UnitResult<Error> deletePositionsResult =
+            await _positionsRepository.DeletePositionsMarkDelete(cancellationToken);
         if (deletePositionsResult.IsFailure)
         {
             transaction.Rollback();
             return deletePositionsResult.Error;
         }
 
-        var commitedResult = transaction.Commit();
+        UnitResult<Error> commitedResult = transaction.Commit();
         if (commitedResult.IsFailure)
         {
             transaction.Rollback();

@@ -9,8 +9,8 @@ namespace DirectoryService.Infrastructure.Postgres.Database;
 public class TransactionManager : ITransactionManager
 {
     private readonly DirectoryServiceDbContext _dbContext;
-    private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<TransactionManager> _logger;
+    private readonly ILoggerFactory _loggerFactory;
 
     public TransactionManager(
         DirectoryServiceDbContext dbContext,
@@ -27,8 +27,8 @@ public class TransactionManager : ITransactionManager
     {
         try
         {
-            var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
-            var transactionCreateLogger = _loggerFactory.CreateLogger<TransactionScope>();
+            IDbContextTransaction? transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+            ILogger<TransactionScope>? transactionCreateLogger = _loggerFactory.CreateLogger<TransactionScope>();
 
             var transactionScope = new TransactionScope(transaction.GetDbTransaction(), transactionCreateLogger);
 
@@ -43,7 +43,7 @@ public class TransactionManager : ITransactionManager
 
     public async Task<UnitResult<Error>> SaveChangeAsync(CancellationToken cancellationToken = default)
     {
-        var saveChangesResultAsync = await _dbContext.SaveChangesResultAsync(cancellationToken);
+        UnitResult<Error> saveChangesResultAsync = await _dbContext.SaveChangesResultAsync(cancellationToken);
         if (saveChangesResultAsync.IsFailure)
         {
             return saveChangesResultAsync.Error;

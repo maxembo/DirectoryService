@@ -1,7 +1,9 @@
 ﻿using System.Data;
+using System.Data.Common;
 using CSharpFunctionalExtensions;
 using Dapper;
 using DirectoryService.Contracts.Departments.GetDepartments.Dtos;
+using DirectoryService.Contracts.Departments.GetDepartments.Requests;
 using SharedService.Core.Abstractions;
 using SharedService.Core.Database;
 using SharedService.SharedKernel;
@@ -24,7 +26,7 @@ public class GetDepartmentsHandler : IQueryHandler<PaginationEnvelope<Department
         var parameters = new DynamicParameters();
         var conditions = new List<string>();
 
-        var request = query.Request;
+        GetDepartmentsRequest? request = query.Request;
 
         if (request.LocationsIds is { Length: > 0 } locationsIds)
         {
@@ -74,40 +76,41 @@ public class GetDepartmentsHandler : IQueryHandler<PaginationEnvelope<Department
             "name" => "d.name",
             "path" => "d.path",
             "created" => "d.created_at",
-            _ => "d.name"
+            _ => "d.name",
         };
 
         string sortDirection = request.SortDirection?.ToLower() == "desc" ? "DESC" : "ASC";
 
         string orderByClause = $"ORDER BY {sortBy} {sortDirection}, d.id {sortDirection}";
 
-        var connection = _dbConnectionFactory.GetDbConnection();
+        DbConnection? connection = _dbConnectionFactory.GetDbConnection();
 
         long? totalCount = 0;
 
-        var departments = await connection.QueryAsync<DepartmentShortDto, long, DepartmentShortDto>(
-            $"""
-             SELECT d.id,
-                    d.name,
-                    d.parent_id,
-                    d.is_active,
-                    d.identifier,
-                    d.path,
-                    d.created_at,
-                    d.updated_at,
-                    d.deleted_at,
-                    COUNT(*) OVER() AS total_count
-             FROM departments d
-             {whereClause}
-             {orderByClause}
-             LIMIT @pageSize OFFSET @page
-             """,
-            splitOn: "total_count",
-            map: (department, count) =>
-            {
-                totalCount = count;
-                return department;
-            }, param: parameters);
+        IEnumerable<DepartmentShortDto>? departments =
+            await connection.QueryAsync<DepartmentShortDto, long, DepartmentShortDto>(
+                $"""
+                 SELECT d.id,
+                        d.name,
+                        d.parent_id,
+                        d.is_active,
+                        d.identifier,
+                        d.path,
+                        d.created_at,
+                        d.updated_at,
+                        d.deleted_at,
+                        COUNT(*) OVER() AS total_count
+                 FROM departments d
+                 {whereClause}
+                 {orderByClause}
+                 LIMIT @pageSize OFFSET @page
+                 """,
+                splitOn: "total_count",
+                map: (department, count) =>
+                {
+                    totalCount = count;
+                    return department;
+                }, param: parameters);
 
         return new PaginationEnvelope<DepartmentShortDto>(departments, totalCount ?? 0, request.Page, request.PageSize);
     }

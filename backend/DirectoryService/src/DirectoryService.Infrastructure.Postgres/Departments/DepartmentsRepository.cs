@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System.Data.Common;
+using System.Linq.Expressions;
 using CSharpFunctionalExtensions;
 using Dapper;
 using DirectoryService.Application.Departments;
@@ -27,9 +28,11 @@ public class DepartmentsRepository : IDepartmentsRepository
     {
         await _dbContext.AddAsync(department, cancellationToken);
 
-        var saveChangesResult = await _dbContext.SaveChangesResultAsync(cancellationToken);
+        UnitResult<Error> saveChangesResult = await _dbContext.SaveChangesResultAsync(cancellationToken);
         if (saveChangesResult.IsFailure)
+        {
             return saveChangesResult.Error;
+        }
 
         return department.Id.Value;
     }
@@ -37,12 +40,14 @@ public class DepartmentsRepository : IDepartmentsRepository
     public async Task<Result<Department, Error>> GetByIdAsync(
         DepartmentId departmentId, CancellationToken cancellationToken = default)
     {
-        var department = await _dbContext.Departments
+        Department? department = await _dbContext.Departments
             .Where(d => d.IsActive == true)
             .FirstOrDefaultAsync(d => departmentId == d.Id, cancellationToken);
 
         if (department == null)
+        {
             return GeneralErrors.NotFound("department", departmentId.Value);
+        }
 
         return department;
     }
@@ -50,9 +55,9 @@ public class DepartmentsRepository : IDepartmentsRepository
     public async Task<UnitResult<Errors>> CheckExistingAndActiveAsync(
         Guid[] ids, CancellationToken cancellationToken = default)
     {
-        var departmentIds = DepartmentId.Create(ids);
+        DepartmentId[]? departmentIds = DepartmentId.Create(ids);
 
-        var existingIds = await _dbContext.Departments
+        List<Guid>? existingIds = await _dbContext.Departments
             .Where(d => departmentIds.Contains(d.Id) && d.IsActive)
             .Select(d => d.Id.Value)
             .ToListAsync(cancellationToken);
@@ -82,7 +87,7 @@ public class DepartmentsRepository : IDepartmentsRepository
     public async Task<Result<Department, Error>> GetActiveByIdWithLock(
         DepartmentId id, CancellationToken cancellationToken = default)
     {
-        var department = await _dbContext.Departments
+        Department? department = await _dbContext.Departments
             .FromSql($"SELECT d.* FROM departments d WHERE d.id = {id.Value} AND d.is_active = TRUE FOR UPDATE")
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -97,7 +102,7 @@ public class DepartmentsRepository : IDepartmentsRepository
     public async Task<Result<Department, Error>> GetByIdWithLock(
         DepartmentId id, CancellationToken cancellationToken = default)
     {
-        var department = await _dbContext.Departments
+        Department? department = await _dbContext.Departments
             .FromSql($"SELECT d.* FROM departments d WHERE d.id = {id.Value} FOR UPDATE")
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -119,7 +124,7 @@ public class DepartmentsRepository : IDepartmentsRepository
                            FOR UPDATE
                            """;
 
-        var dbConnection = _dbContext.Database.GetDbConnection();
+        DbConnection? dbConnection = _dbContext.Database.GetDbConnection();
 
         var sqlParams = new { parentPath = path.Value };
 
@@ -139,7 +144,7 @@ public class DepartmentsRepository : IDepartmentsRepository
                                              WHERE path <@ @departmentPath::ltree
                                              """;
 
-        var dbConnection = _dbContext.Database.GetDbConnection();
+        DbConnection? dbConnection = _dbContext.Database.GetDbConnection();
 
         try
         {
@@ -171,11 +176,11 @@ public class DepartmentsRepository : IDepartmentsRepository
                                              WHERE path <@ @departmentPath::ltree
                                              """;
 
-        var dbConnection = _dbContext.Database.GetDbConnection();
+        DbConnection? dbConnection = _dbContext.Database.GetDbConnection();
 
         try
         {
-            await dbConnection.ExecuteAsync(sqlUpdatePathAndDepth, new { departmentPath = departmentPath.Value, });
+            await dbConnection.ExecuteAsync(sqlUpdatePathAndDepth, new { departmentPath = departmentPath.Value });
 
             return UnitResult.Success<Error>();
         }
@@ -197,16 +202,18 @@ public class DepartmentsRepository : IDepartmentsRepository
                            ORDER BY depth
                            """;
 
-        var dbConnection = _dbContext.Database.GetDbConnection();
+        DbConnection? dbConnection = _dbContext.Database.GetDbConnection();
 
         try
         {
             var sqlParams = new { parentPath = parentPath.Value, departmentPath = departmentPath.Value };
 
-            var result = await dbConnection.QueryAsync(sql, sqlParams);
+            IEnumerable<dynamic>? result = await dbConnection.QueryAsync(sql, sqlParams);
 
             if (result.Any())
+            {
                 return GeneralErrors.Invalid("department.parentId");
+            }
 
             return UnitResult.Success<Error>();
         }
@@ -221,7 +228,7 @@ public class DepartmentsRepository : IDepartmentsRepository
     public async Task<Result<Department, Error>> GetBy(
         Expression<Func<Department, bool>> predicate, CancellationToken cancellationToken)
     {
-        var department = await _dbContext.Departments.FirstOrDefaultAsync(predicate, cancellationToken);
+        Department? department = await _dbContext.Departments.FirstOrDefaultAsync(predicate, cancellationToken);
 
         if (department is null)
         {
@@ -248,11 +255,11 @@ public class DepartmentsRepository : IDepartmentsRepository
                            WHERE path <@ @departmentPath::ltree
                            """;
 
-        var dbConnection = _dbContext.Database.GetDbConnection();
+        DbConnection? dbConnection = _dbContext.Database.GetDbConnection();
 
         try
         {
-            await dbConnection.ExecuteAsync(sql, param: new { departmentPath = departmentPath.Value });
+            await dbConnection.ExecuteAsync(sql, new { departmentPath = departmentPath.Value });
 
             return UnitResult.Success<Error>();
         }
@@ -352,9 +359,9 @@ public class DepartmentsRepository : IDepartmentsRepository
                                FROM departments d
                                LEFT JOIN expired e ON e.id = d.id
                                WHERE d.parent_id IS NULL
-
+                           
                                UNION ALL
-
+                           
                                SELECT child.id,
                                       e.id IS NOT NULL AS is_expired,
                                       CASE
@@ -399,7 +406,7 @@ public class DepartmentsRepository : IDepartmentsRepository
                                   OR d.depth IS DISTINCT FROM r.new_depth);
                            """;
 
-        var dbConnection = _dbContext.Database.GetDbConnection();
+        DbConnection? dbConnection = _dbContext.Database.GetDbConnection();
 
         try
         {
@@ -431,7 +438,7 @@ public class DepartmentsRepository : IDepartmentsRepository
                            WHERE path <@ @departmentPath::ltree;
                            """;
 
-        var dbConnection = _dbContext.Database.GetDbConnection();
+        DbConnection? dbConnection = _dbContext.Database.GetDbConnection();
 
         var sqlParams = new { departmentPath = departmentPath.Value, restoredPath = restoredPath.Value };
 

@@ -7,11 +7,11 @@ namespace DirectoryService.Domain.Departments;
 
 public sealed class Department : BaseEntity<DepartmentId>, ISoftDeletable
 {
-    // ef core
-    private Department(DepartmentId id)
-        : base(id)
-    {
-    }
+    private readonly List<Department> _childrens = [];
+
+    private readonly List<DepartmentPosition> _positions = [];
+
+    private List<DepartmentLocation> _locations = [];
 
     public Department(
         DepartmentId id,
@@ -29,11 +29,10 @@ public sealed class Department : BaseEntity<DepartmentId>, ISoftDeletable
         _locations = locations.ToList();
     }
 
-    private List<DepartmentLocation> _locations = [];
-
-    private readonly List<Department> _childrens = [];
-
-    private readonly List<DepartmentPosition> _positions = [];
+    // ef core
+    private Department(DepartmentId id)
+        : base(id)
+    { }
 
     public IReadOnlyList<DepartmentLocation> Locations => _locations.AsReadOnly();
 
@@ -53,18 +52,6 @@ public sealed class Department : BaseEntity<DepartmentId>, ISoftDeletable
 
     public DateTime? DeletedAt { get; private set; }
 
-    public UnitResult<Error> Rename(string name)
-    {
-        var nameResult = DepartmentName.Create(name);
-
-        if (nameResult.IsFailure)
-            return GeneralErrors.Invalid("department rename");
-
-        Name = nameResult.Value;
-
-        return UnitResult.Success<Error>();
-    }
-
     public static Result<Department, Error> CreateParent(
         DepartmentName name,
         Identifier identifier,
@@ -73,7 +60,9 @@ public sealed class Department : BaseEntity<DepartmentId>, ISoftDeletable
     {
         var locationsList = locations.ToList();
         if (locationsList.Count == 0)
+        {
             return GeneralErrors.Required("locations");
+        }
 
         var path = Path.CreateParent(identifier);
 
@@ -89,25 +78,50 @@ public sealed class Department : BaseEntity<DepartmentId>, ISoftDeletable
     {
         var locationsList = locations.ToList();
         if (locationsList.Count == 0)
+        {
             return GeneralErrors.Required("locations");
+        }
 
-        var path = parent.Path.CreateChild(identifier);
+        Path? path = parent.Path.CreateChild(identifier);
 
         return new Department(
             departmentId ?? DepartmentId.CreateNew(), name, identifier, path, locationsList, parent.Id);
     }
 
-    public void UpdateParent(DepartmentId? parentId = null)
+    public void MarkAsDelete()
     {
-        ParentId = parentId;
+        DateTime now = DateTime.UtcNow;
+
+        IsActive = false;
+        DeletedAt = now;
+
+        UpdatedAt = now;
     }
+
+    public UnitResult<Error> Rename(string name)
+    {
+        Result<DepartmentName, Error> nameResult = DepartmentName.Create(name);
+
+        if (nameResult.IsFailure)
+        {
+            return GeneralErrors.Invalid("department rename");
+        }
+
+        Name = nameResult.Value;
+
+        return UnitResult.Success<Error>();
+    }
+
+    public void UpdateParent(DepartmentId? parentId = null) => ParentId = parentId;
 
     public UnitResult<Error> UpdateLocationIds(IEnumerable<DepartmentLocation> locations)
     {
         var locationsList = locations.ToList();
 
         if (locationsList.Count == 0)
+        {
             return GeneralErrors.Required("locationsIds");
+        }
 
         _locations = locationsList.ToList();
 
@@ -117,7 +131,9 @@ public sealed class Department : BaseEntity<DepartmentId>, ISoftDeletable
     public UnitResult<Error> AddLocation(DepartmentLocation location)
     {
         if (_locations.Contains(location))
+        {
             return GeneralErrors.Invalid("department location");
+        }
 
         _locations.Add(location);
 
@@ -127,7 +143,9 @@ public sealed class Department : BaseEntity<DepartmentId>, ISoftDeletable
     public UnitResult<Error> RemoveLocation(DepartmentLocation location)
     {
         if (!_locations.Contains(location))
+        {
             return GeneralErrors.Invalid("department location");
+        }
 
         _locations.Remove(location);
 
@@ -137,7 +155,9 @@ public sealed class Department : BaseEntity<DepartmentId>, ISoftDeletable
     public UnitResult<Error> AddChild(Department department)
     {
         if (_childrens.Contains(department))
+        {
             return GeneralErrors.Invalid("department child");
+        }
 
         _childrens.Add(department);
 
@@ -147,7 +167,9 @@ public sealed class Department : BaseEntity<DepartmentId>, ISoftDeletable
     public UnitResult<Error> RemoveChild(Department department)
     {
         if (!_childrens.Contains(department))
+        {
             return GeneralErrors.Invalid("department child");
+        }
 
         _childrens.Remove(department);
 
@@ -157,7 +179,9 @@ public sealed class Department : BaseEntity<DepartmentId>, ISoftDeletable
     public UnitResult<Error> AddPosition(DepartmentPosition position)
     {
         if (_positions.Contains(position))
+        {
             return GeneralErrors.Invalid("department position");
+        }
 
         _positions.Add(position);
 
@@ -167,21 +191,13 @@ public sealed class Department : BaseEntity<DepartmentId>, ISoftDeletable
     public UnitResult<Error> RemovePosition(DepartmentPosition position)
     {
         if (!_positions.Contains(position))
+        {
             return GeneralErrors.Invalid("department position");
+        }
 
         _positions.Remove(position);
 
         return UnitResult.Success<Error>();
-    }
-
-    public void MarkAsDelete()
-    {
-        var now = DateTime.UtcNow;
-
-        IsActive = false;
-        DeletedAt = now;
-
-        UpdatedAt = now;
     }
 
     public void Restore()

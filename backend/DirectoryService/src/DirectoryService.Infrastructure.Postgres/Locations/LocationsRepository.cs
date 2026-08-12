@@ -1,3 +1,4 @@
+using System.Data.Common;
 using CSharpFunctionalExtensions;
 using Dapper;
 using DirectoryService.Application.Locations;
@@ -26,9 +27,11 @@ public class LocationsRepository : ILocationsRepository
     {
         await _dbContext.AddAsync(location, cancellationToken);
 
-        var saveChangesResult = await _dbContext.SaveChangesResultAsync(cancellationToken);
+        UnitResult<Error> saveChangesResult = await _dbContext.SaveChangesResultAsync(cancellationToken);
         if (saveChangesResult.IsFailure)
+        {
             return saveChangesResult.Error;
+        }
 
         return location.Id.Value;
     }
@@ -36,12 +39,14 @@ public class LocationsRepository : ILocationsRepository
     public async Task<Result<Location, Error>> GetByIdAsync(
         LocationId locationId, CancellationToken cancellationToken = default)
     {
-        var location = await _dbContext.Locations
+        Location? location = await _dbContext.Locations
             .Where(l => l.IsActive == true)
             .FirstOrDefaultAsync(l => l.Id == locationId, cancellationToken);
 
         if (location == null)
+        {
             return GeneralErrors.NotFound("location", locationId.Value);
+        }
 
         return location;
     }
@@ -49,11 +54,13 @@ public class LocationsRepository : ILocationsRepository
     public async Task<Result<Location, Error>> GetByIdIncludingInactiveAsync(
         LocationId locationId, CancellationToken cancellationToken = default)
     {
-        var location = await _dbContext.Locations
+        Location? location = await _dbContext.Locations
             .FirstOrDefaultAsync(l => l.Id == locationId, cancellationToken);
 
         if (location is null)
+        {
             return GeneralErrors.NotFound("location", locationId.Value);
+        }
 
         return location;
     }
@@ -61,9 +68,9 @@ public class LocationsRepository : ILocationsRepository
     public async Task<UnitResult<Errors>> CheckExistingAndActiveIdsAsync(
         Guid[] ids, CancellationToken cancellationToken = default)
     {
-        var locationIds = LocationId.Create(ids);
+        LocationId[]? locationIds = LocationId.Create(ids);
 
-        var existingIds = await _dbContext.Locations
+        List<Guid>? existingIds = await _dbContext.Locations
             .Where(l => locationIds.Contains(l.Id) && l.IsActive == true)
             .Select(l => l.Id.Value)
             .ToListAsync(cancellationToken);
@@ -102,13 +109,13 @@ public class LocationsRepository : ILocationsRepository
                              AND l.is_active = true
                            """;
 
-        var dbConnection = _dbContext.Database.GetDbConnection();
+        DbConnection? dbConnection = _dbContext.Database.GetDbConnection();
 
         try
         {
             await dbConnection.ExecuteAsync(
                 sql,
-                param: new
+                new
                 {
                     departmentId = departmentId.Value,
                     deletionReason = DeletionReason.NO_ACTIVE_DEPARTMENTS.ToString(),
@@ -123,8 +130,7 @@ public class LocationsRepository : ILocationsRepository
                 "Failed to soft delete locations for department {DepartmentId}",
                 departmentId.Value);
 
-            return GeneralErrors.Database(
-                message: "Не удалось пометить как мягкое удаление локации подразделения.");
+            return GeneralErrors.Database(message: "Не удалось пометить как мягкое удаление локации подразделения.");
         }
     }
 
@@ -144,13 +150,13 @@ public class LocationsRepository : ILocationsRepository
                              AND l.deletion_reason = @deletionReason
                            """;
 
-        var dbConnection = _dbContext.Database.GetDbConnection();
+        DbConnection? dbConnection = _dbContext.Database.GetDbConnection();
 
         try
         {
             await dbConnection.ExecuteAsync(
                 sql,
-                param: new
+                new
                 {
                     departmentId = departmentId.Value,
                     deletionReason = DeletionReason.NO_ACTIVE_DEPARTMENTS.ToString(),
@@ -165,8 +171,7 @@ public class LocationsRepository : ILocationsRepository
                 "Failed to restore locations for department {DepartmentId}",
                 departmentId.Value);
 
-            return GeneralErrors.Database(
-                message: "Не удалось восстановить локации подразделения.");
+            return GeneralErrors.Database(message: "Не удалось восстановить локации подразделения.");
         }
     }
 

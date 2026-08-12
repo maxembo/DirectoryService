@@ -2,6 +2,7 @@
 using DirectoryService.Contracts.Locations.UpdateLocations;
 using DirectoryService.Domain.Locations;
 using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.Extensions.Logging;
 using SharedService.Core.Abstractions;
 using SharedService.Core.Database;
@@ -13,9 +14,9 @@ namespace DirectoryService.Application.Locations.Commands.UpdateLocations;
 public class UpdateLocationHandler : ICommandHandler<Guid, UpdateLocationCommand>
 {
     private readonly ILocationsRepository _locationsRepository;
+    private readonly ILogger<UpdateLocationHandler> _logger;
     private readonly ITransactionManager _transactionManager;
     private readonly IValidator<UpdateLocationRequest> _validator;
-    private readonly ILogger<UpdateLocationHandler> _logger;
 
     public UpdateLocationHandler(
         ILocationsRepository locationsRepository,
@@ -32,7 +33,7 @@ public class UpdateLocationHandler : ICommandHandler<Guid, UpdateLocationCommand
     public async Task<Result<Guid, Errors>> Handle(
         UpdateLocationCommand command, CancellationToken cancellationToken = default)
     {
-        var validationResult = await _validator.ValidateAsync(command.Request, cancellationToken);
+        ValidationResult? validationResult = await _validator.ValidateAsync(command.Request, cancellationToken);
         if (!validationResult.IsValid)
         {
             return validationResult.ToErrors();
@@ -40,17 +41,17 @@ public class UpdateLocationHandler : ICommandHandler<Guid, UpdateLocationCommand
 
         var locationId = LocationId.Create(command.LocationId);
 
-        var locationResult = await _locationsRepository.GetByIdAsync(locationId, cancellationToken);
+        Result<Location, Error> locationResult = await _locationsRepository.GetByIdAsync(locationId, cancellationToken);
         if (locationResult.IsFailure)
         {
             return locationResult.Error.ToErrors();
         }
 
-        var location = locationResult.Value;
+        Location? location = locationResult.Value;
 
-        var name = LocationName.Create(command.Request.Name).Value;
-        var timezone = Timezone.Create(command.Request.Timezone).Value;
-        var address = Address.Create(
+        LocationName? name = LocationName.Create(command.Request.Name).Value;
+        Timezone? timezone = Timezone.Create(command.Request.Timezone).Value;
+        Address? address = Address.Create(
             command.Request.Address.City,
             command.Request.Address.Country,
             command.Request.Address.Street,
@@ -58,7 +59,7 @@ public class UpdateLocationHandler : ICommandHandler<Guid, UpdateLocationCommand
 
         location.Update(name, timezone, address);
 
-        var transactionResult = await _transactionManager.SaveChangeAsync(cancellationToken);
+        UnitResult<Error> transactionResult = await _transactionManager.SaveChangeAsync(cancellationToken);
         if (transactionResult.IsFailure)
         {
             return transactionResult.Error.ToErrors();

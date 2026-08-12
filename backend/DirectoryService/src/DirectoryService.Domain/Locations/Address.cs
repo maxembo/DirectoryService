@@ -7,6 +7,9 @@ namespace DirectoryService.Domain.Locations;
 
 public sealed partial record Address
 {
+    private static readonly Regex _houseRegex =
+        HouseRegex();
+
     private Address(string city, string country, string street, string house)
     {
         City = city;
@@ -14,9 +17,6 @@ public sealed partial record Address
         Street = street;
         House = house;
     }
-
-    private static readonly Regex _houseRegex =
-        HouseRegex();
 
     public string City { get; }
 
@@ -30,25 +30,25 @@ public sealed partial record Address
     {
         var errors = new List<Error>();
 
-        var cityResult = ValidateAndTrim(city, "location.address.city");
+        Result<string, Error> cityResult = ValidateAndTrim(city, "location.address.city");
         if (cityResult.IsFailure)
         {
             errors.Add(cityResult.Error);
         }
 
-        var countryResult = ValidateAndTrim(country, "location.address.country");
+        Result<string, Error> countryResult = ValidateAndTrim(country, "location.address.country");
         if (countryResult.IsFailure)
         {
             errors.Add(countryResult.Error);
         }
 
-        var streetResult = ValidateAndTrim(street, "location.address.street");
+        Result<string, Error> streetResult = ValidateAndTrim(street, "location.address.street");
         if (streetResult.IsFailure)
         {
             errors.Add(streetResult.Error);
         }
 
-        var houseResult = ValidateHouse(house);
+        Result<string, Error> houseResult = ValidateHouse(house);
         if (houseResult.IsFailure)
         {
             errors.Add(houseResult.Error);
@@ -67,10 +67,14 @@ public sealed partial record Address
         string trimmed = value?.Trim() ?? string.Empty;
 
         if (string.IsNullOrWhiteSpace(trimmed))
+        {
             return GeneralErrors.Required(fieldName);
+        }
 
         if (trimmed.Length > Constants.MAX_LOCATION_ADDRESS_LENGTH)
+        {
             return GeneralErrors.LengthOutOfRange(fieldName, 0, Constants.MAX_LOCATION_ADDRESS_LENGTH);
+        }
 
         return trimmed;
     }
@@ -79,12 +83,16 @@ public sealed partial record Address
     {
         const string fieldName = "location.address.house";
 
-        var baseValidationResult = ValidateAndTrim(value, fieldName);
+        Result<string, Error> baseValidationResult = ValidateAndTrim(value, fieldName);
         if (baseValidationResult.IsFailure)
+        {
             return baseValidationResult.Error;
+        }
 
         if (!_houseRegex.IsMatch(baseValidationResult.Value))
+        {
             return GeneralErrors.MismatchRegex(fieldName);
+        }
 
         return baseValidationResult.Value;
     }

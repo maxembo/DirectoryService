@@ -2,6 +2,7 @@
 using DirectoryService.Contracts.Positions.UpdatePositions;
 using DirectoryService.Domain.Positions;
 using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.Extensions.Logging;
 using SharedService.Core.Abstractions;
 using SharedService.Core.Database;
@@ -12,10 +13,10 @@ namespace DirectoryService.Application.Positions.Commands.UpdatePositions;
 
 public class UpdatePositionHandler : ICommandHandler<Guid, UpdatePositionCommand>
 {
+    private readonly ILogger<UpdatePositionHandler> _logger;
     private readonly IPositionsRepository _positionsRepository;
     private readonly ITransactionManager _transactionManager;
     private readonly IValidator<UpdatePositionRequest> _validator;
-    private readonly ILogger<UpdatePositionHandler> _logger;
 
     public UpdatePositionHandler(
         IPositionsRepository positionsRepository,
@@ -33,25 +34,25 @@ public class UpdatePositionHandler : ICommandHandler<Guid, UpdatePositionCommand
         UpdatePositionCommand command, CancellationToken cancellationToken = default)
     {
         var positionId = PositionId.Create(command.PositionId);
-        var request = command.Request;
+        UpdatePositionRequest? request = command.Request;
 
-        var validationResult = await _validator.ValidateAsync(command.Request, cancellationToken);
+        ValidationResult? validationResult = await _validator.ValidateAsync(command.Request, cancellationToken);
         if (!validationResult.IsValid)
         {
             return validationResult.ToErrors();
         }
 
-        var positionResult = await _positionsRepository.GetByIdAsync(positionId, cancellationToken);
+        Result<Position, Error> positionResult = await _positionsRepository.GetByIdAsync(positionId, cancellationToken);
         if (positionResult.IsFailure)
         {
             return positionResult.Error.ToErrors();
         }
 
-        var position = positionResult.Value;
+        Position? position = positionResult.Value;
 
         position.Update(PositionName.Create(request.Name).Value, Description.Create(request.Description).Value);
 
-        var transactionResult = await _transactionManager.SaveChangeAsync(cancellationToken);
+        UnitResult<Error> transactionResult = await _transactionManager.SaveChangeAsync(cancellationToken);
         if (transactionResult.IsFailure)
         {
             return transactionResult.Error.ToErrors();

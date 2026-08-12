@@ -17,7 +17,8 @@ using Microsoft.AspNetCore.Mvc;
 using SharedService.Core.Abstractions;
 using SharedService.Framework.EndpointResults;
 using SharedService.SharedKernel.Response;
-using GetDepartmentDto = DirectoryService.Contracts.Departments.GetDepartments.Dtos.GetDepartmentDto;
+using GetDepartmentDto =
+    DirectoryService.Contracts.Departments.GetTopFiveDepartmentsWithMostPositions.Dtos.GetDepartmentDto;
 
 namespace DirectoryService.Presentation.Departments;
 
@@ -69,24 +70,20 @@ public class DepartmentsController : ControllerBase
     }
 
     [HttpGet("top-positions")]
-    public async Task<EndpointResult<Contracts.Departments.GetTopFiveDepartmentsWithMostPositions.Dtos.GetDepartmentDto
+    public async Task<EndpointResult<GetDepartmentDto
             []>>
         GetTopFiveDepartmentsWithMostPositions(
             [FromServices] GetTopFiveDepartmentsWithMostPositionsHandler handler,
-            CancellationToken cancellationToken)
-    {
-        return await handler.Handle(cancellationToken);
-    }
+            CancellationToken cancellationToken) =>
+        await handler.Handle(cancellationToken);
 
     [HttpGet("top-positions/dapper")]
-    public async Task<EndpointResult<Contracts.Departments.GetTopFiveDepartmentsWithMostPositions.Dtos.GetDepartmentDto
+    public async Task<EndpointResult<GetDepartmentDto
             []>>
         GetTopFiveDepartmentsWithMostPositionsDapper(
             [FromServices] GetTopFiveDepartmentsWithMostPositionsHandlerDapper handler,
-            CancellationToken cancellationToken)
-    {
-        return await handler.Handle(cancellationToken);
-    }
+            CancellationToken cancellationToken) =>
+        await handler.Handle(cancellationToken);
 
     [HttpGet("tree")]
     [EndpointSummary("Получить корневые подразделения дерева")]
@@ -94,7 +91,8 @@ public class DepartmentsController : ControllerBase
         "Возвращает только корневой уровень дерева подразделений. " +
         "Дочерние подразделения загружаются отдельным запросом.")]
     public async Task<EndpointResult<PaginationEnvelope<GetDepartmentTreeRootsDto>>> GetTreeRoots(
-        [FromServices] IQueryHandler<PaginationEnvelope<GetDepartmentTreeRootsDto>, GetDepartmentTreeRootsQuery> handler,
+        [FromServices]
+        IQueryHandler<PaginationEnvelope<GetDepartmentTreeRootsDto>, GetDepartmentTreeRootsQuery> handler,
         [FromQuery] GetDepartmentTreeRootsRequest request,
         CancellationToken cancellationToken)
     {
@@ -140,7 +138,7 @@ public class DepartmentsController : ControllerBase
 
         return await handler.Handle(command, cancellationToken);
     }
-    
+
     [HttpPatch("{departmentId:guid}/restore")]
     public async Task<EndpointResult<Guid>> Restore(
         Guid departmentId,

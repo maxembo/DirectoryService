@@ -2,7 +2,10 @@ namespace DirectoryService.Domain.DepartmentLocations;
 
 public sealed record DepartmentLocationId
 {
-    private DepartmentLocationId(Guid value) => Value = value;
+    private DepartmentLocationId(Guid value)
+    {
+        Value = value;
+    }
 
     public Guid Value { get; }
 

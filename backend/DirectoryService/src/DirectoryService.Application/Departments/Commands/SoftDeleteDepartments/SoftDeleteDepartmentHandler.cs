@@ -4,6 +4,7 @@ using DirectoryService.Application.Locations;
 using DirectoryService.Application.Positions;
 using DirectoryService.Domain.Departments;
 using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
 using SharedService.Core.Abstractions;
@@ -15,13 +16,13 @@ namespace DirectoryService.Application.Departments.Commands.SoftDeleteDepartment
 
 public class SoftDeleteDepartmentHandler : ICommandHandler<Guid, SoftDeleteDepartmentCommand>
 {
-    private readonly IDepartmentsRepository _departmentsRepository;
-    private readonly ITransactionManager _transactionManager;
-    private readonly ILocationsRepository _locationsRepository;
-    private readonly IPositionsRepository _positionsRepository;
-    private readonly IValidator<SoftDeleteDepartmentCommand> _validator;
     private readonly HybridCache _cache;
+    private readonly IDepartmentsRepository _departmentsRepository;
+    private readonly ILocationsRepository _locationsRepository;
     private readonly ILogger<SoftDeleteDepartmentHandler> _logger;
+    private readonly IPositionsRepository _positionsRepository;
+    private readonly ITransactionManager _transactionManager;
+    private readonly IValidator<SoftDeleteDepartmentCommand> _validator;
 
     public SoftDeleteDepartmentHandler(
         IDepartmentsRepository departmentsRepository,
@@ -46,21 +47,22 @@ public class SoftDeleteDepartmentHandler : ICommandHandler<Guid, SoftDeleteDepar
     {
         var departmentId = DepartmentId.Create(command.DepartmentId);
 
-        var validationResult = await _validator.ValidateAsync(command, cancellationToken);
+        ValidationResult? validationResult = await _validator.ValidateAsync(command, cancellationToken);
         if (!validationResult.IsValid)
         {
             return validationResult.ToErrors();
         }
 
-        var transactionResult = await _transactionManager.BeginTransactionAsync(cancellationToken);
+        Result<ITransactionScope, Error> transactionResult =
+            await _transactionManager.BeginTransactionAsync(cancellationToken);
         if (transactionResult.IsFailure)
         {
             return transactionResult.Error.ToErrors();
         }
 
-        using var transaction = transactionResult.Value;
+        using ITransactionScope? transaction = transactionResult.Value;
 
-        var departmentResult = await _departmentsRepository.GetBy(
+        Result<Department, Error> departmentResult = await _departmentsRepository.GetBy(
             d => d.Id == departmentId && d.IsActive == true, cancellationToken);
         if (departmentResult.IsFailure)
         {
@@ -68,11 +70,11 @@ public class SoftDeleteDepartmentHandler : ICommandHandler<Guid, SoftDeleteDepar
             return departmentResult.Error.ToErrors();
         }
 
-        var department = departmentResult.Value;
+        Department? department = departmentResult.Value;
 
         department.MarkAsDelete();
 
-        var updatePathsMarkDeleteResult =
+        UnitResult<Error> updatePathsMarkDeleteResult =
             await _departmentsRepository.UpdatePathsMarkDelete(department.Path, cancellationToken);
         if (updatePathsMarkDeleteResult.IsFailure)
         {
@@ -80,7 +82,7 @@ public class SoftDeleteDepartmentHandler : ICommandHandler<Guid, SoftDeleteDepar
             return updatePathsMarkDeleteResult.Error.ToErrors();
         }
 
-        var deleteUnusedLocationsResult =
+        UnitResult<Error> deleteUnusedLocationsResult =
             await _locationsRepository.SoftDeleteUnusedLocationsByDepartmentIdAsync(departmentId, cancellationToken);
         if (deleteUnusedLocationsResult.IsFailure)
         {
@@ -88,7 +90,7 @@ public class SoftDeleteDepartmentHandler : ICommandHandler<Guid, SoftDeleteDepar
             return deleteUnusedLocationsResult.Error.ToErrors();
         }
 
-        var deleteUnusedPositionsResult =
+        UnitResult<Error> deleteUnusedPositionsResult =
             await _positionsRepository.SoftDeleteUnusedPositionsByDepartmentIdAsync(departmentId, cancellationToken);
         if (deleteUnusedPositionsResult.IsFailure)
         {
@@ -96,14 +98,14 @@ public class SoftDeleteDepartmentHandler : ICommandHandler<Guid, SoftDeleteDepar
             return deleteUnusedPositionsResult.Error.ToErrors();
         }
 
-        var saveChangesResult = await _transactionManager.SaveChangeAsync(cancellationToken);
+        UnitResult<Error> saveChangesResult = await _transactionManager.SaveChangeAsync(cancellationToken);
         if (saveChangesResult.IsFailure)
         {
             transaction.Rollback();
             return saveChangesResult.Error.ToErrors();
         }
 
-        var commitResult = transaction.Commit();
+        UnitResult<Error> commitResult = transaction.Commit();
         if (commitResult.IsFailure)
         {
             transaction.Rollback();

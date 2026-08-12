@@ -14,12 +14,12 @@ namespace DirectoryService.Application.Departments.Commands.RestoreDepartments;
 
 public class RestoreDepartmentHandler : ICommandHandler<Guid, RestoreDepartmentCommand>
 {
+    private readonly HybridCache _cache;
     private readonly IDepartmentsRepository _departmentsRepository;
     private readonly ILocationsRepository _locationsRepository;
+    private readonly ILogger<RestoreDepartmentHandler> _logger;
     private readonly IPositionsRepository _positionsRepository;
     private readonly ITransactionManager _transactionManager;
-    private readonly HybridCache _cache;
-    private readonly ILogger<RestoreDepartmentHandler> _logger;
 
     public RestoreDepartmentHandler(
         IDepartmentsRepository departmentsRepository,
@@ -42,22 +42,24 @@ public class RestoreDepartmentHandler : ICommandHandler<Guid, RestoreDepartmentC
     {
         var departmentId = DepartmentId.Create(command.DepartmentId);
 
-        var transactionResult = await _transactionManager.BeginTransactionAsync(cancellationToken);
+        Result<ITransactionScope, Error> transactionResult =
+            await _transactionManager.BeginTransactionAsync(cancellationToken);
         if (transactionResult.IsFailure)
         {
             return transactionResult.Error.ToErrors();
         }
 
-        using var transaction = transactionResult.Value;
+        using ITransactionScope? transaction = transactionResult.Value;
 
-        var departmentResult = await _departmentsRepository.GetByIdWithLock(departmentId, cancellationToken);
+        Result<Department, Error> departmentResult =
+            await _departmentsRepository.GetByIdWithLock(departmentId, cancellationToken);
         if (departmentResult.IsFailure)
         {
             transaction.Rollback();
             return departmentResult.Error.ToErrors();
         }
 
-        var department = departmentResult.Value;
+        Department? department = departmentResult.Value;
 
         if (department.IsActive)
         {
@@ -74,7 +76,7 @@ public class RestoreDepartmentHandler : ICommandHandler<Guid, RestoreDepartmentC
 
         if (department.ParentId != null)
         {
-            var parentDepartmentResult
+            Result<Department, Error> parentDepartmentResult
                 = await _departmentsRepository.GetByIdWithLock(department.ParentId, cancellationToken);
             if (parentDepartmentResult.IsFailure)
             {
@@ -82,7 +84,7 @@ public class RestoreDepartmentHandler : ICommandHandler<Guid, RestoreDepartmentC
                 return parentDepartmentResult.Error.ToErrors();
             }
 
-            var parentDepartment = parentDepartmentResult.Value;
+            Department? parentDepartment = parentDepartmentResult.Value;
 
             if (!parentDepartment.IsActive)
             {
@@ -97,7 +99,7 @@ public class RestoreDepartmentHandler : ICommandHandler<Guid, RestoreDepartmentC
             restoredPath = Path.CreateParent(department.Identifier);
         }
 
-        var restorePathsResult = await _departmentsRepository.RestoreSubtreePaths(
+        UnitResult<Error> restorePathsResult = await _departmentsRepository.RestoreSubtreePaths(
             department.Path, restoredPath, cancellationToken);
         if (restorePathsResult.IsFailure)
         {
@@ -107,7 +109,7 @@ public class RestoreDepartmentHandler : ICommandHandler<Guid, RestoreDepartmentC
 
         department.Restore();
 
-        var restoreLocationsResult =
+        UnitResult<Error> restoreLocationsResult =
             await _locationsRepository.RestoreLocationsByDepartmentIdAsync(departmentId, cancellationToken);
         if (restoreLocationsResult.IsFailure)
         {
@@ -115,7 +117,7 @@ public class RestoreDepartmentHandler : ICommandHandler<Guid, RestoreDepartmentC
             return restoreLocationsResult.Error.ToErrors();
         }
 
-        var restorePositionsResult =
+        UnitResult<Error> restorePositionsResult =
             await _positionsRepository.RestorePositionsByDepartmentIdAsync(departmentId, cancellationToken);
         if (restorePositionsResult.IsFailure)
         {
@@ -123,14 +125,14 @@ public class RestoreDepartmentHandler : ICommandHandler<Guid, RestoreDepartmentC
             return restorePositionsResult.Error.ToErrors();
         }
 
-        var saveChangeResult = await _transactionManager.SaveChangeAsync(cancellationToken);
+        UnitResult<Error> saveChangeResult = await _transactionManager.SaveChangeAsync(cancellationToken);
         if (saveChangeResult.IsFailure)
         {
             transaction.Rollback();
             return saveChangeResult.Error.ToErrors();
         }
 
-        var commitResult = transaction.Commit();
+        UnitResult<Error> commitResult = transaction.Commit();
         if (commitResult.IsFailure)
         {
             return commitResult.Error.ToErrors();

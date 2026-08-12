@@ -1,6 +1,8 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Positions.Commands.CreatePositions;
 using DirectoryService.Contracts.Positions.CreatePositions;
+using DirectoryService.Domain.DepartmentPositions;
+using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Positions;
 using DirectoryService.Domain.Shared;
 using DirectoryService.IntegrationTests.Infrastructure;
@@ -15,19 +17,19 @@ public class CreatePositionTests(DirectoryTestWebFactory factory) : PositionBase
     public async Task CreatePosition_WhenOneDepartmentIsInactive_ShouldFail()
     {
         // arrange
-        var activeDepartment = await SeedActiveDepartment("activeDepartment", "department-active");
+        Department? activeDepartment = await SeedActiveDepartment("activeDepartment", "department-active");
 
-        var inactiveDepartment = await SeedActiveDepartment("inactiveDepartment", "department-inactive");
+        Department? inactiveDepartment = await SeedActiveDepartment("inactiveDepartment", "department-inactive");
 
         await MarkDepartmentAsDeleted(inactiveDepartment.Id);
 
-        var command = CreateCommand(
+        CreatePositionCommand? command = CreateCommand(
             "name test position",
             "description test position",
             [activeDepartment.Id.Value, inactiveDepartment.Id.Value]);
 
         // act
-        var result = await Execute(command);
+        Result<Guid, Errors> result = await Execute(command);
 
         AssertSingleError(result, GeneralErrors.NotFound("position.departmentIds"));
     }
@@ -43,20 +45,20 @@ public class CreatePositionTests(DirectoryTestWebFactory factory) : PositionBase
         // arrange
         const string existingName = "Test Position";
 
-        var department = await SeedActiveDepartment();
+        Department? department = await SeedActiveDepartment();
 
-        var existingPositionId = await CreatePosition(
+        PositionId? existingPositionId = await CreatePosition(
             existingName,
             "existing description",
             [department.Id]);
 
-        var command = CreateCommand(
+        CreatePositionCommand? command = CreateCommand(
             requestedName,
             "description test position",
             [department.Id.Value]);
 
         // act
-        var result = await Execute(command);
+        Result<Guid, Errors> result = await Execute(command);
 
         // assert
         AssertSingleError(
@@ -65,7 +67,7 @@ public class CreatePositionTests(DirectoryTestWebFactory factory) : PositionBase
 
         await ExecuteInDb(async dbContext =>
         {
-            var position = await dbContext.Positions
+            Position? position = await dbContext.Positions
                 .SingleAsync(p => p.Id == existingPositionId);
 
             Assert.Equal(existingName, position.Name.Value);
@@ -78,16 +80,16 @@ public class CreatePositionTests(DirectoryTestWebFactory factory) : PositionBase
     public async Task CreatePosition_WhenOneDepartmentDoesNotExist_ShouldFail()
     {
         // arrange
-        var existingDepartment = await SeedActiveDepartment();
+        Department? existingDepartment = await SeedActiveDepartment();
         var missingDepartmentId = Guid.NewGuid();
 
-        var command = CreateCommand(
+        CreatePositionCommand? command = CreateCommand(
             "name test position",
             "description test position",
             [existingDepartment.Id.Value, missingDepartmentId]);
 
         // act
-        var result = await Execute(command);
+        Result<Guid, Errors> result = await Execute(command);
 
         // assert
         AssertSingleError(result, GeneralErrors.NotFound("department", missingDepartmentId));
@@ -99,17 +101,17 @@ public class CreatePositionTests(DirectoryTestWebFactory factory) : PositionBase
     public async Task CreatePosition_WhenDepartmentIsInactive_ShouldFail()
     {
         // arrange
-        var inactiveDepartment = await SeedActiveDepartment();
+        Department? inactiveDepartment = await SeedActiveDepartment();
 
         await MarkDepartmentAsDeleted(inactiveDepartment.Id);
 
-        var command = CreateCommand(
+        CreatePositionCommand? command = CreateCommand(
             "name test position",
             "description test position",
             [inactiveDepartment.Id.Value]);
 
         // act
-        var result = await Execute(command);
+        Result<Guid, Errors> result = await Execute(command);
 
         // assert
         AssertSingleError(result, GeneralErrors.NotFound("department", inactiveDepartment.Id.Value));
@@ -123,13 +125,13 @@ public class CreatePositionTests(DirectoryTestWebFactory factory) : PositionBase
         // arrange
         var missingDepartmentId = Guid.NewGuid();
 
-        var command = CreateCommand(
+        CreatePositionCommand? command = CreateCommand(
             "name test position",
             "description test position",
             [missingDepartmentId]);
 
         // act
-        var result = await Execute(command);
+        Result<Guid, Errors> result = await Execute(command);
 
         // assert
         AssertSingleError(result, GeneralErrors.NotFound("position.departmentIds"));
@@ -141,13 +143,13 @@ public class CreatePositionTests(DirectoryTestWebFactory factory) : PositionBase
     public async Task CreatePosition_WhenDepartmentIdsContainDuplicates_ShouldFail()
     {
         // arrange
-        var department = await SeedActiveDepartment();
+        Department? department = await SeedActiveDepartment();
 
-        var command = CreateCommand(
+        CreatePositionCommand? command = CreateCommand(
             "name test position", "description test position", [department.Id.Value, department.Id.Value]);
 
         // act
-        var result = await Execute(command);
+        Result<Guid, Errors> result = await Execute(command);
 
         // assert
         AssertSingleError(result, GeneralErrors.ArrayContainsDuplicates("position.departmentIds"));
@@ -159,12 +161,13 @@ public class CreatePositionTests(DirectoryTestWebFactory factory) : PositionBase
     public async Task CreatePosition_WhenDepartmentIdsAreEmpty_ShouldFail()
     {
         // arrange
-        var emptyDepartmentIds = Array.Empty<Guid>();
+        Guid[]? emptyDepartmentIds = Array.Empty<Guid>();
 
-        var command = CreateCommand("name test position", "description test position", emptyDepartmentIds);
+        CreatePositionCommand? command =
+            CreateCommand("name test position", "description test position", emptyDepartmentIds);
 
         // act
-        var result = await Execute(command);
+        Result<Guid, Errors> result = await Execute(command);
 
         // assert
         AssertSingleError(result, GeneralErrors.Required("position.departmentIds"));
@@ -176,14 +179,14 @@ public class CreatePositionTests(DirectoryTestWebFactory factory) : PositionBase
     public async Task CreatePosition_WhenDescriptionExceedsMaxLength_ShouldFail()
     {
         // arrange
-        string description = new string('c', Constants.MAX_POSITION_DESCRIPTION_LENGTH + 1);
+        string description = new('c', Constants.MAX_POSITION_DESCRIPTION_LENGTH + 1);
 
-        var department = await SeedActiveDepartment();
+        Department? department = await SeedActiveDepartment();
 
-        var command = CreateCommand("test name position", description, [department.Id.Value]);
+        CreatePositionCommand? command = CreateCommand("test name position", description, [department.Id.Value]);
 
         // act
-        var result = await Execute(command);
+        Result<Guid, Errors> result = await Execute(command);
 
         // assert
         AssertSingleError(
@@ -203,12 +206,12 @@ public class CreatePositionTests(DirectoryTestWebFactory factory) : PositionBase
         string name = new('p', nameLength);
         const string description = "description test position";
 
-        var department = await SeedActiveDepartment();
+        Department? department = await SeedActiveDepartment();
 
-        var command = CreateCommand(name, description, [department.Id.Value]);
+        CreatePositionCommand? command = CreateCommand(name, description, [department.Id.Value]);
 
         // act
-        var result = await Execute(command);
+        Result<Guid, Errors> result = await Execute(command);
 
         // assert
         AssertSingleError(
@@ -229,12 +232,12 @@ public class CreatePositionTests(DirectoryTestWebFactory factory) : PositionBase
         // arrange
         const string description = "description test position";
 
-        var department = await SeedActiveDepartment();
+        Department? department = await SeedActiveDepartment();
 
-        var command = CreateCommand(name!, description, [department.Id.Value]);
+        CreatePositionCommand? command = CreateCommand(name!, description, [department.Id.Value]);
 
         // act
-        var result = await Execute(command);
+        Result<Guid, Errors> result = await Execute(command);
 
         // assert
         AssertSingleError(result, GeneralErrors.Required("position.name"));
@@ -250,22 +253,22 @@ public class CreatePositionTests(DirectoryTestWebFactory factory) : PositionBase
         // arrange
         string description = new('d', descriptionLength);
 
-        var department = await SeedActiveDepartment();
+        Department? department = await SeedActiveDepartment();
 
-        var command = CreateCommand(
+        CreatePositionCommand? command = CreateCommand(
             "name test position",
             description,
             [department.Id.Value]);
 
         // act
-        var result = await Execute(command);
+        Result<Guid, Errors> result = await Execute(command);
 
         // assert
         Assert.True(result.IsSuccess);
 
         await ExecuteInDb(async dbContext =>
         {
-            var position = await dbContext.Positions
+            Position? position = await dbContext.Positions
                 .SingleAsync(p => p.Id == PositionId.Create(result.Value));
 
             Assert.Equal(description, position.Description?.Value);
@@ -276,16 +279,16 @@ public class CreatePositionTests(DirectoryTestWebFactory factory) : PositionBase
     public async Task CreatePosition_WithMultipleDepartments_ShouldSucceed()
     {
         // arrange
-        var firstDepartment = await SeedActiveDepartment("first department", "first-department");
+        Department? firstDepartment = await SeedActiveDepartment("first department", "first-department");
 
-        var secondDepartment = await SeedActiveDepartment("second department", "second-department");
+        Department? secondDepartment = await SeedActiveDepartment("second department", "second-department");
 
-        var command = CreateCommand(
+        CreatePositionCommand? command = CreateCommand(
             "name test position", "description test position",
             [firstDepartment.Id.Value, secondDepartment.Id.Value]);
 
         // act
-        var result = await Execute(command);
+        Result<Guid, Errors> result = await Execute(command);
 
         // assert
         Assert.True(result.IsSuccess);
@@ -293,7 +296,7 @@ public class CreatePositionTests(DirectoryTestWebFactory factory) : PositionBase
 
         await ExecuteInDb(async dbContext =>
         {
-            var position = await dbContext.Positions
+            Position? position = await dbContext.Positions
                 .Include(p => p.Departments)
                 .SingleAsync(p => p.Id == PositionId.Create(result.Value), CancellationToken.None);
 
@@ -311,19 +314,19 @@ public class CreatePositionTests(DirectoryTestWebFactory factory) : PositionBase
         const string nameWithSurroundingSpaces = "   name test position  ";
         const string description = "description test position";
 
-        var department = await SeedActiveDepartment();
+        Department? department = await SeedActiveDepartment();
 
-        var command = CreateCommand(nameWithSurroundingSpaces, description, [department.Id.Value]);
+        CreatePositionCommand? command = CreateCommand(nameWithSurroundingSpaces, description, [department.Id.Value]);
 
         // act
-        var result = await Execute(command);
+        Result<Guid, Errors> result = await Execute(command);
 
         // assert
         Assert.True(result.IsSuccess);
 
         await ExecuteInDb(async dbContext =>
         {
-            var position = await dbContext.Positions
+            Position? position = await dbContext.Positions
                 .SingleAsync(p => p.Id == PositionId.Create(result.Value));
 
             Assert.Equal(nameWithSurroundingSpaces.Trim(), position.Name.Value);
@@ -337,12 +340,12 @@ public class CreatePositionTests(DirectoryTestWebFactory factory) : PositionBase
         const string? nullDescription = null;
         const string name = "name test position";
 
-        var department = await SeedActiveDepartment();
+        Department? department = await SeedActiveDepartment();
 
-        var command = CreateCommand(name, nullDescription, [department.Id.Value]);
+        CreatePositionCommand? command = CreateCommand(name, nullDescription, [department.Id.Value]);
 
         // act
-        var result = await Execute(command);
+        Result<Guid, Errors> result = await Execute(command);
 
         // assert
         Assert.True(result.IsSuccess);
@@ -350,7 +353,7 @@ public class CreatePositionTests(DirectoryTestWebFactory factory) : PositionBase
 
         await ExecuteInDb(async dbContext =>
         {
-            var position = await dbContext.Positions
+            Position? position = await dbContext.Positions
                 .Include(p => p.Departments)
                 .SingleAsync(p => p.Id == PositionId.Create(result.Value));
 
@@ -372,19 +375,19 @@ public class CreatePositionTests(DirectoryTestWebFactory factory) : PositionBase
         string name = new('p', nameLength);
         const string description = "description test position";
 
-        var department = await SeedActiveDepartment();
+        Department? department = await SeedActiveDepartment();
 
-        var command = CreateCommand(name, description, [department.Id.Value]);
+        CreatePositionCommand? command = CreateCommand(name, description, [department.Id.Value]);
 
         // act
-        var result = await Execute(command);
+        Result<Guid, Errors> result = await Execute(command);
 
         // assert
         Assert.True(result.IsSuccess);
 
         await ExecuteInDb(async dbContext =>
         {
-            var position = await dbContext.Positions
+            Position? position = await dbContext.Positions
                 .SingleAsync(p => p.Id == PositionId.Create(result.Value));
 
             Assert.Equal(name, position.Name.Value);
@@ -398,12 +401,12 @@ public class CreatePositionTests(DirectoryTestWebFactory factory) : PositionBase
         const string name = "name test position";
         const string description = "description test position";
 
-        var department = await SeedActiveDepartment();
+        Department? department = await SeedActiveDepartment();
 
-        var command = CreateCommand(name, description, [department.Id.Value]);
+        CreatePositionCommand? command = CreateCommand(name, description, [department.Id.Value]);
 
         // act
-        var result = await Execute(command);
+        Result<Guid, Errors> result = await Execute(command);
 
         // assert
         Assert.True(result.IsSuccess);
@@ -411,7 +414,7 @@ public class CreatePositionTests(DirectoryTestWebFactory factory) : PositionBase
 
         await ExecuteInDb(async dbContext =>
         {
-            var position = await dbContext.Positions
+            Position? position = await dbContext.Positions
                 .Include(p => p.Departments)
                 .SingleAsync(p => p.Id == PositionId.Create(result.Value));
 
@@ -422,7 +425,7 @@ public class CreatePositionTests(DirectoryTestWebFactory factory) : PositionBase
             Assert.True(position.IsActive);
             Assert.Null(position.DeletedAt);
 
-            var departmentPosition = Assert.Single(position.Departments);
+            DepartmentPosition? departmentPosition = Assert.Single(position.Departments);
 
             Assert.Equal(department.Id, departmentPosition.DepartmentId);
             Assert.Equal(position.Id, departmentPosition.PositionId);
@@ -433,6 +436,5 @@ public class CreatePositionTests(DirectoryTestWebFactory factory) : PositionBase
         => new(new CreatePositionRequest(name, description, departmentIds));
 
     private Task<Result<Guid, Errors>> Execute(CreatePositionCommand command) =>
-        Execute<Result<Guid, Errors>, CreatePositionHandler>(
-            handler => handler.Handle(command));
+        Execute<Result<Guid, Errors>, CreatePositionHandler>(handler => handler.Handle(command));
 }

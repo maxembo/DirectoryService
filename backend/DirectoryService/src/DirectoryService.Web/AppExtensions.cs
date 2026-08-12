@@ -15,13 +15,12 @@ public static class AppExtensions
                                           StringSplitOptions.TrimEntries)
                                   ?? [];
 
-        app.UseCors(
-            builder =>
-            {
-                builder.WithOrigins(allowedOrigins)
-                    .AllowAnyHeader()
-                    .AllowAnyMethod();
-            });
+        app.UseCors(builder =>
+        {
+            builder.WithOrigins(allowedOrigins)
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
 
         app.UseSerilogRequestLogging();
 
