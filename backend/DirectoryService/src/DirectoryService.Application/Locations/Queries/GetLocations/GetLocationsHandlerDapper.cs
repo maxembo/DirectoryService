@@ -33,7 +33,6 @@ public class GetLocationsHandlerDapper : IQueryHandler<PaginationEnvelope<GetLoc
             return validationResult.ToErrors();
         }
 
-        Console.WriteLine("dhjdjd");
         var parameters = new DynamicParameters();
         var conditions = new List<string>();
 
