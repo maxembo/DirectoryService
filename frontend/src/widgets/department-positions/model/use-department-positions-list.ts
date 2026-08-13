@@ -47,7 +47,7 @@ export function useDepartmentPositionsList({
 	} = useInfiniteQuery({
 		...positionsApi.getPositionsInfiniteQueryOptions({
 			...request,
-			departmentsIds: selectedDepartmentId ? [selectedDepartmentId] : undefined,
+			departmentIds: selectedDepartmentId ? [selectedDepartmentId] : undefined,
 			search: debouncedSearch,
 			isActive: isActive === "all" ? undefined : isActive === "active",
 			sortBy,
