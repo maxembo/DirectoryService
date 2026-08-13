@@ -1,15 +1,15 @@
-import { LocationSortByFilter } from "@/entities/locations/model/types";
-import {
-	LocationListId,
-	setLocationSearch,
-	setLocationSortBy,
-	setLocationSortDirection,
-	useLocationList,
-} from "@/features/locations/location-list/model/location-list-store";
+import type { LocationSortByFilter } from "@/entities/locations";
 import { FilterSelect } from "@/shared/components/filter-select";
 import { SearchInput } from "@/shared/components/search-input";
 import { sortDirectionOptions } from "@/shared/model/filter-options";
 import { FilterOption } from "@/shared/model/filter-types";
+import {
+	setLocationSearch,
+	setLocationSortBy,
+	setLocationSortDirection,
+	useLocationList,
+	type LocationListId,
+} from "../model/location-list-store";
 
 const locationSortByOptions: Array<FilterOption<LocationSortByFilter>> = [
 	{ value: "name", label: "По имени" },

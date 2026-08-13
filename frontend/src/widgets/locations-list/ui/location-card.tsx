@@ -1,6 +1,6 @@
-import { Location } from "@/entities/locations/model/types";
-import { DeleteLocationButton } from "@/features/locations/delete-location/ui/delete-location-button";
-import { RestoreLocationDialog } from "@/features/locations/restore-location/ui/restore-location-dialog";
+import type { LocationDto } from "@/entities/locations";
+import { DeleteLocationButton } from "@/features/delete-location";
+import { RestoreLocationDialog } from "@/features/restore-location";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 
 type Props = {
-	location: Location;
+	location: LocationDto;
 	onEdit: () => void;
 };
 
@@ -81,17 +81,17 @@ export function LocationCard({ location, onEdit }: Props) {
 			</CardHeader>
 
 			<CardContent className="space-y-3">
-				<div className="flex items-center gap-2 text-sm text-muted-foreground">
+				<div className="text-muted-foreground flex items-center gap-2 text-sm">
 					<Globe2 className="h-4 w-4 shrink-0" />
 					<span>{location.timezone}</span>
 				</div>
 
-				<div className="space-y-3 rounded-lg border bg-muted/30 p-3">
+				<div className="bg-muted/30 space-y-3 rounded-lg border p-3">
 					<div className="flex items-start gap-2 text-sm">
-						<MapPin className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+						<MapPin className="text-muted-foreground mt-0.5 h-4 w-4 shrink-0" />
 						<div className="space-y-1">
 							<p className="font-medium">Адрес</p>
-							<ul className="space-y-1 text-muted-foreground">
+							<ul className="text-muted-foreground space-y-1">
 								<li>Страна: {location.address.country}</li>
 								<li>Город: {location.address.city}</li>
 								<li>Улица: {location.address.street}</li>
@@ -102,13 +102,13 @@ export function LocationCard({ location, onEdit }: Props) {
 
 					<Separator />
 
-					<div className="flex items-center gap-2 text-xs text-muted-foreground">
+					<div className="text-muted-foreground flex items-center gap-2 text-xs">
 						<Clock3 className="h-3.5 w-3.5" />
 						<span>ID: {location.id}</span>
 					</div>
 				</div>
 
-				<div className="flex items-center gap-2 text-sm text-muted-foreground">
+				<div className="text-muted-foreground flex items-center gap-2 text-sm">
 					<Clock3 className="h-4 w-4 shrink-0" />
 					{location.isActive ? (
 						<span>
@@ -126,7 +126,7 @@ export function LocationCard({ location, onEdit }: Props) {
 
 				<Separator />
 
-				<div className="flex items-center gap-2 text-sm text-muted-foreground">
+				<div className="text-muted-foreground flex items-center gap-2 text-sm">
 					<Clock3 className="h-4 w-4 shrink-0" />
 					<span>
 						Дата обновления: {new Date(location.updatedAt).toLocaleDateString()}

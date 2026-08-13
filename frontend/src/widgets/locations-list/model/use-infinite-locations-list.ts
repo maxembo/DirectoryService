@@ -1,16 +1,18 @@
-import { locationsApi } from "@/entities/locations/api/api";
-import { GetLocationsInfinityRequest } from "@/entities/locations/api/types";
 import {
-	LocationListId,
-	useLocationSearch,
-	useLocationSelectedDepartments,
-	useLocationSortBy,
-	useLocationSortDirection,
-} from "@/features/locations/location-list/model/location-list-store";
+	locationsApi,
+	type GetLocationsInfinityRequest,
+} from "@/entities/locations";
 import { EnvelopeError } from "@/shared/api/errors";
 import { useCursorRef } from "@/shared/hooks/use-cursor-ref";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useDebounce } from "use-debounce";
+import {
+	useLocationSearch,
+	useLocationSelectedDepartments,
+	useLocationSortBy,
+	useLocationSortDirection,
+	type LocationListId,
+} from "./location-list-store";
 
 type Props = {
 	stateId?: LocationListId;

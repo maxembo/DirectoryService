@@ -1,8 +1,5 @@
-import {
-	DepartmentId,
-	DepartmentShortDto,
-} from "@/entities/departments/model/types";
-import { LocationSortByFilter } from "@/entities/locations/model/types";
+import type { DepartmentId, DepartmentShortDto } from "@/entities/departments";
+import type { LocationSortByFilter } from "@/entities/locations";
 import { PAGE_SIZE } from "@/shared/api/pagination-request";
 import { SortDirectionFilter } from "@/shared/model/filter-types";
 import { create } from "zustand";

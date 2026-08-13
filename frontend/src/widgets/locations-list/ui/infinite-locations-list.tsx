@@ -1,28 +1,27 @@
 "use client";
 
+import type { DepartmentId, DepartmentShortDto } from "@/entities/departments";
+import type { LocationDto } from "@/entities/locations";
+import { ArchiveViewSwitch } from "@/shared/components/archive-view-switch";
+import { Spinner } from "@/shared/components/ui/spinner";
+import { useArchiveView } from "@/shared/hooks/use-archive-view";
+import { ListEmpty } from "@/shared/ui/list-empty";
+import { ListError } from "@/shared/ui/list-error";
+import { useState } from "react";
 import {
-	DepartmentId,
-	DepartmentShortDto,
-} from "@/entities/departments/model/types";
-import { Location } from "@/entities/locations/model/types";
-import { SelectDepartmentDialog } from "@/features/departments/select-department/ui/select-department-dialog";
-import { SelectedDepartment } from "@/features/departments/select-department/ui/selected-department";
-import { CreateLocationDialog } from "@/features/locations/create-location/ui/create-location-dialog";
+	SelectDepartmentDialog,
+	SelectedDepartment,
+} from "@/features/select-department";
+import { CreateLocationDialog } from "@/features/create-location";
+import { UpdateLocationDialog } from "@/features/update-location";
+import { LocationCard } from "./location-card";
+import { useInfiniteLocationsList } from "../model/use-infinite-locations-list";
 import {
 	removeLocationSelectedDepartments,
 	setLocationSelectedDepartments,
 	useLocationSelectedDepartments,
-} from "@/features/locations/location-list/model/location-list-store";
-import { useInfiniteLocationsList } from "@/features/locations/location-list/model/use-infinite-locations-list";
-import { LocationFilters } from "@/features/locations/location-list/ui/location-filters";
-import { UpdateLocationDialog } from "@/features/locations/update-location/ui/update-location-dialog";
-import { ArchiveViewSwitch } from "@/shared/components/archive-view-switch";
-import { Spinner } from "@/shared/components/ui/spinner";
-import { useArchiveView } from "@/shared/hooks/use-archive-view";
-import { ListEmpty } from "@/widgets/list-empty";
-import { ListError } from "@/widgets/list-error";
-import { LocationCard } from "@/widgets/locations-list/ui/location-card";
-import { useState } from "react";
+} from "../model/location-list-store";
+import { LocationFilters } from "./location-filters";
 
 const LOCATIONS_DEPARTMENT_SELECT_STATE_ID = "locations-department-select";
 
@@ -32,7 +31,7 @@ export function InfiniteLocationsList() {
 
 	const [selectOpen, setSelectOpen] = useState(false);
 
-	const [selectedLocation, setSelectedLocation] = useState<Location | null>(
+	const [selectedLocation, setSelectedLocation] = useState<LocationDto | null>(
 		null,
 	);
 
@@ -81,7 +80,7 @@ export function InfiniteLocationsList() {
 			<div className="flex flex-wrap items-center justify-between gap-3">
 				<div>
 					<h1 className="text-2xl font-bold tracking-tight">Локации</h1>
-					<p className="text-sm text-muted-foreground">
+					<p className="text-muted-foreground text-sm">
 						{view === "active" ? "Действующие локации" : "Удалённые локации"}
 					</p>
 				</div>
