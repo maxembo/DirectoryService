@@ -13,11 +13,11 @@ namespace DirectoryService.Application.Departments.Commands.MoveDepartments;
 
 public class MoveDepartmentHandler : ICommandHandler<Guid, MoveDepartmentCommand>
 {
-    private readonly IDepartmentsRepository _departmentsRepository;
-    private readonly IValidator<MoveDepartmentCommand> _validator;
-    private readonly ITransactionManager _transactionManager;
-    private readonly ILogger<MoveDepartmentHandler> _logger;
     private readonly HybridCache _cache;
+    private readonly IDepartmentsRepository _departmentsRepository;
+    private readonly ILogger<MoveDepartmentHandler> _logger;
+    private readonly ITransactionManager _transactionManager;
+    private readonly IValidator<MoveDepartmentCommand> _validator;
 
     public MoveDepartmentHandler(
         IDepartmentsRepository departmentsRepository,
@@ -47,7 +47,8 @@ public class MoveDepartmentHandler : ICommandHandler<Guid, MoveDepartmentCommand
         var departmentId = DepartmentId.Create(command.DepartmentId);
         var parentId = command.Request.ParentId;
 
-        var transactionResult = await _transactionManager.BeginTransactionAsync(cancellationToken);
+        var transactionResult =
+            await _transactionManager.BeginTransactionAsync(cancellationToken);
         if (transactionResult.IsFailure)
         {
             return transactionResult.Error.ToErrors();
@@ -55,7 +56,8 @@ public class MoveDepartmentHandler : ICommandHandler<Guid, MoveDepartmentCommand
 
         using var transaction = transactionResult.Value;
 
-        var departmentResult = await _departmentsRepository.GetActiveByIdWithLock(departmentId, cancellationToken);
+        var departmentResult =
+            await _departmentsRepository.GetActiveByIdWithLock(departmentId, cancellationToken);
         if (departmentResult.IsFailure)
         {
             return departmentResult.Error.ToErrors();

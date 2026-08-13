@@ -14,10 +14,10 @@ namespace DirectoryService.Application.Positions.Commands.CreatePositions;
 
 public class CreatePositionHandler : ICommandHandler<Guid, CreatePositionCommand>
 {
-    private readonly IPositionsRepository _positionsRepository;
     private readonly IDepartmentsRepository _departmentsRepository;
-    private readonly IValidator<CreatePositionRequest> _validator;
     private readonly ILogger<CreatePositionHandler> _logger;
+    private readonly IPositionsRepository _positionsRepository;
+    private readonly IValidator<CreatePositionRequest> _validator;
 
     public CreatePositionHandler(
         IPositionsRepository positionsRepository,
@@ -50,10 +50,12 @@ public class CreatePositionHandler : ICommandHandler<Guid, CreatePositionCommand
         var checkExistingAndActiveResult =
             await _departmentsRepository.CheckExistingAndActiveAsync(command.Request.DepartmentIds, cancellationToken);
         if (checkExistingAndActiveResult.IsFailure)
+        {
             return checkExistingAndActiveResult.Error;
+        }
 
-        var departmentIds = command.Request.DepartmentIds.Select(
-                id => new DepartmentPosition(DepartmentPositionId.CreateNew(), DepartmentId.Create(id), positionId))
+        var departmentIds = command.Request.DepartmentIds.Select(id =>
+                new DepartmentPosition(DepartmentPositionId.CreateNew(), DepartmentId.Create(id), positionId))
             .ToList();
 
         var position = new Position(positionId, name, description, departmentIds);

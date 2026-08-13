@@ -48,7 +48,8 @@ public class UpdatePositionTests(DirectoryTestWebFactory factory) : PositionBase
         var positionToUpdatedId =
             await CreatePosition(nameWithSurroundingSpaces, description, [department.Id]);
 
-        var command = CreateCommand(positionToUpdatedId.Value, nameWithSurroundingSpaces, description);
+        var command =
+            CreateCommand(positionToUpdatedId.Value, nameWithSurroundingSpaces, description);
 
         // act
         var result = await Execute(command);
@@ -132,7 +133,7 @@ public class UpdatePositionTests(DirectoryTestWebFactory factory) : PositionBase
         const string conflictingName = "conflict name test position";
         const string updateDescription = "description test position";
 
-        var locationId = await CreateLocation(name: "name test location");
+        var locationId = await CreateLocation("name test location");
 
         var department =
             await CreateParentDepartment("name test department", "department", [locationId]);
@@ -164,7 +165,7 @@ public class UpdatePositionTests(DirectoryTestWebFactory factory) : PositionBase
         const string updateEmptyName = "";
         const string updateEmptyDescription = "";
 
-        var locationId = await CreateLocation(name: "name test location");
+        var locationId = await CreateLocation("name test location");
 
         var department =
             await CreateParentDepartment("name test department", "department", [locationId]);
@@ -324,6 +325,5 @@ public class UpdatePositionTests(DirectoryTestWebFactory factory) : PositionBase
         new(positionId, new UpdatePositionRequest(name, description));
 
     private Task<Result<Guid, Errors>> Execute(UpdatePositionCommand command) =>
-        Execute<Result<Guid, Errors>, UpdatePositionHandler>(
-            handle => handle.Handle(command));
+        Execute<Result<Guid, Errors>, UpdatePositionHandler>(handle => handle.Handle(command));
 }

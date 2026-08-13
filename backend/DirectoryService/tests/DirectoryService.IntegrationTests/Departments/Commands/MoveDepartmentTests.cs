@@ -56,7 +56,8 @@ public class MoveDepartmentTests : DirectoryBaseTests
         var nonExistingId = Guid.NewGuid();
 
         // act
-        var result = await Execute(new MoveDepartmentCommand(nonExistingId, new MoveDepartmentRequest(null)));
+        var result =
+            await Execute(new MoveDepartmentCommand(nonExistingId, new MoveDepartmentRequest(null)));
 
         // assert
         Assert.NotEmpty(result.Error);
@@ -99,27 +100,27 @@ public class MoveDepartmentTests : DirectoryBaseTests
         var cancellationToken = CancellationToken.None;
 
         // act
-        var result = await Execute(new MoveDepartmentCommand(dev.Id.Value, new MoveDepartmentRequest(null)));
+        var result =
+            await Execute(new MoveDepartmentCommand(dev.Id.Value, new MoveDepartmentRequest(null)));
 
         // assert
-        await ExecuteInDb(
-            async dbContext =>
-            {
-                var departmentDev = await dbContext.Departments.FirstAsync(d => d.Id == dev.Id, cancellationToken);
+        await ExecuteInDb(async dbContext =>
+        {
+            var departmentDev = await dbContext.Departments.FirstAsync(d => d.Id == dev.Id, cancellationToken);
 
-                Assert.NotNull(departmentDev);
-                Assert.Equal("dev", departmentDev.Path.Value);
-                Assert.Equal(0, departmentDev.Path.Depth);
-                Assert.Null(departmentDev.ParentId);
+            Assert.NotNull(departmentDev);
+            Assert.Equal("dev", departmentDev.Path.Value);
+            Assert.Equal(0, departmentDev.Path.Depth);
+            Assert.Null(departmentDev.ParentId);
 
-                var departmentFronted = await dbContext.Departments.FirstAsync(
-                    d => d.Id == fronted.Id, cancellationToken);
+            var departmentFronted =
+                await dbContext.Departments.FirstAsync(d => d.Id == fronted.Id, cancellationToken);
 
-                Assert.NotNull(departmentFronted);
-                Assert.Equal("dev.frontend", departmentFronted.Path.Value);
-                Assert.Equal(1, departmentFronted.Path.Depth);
-                Assert.Equal(dev.Id, departmentFronted.ParentId);
-            });
+            Assert.NotNull(departmentFronted);
+            Assert.Equal("dev.frontend", departmentFronted.Path.Value);
+            Assert.Equal(1, departmentFronted.Path.Depth);
+            Assert.Equal(dev.Id, departmentFronted.ParentId);
+        });
 
         Assert.True(result.IsSuccess);
         Assert.NotEqual(Guid.Empty, result.Value);
@@ -148,30 +149,30 @@ public class MoveDepartmentTests : DirectoryBaseTests
             new MoveDepartmentCommand(fronted.Id.Value, new MoveDepartmentRequest(company.Id.Value)));
 
         // assert
-        await ExecuteInDb(
-            async dbContext =>
-            {
-                var departmentFronted = await dbContext.Departments.FirstAsync(
-                    d => d.Id == fronted.Id, cancellationToken);
+        await ExecuteInDb(async dbContext =>
+        {
+            var departmentFronted =
+                await dbContext.Departments.FirstAsync(d => d.Id == fronted.Id, cancellationToken);
 
-                Assert.NotNull(departmentFronted);
-                Assert.Equal("company.fronted", departmentFronted.Path.Value);
-                Assert.Equal(1, departmentFronted.Path.Depth);
-                Assert.Equal(company.Id.Value, departmentFronted.ParentId!.Value);
+            Assert.NotNull(departmentFronted);
+            Assert.Equal("company.fronted", departmentFronted.Path.Value);
+            Assert.Equal(1, departmentFronted.Path.Depth);
+            Assert.Equal(company.Id.Value, departmentFronted.ParentId!.Value);
 
-                var departmentTeam = await dbContext.Departments.FirstAsync(d => d.Id == team.Id, cancellationToken);
+            var departmentTeam =
+                await dbContext.Departments.FirstAsync(d => d.Id == team.Id, cancellationToken);
 
-                Assert.NotNull(departmentTeam);
-                Assert.Equal("company.fronted.team", departmentTeam.Path.Value);
-                Assert.Equal(2, departmentTeam.Path.Depth);
-                Assert.Equal(departmentFronted.Id.Value, departmentTeam.ParentId!.Value);
-            });
+            Assert.NotNull(departmentTeam);
+            Assert.Equal("company.fronted.team", departmentTeam.Path.Value);
+            Assert.Equal(2, departmentTeam.Path.Depth);
+            Assert.Equal(departmentFronted.Id.Value, departmentTeam.ParentId!.Value);
+        });
 
         Assert.True(result.IsSuccess);
         Assert.NotEqual(Guid.Empty, result.Value);
     }
 
     private Task<Result<Guid, Errors>> Execute(MoveDepartmentCommand command)
-        => Execute<Result<Guid, Errors>, MoveDepartmentHandler>(
-            handler => handler.Handle(command, CancellationToken.None));
+        => Execute<Result<Guid, Errors>, MoveDepartmentHandler>(handler => handler.Handle(
+            command, CancellationToken.None));
 }

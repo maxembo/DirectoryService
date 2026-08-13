@@ -29,7 +29,9 @@ public class DepartmentsRepository : IDepartmentsRepository
 
         var saveChangesResult = await _dbContext.SaveChangesResultAsync(cancellationToken);
         if (saveChangesResult.IsFailure)
+        {
             return saveChangesResult.Error;
+        }
 
         return department.Id.Value;
     }
@@ -42,7 +44,9 @@ public class DepartmentsRepository : IDepartmentsRepository
             .FirstOrDefaultAsync(d => departmentId == d.Id, cancellationToken);
 
         if (department == null)
+        {
             return GeneralErrors.NotFound("department", departmentId.Value);
+        }
 
         return department;
     }
@@ -70,13 +74,32 @@ public class DepartmentsRepository : IDepartmentsRepository
     }
 
     public async Task<UnitResult<Error>> DeleteLocationsAsync(
-        DepartmentId departmentId, CancellationToken cancellationToken = default)
+        DepartmentId departmentId,
+        CancellationToken cancellationToken = default)
     {
-        await _dbContext.DepartmentLocations
-            .Where(dl => dl.DepartmentId == departmentId)
-            .ExecuteDeleteAsync(cancellationToken);
+        try
+        {
+            await _dbContext.DepartmentLocations
+                .Where(location => location.DepartmentId == departmentId)
+                .ExecuteDeleteAsync(cancellationToken);
 
-        return UnitResult.Success<Error>();
+            return UnitResult.Success<Error>();
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(
+                exception,
+                "Failed to delete location links for department {DepartmentId}",
+                departmentId.Value);
+
+            return GeneralErrors.Database(
+                code: "department.locations.delete.failed",
+                message: "Не удалось удалить связи подразделения с локациями.");
+        }
     }
 
     public async Task<Result<Department, Error>> GetActiveByIdWithLock(
@@ -175,7 +198,7 @@ public class DepartmentsRepository : IDepartmentsRepository
 
         try
         {
-            await dbConnection.ExecuteAsync(sqlUpdatePathAndDepth, new { departmentPath = departmentPath.Value, });
+            await dbConnection.ExecuteAsync(sqlUpdatePathAndDepth, new { departmentPath = departmentPath.Value });
 
             return UnitResult.Success<Error>();
         }
@@ -206,7 +229,9 @@ public class DepartmentsRepository : IDepartmentsRepository
             var result = await dbConnection.QueryAsync(sql, sqlParams);
 
             if (result.Any())
+            {
                 return GeneralErrors.Invalid("department.parentId");
+            }
 
             return UnitResult.Success<Error>();
         }
@@ -252,7 +277,7 @@ public class DepartmentsRepository : IDepartmentsRepository
 
         try
         {
-            await dbConnection.ExecuteAsync(sql, param: new { departmentPath = departmentPath.Value });
+            await dbConnection.ExecuteAsync(sql, new { departmentPath = departmentPath.Value });
 
             return UnitResult.Success<Error>();
         }

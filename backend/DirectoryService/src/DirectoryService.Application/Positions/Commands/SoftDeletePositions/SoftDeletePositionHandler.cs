@@ -9,9 +9,9 @@ namespace DirectoryService.Application.Positions.Commands.SoftDeletePositions;
 
 public class SoftDeletePositionHandler : ICommandHandler<Guid, SoftDeletePositionCommand>
 {
+    private readonly ILogger<SoftDeletePositionHandler> _logger;
     private readonly IPositionsRepository _positionRepository;
     private readonly ITransactionManager _transactionManager;
-    private readonly ILogger<SoftDeletePositionHandler> _logger;
 
     public SoftDeletePositionHandler(
         IPositionsRepository positionRepository,

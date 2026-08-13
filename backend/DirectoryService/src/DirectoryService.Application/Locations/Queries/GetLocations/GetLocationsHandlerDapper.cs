@@ -33,7 +33,6 @@ public class GetLocationsHandlerDapper : IQueryHandler<PaginationEnvelope<GetLoc
             return validationResult.ToErrors();
         }
 
-        Console.WriteLine("dhjdjd");
         var parameters = new DynamicParameters();
         var conditions = new List<string>();
 
@@ -72,7 +71,7 @@ public class GetLocationsHandlerDapper : IQueryHandler<PaginationEnvelope<GetLoc
         {
             "name" => "l.name",
             "created" => "l.created_at",
-            _ => "l.name"
+            _ => "l.name",
         };
 
         string sortDirection = query.Request.SortDirection?.ToLower() == "asc"

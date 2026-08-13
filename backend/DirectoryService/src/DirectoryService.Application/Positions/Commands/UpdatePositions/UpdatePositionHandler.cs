@@ -12,10 +12,10 @@ namespace DirectoryService.Application.Positions.Commands.UpdatePositions;
 
 public class UpdatePositionHandler : ICommandHandler<Guid, UpdatePositionCommand>
 {
+    private readonly ILogger<UpdatePositionHandler> _logger;
     private readonly IPositionsRepository _positionsRepository;
     private readonly ITransactionManager _transactionManager;
     private readonly IValidator<UpdatePositionRequest> _validator;
-    private readonly ILogger<UpdatePositionHandler> _logger;
 
     public UpdatePositionHandler(
         IPositionsRepository positionsRepository,

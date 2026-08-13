@@ -1,4 +1,4 @@
-﻿using DirectoryService.Contracts.Departments.UpdateDepartment;
+﻿using DirectoryService.Contracts.Departments.UpdateDepartments;
 using FluentValidation;
 using SharedService.Core.Validation;
 using SharedService.SharedKernel;
@@ -9,9 +9,10 @@ public class UpdateDepartmentLocationIdsValidator : AbstractValidator<UpdateDepa
 {
     public UpdateDepartmentLocationIdsValidator()
     {
-        RuleFor(u => u.LocationIds)
+        RuleFor(request => request.LocationIds)
+            .Cascade(CascadeMode.Stop)
             .NotEmpty()
-            .WithError(GeneralErrors.Required("locationIds"))
+            .WithError(GeneralErrors.Required("department.locationIds"))
             .Must(locationIds => locationIds.Distinct().Count() == locationIds.Length)
             .WithError(GeneralErrors.ArrayContainsDuplicates("department.locationIds"));
     }

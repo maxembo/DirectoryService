@@ -38,6 +38,8 @@ public class DirectoryServiceDbContext(string connectionString) : DbContext, IRe
     public IQueryable<DepartmentPosition> DepartmentPositionsRead =>
         Set<DepartmentPosition>().AsQueryable().AsNoTracking();
 
+    public DbConnection GetDbConnection() => Database.GetDbConnection();
+
     public async Task<UnitResult<Error>> SaveChangesResultAsync(CancellationToken cancellationToken = default)
     {
         try
@@ -64,8 +66,6 @@ public class DirectoryServiceDbContext(string connectionString) : DbContext, IRe
 
         return UnitResult.Success<Error>();
     }
-
-    public DbConnection GetDbConnection() => Database.GetDbConnection();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

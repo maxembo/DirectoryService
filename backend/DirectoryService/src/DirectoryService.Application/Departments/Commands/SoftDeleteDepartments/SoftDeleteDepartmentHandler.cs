@@ -15,13 +15,13 @@ namespace DirectoryService.Application.Departments.Commands.SoftDeleteDepartment
 
 public class SoftDeleteDepartmentHandler : ICommandHandler<Guid, SoftDeleteDepartmentCommand>
 {
-    private readonly IDepartmentsRepository _departmentsRepository;
-    private readonly ITransactionManager _transactionManager;
-    private readonly ILocationsRepository _locationsRepository;
-    private readonly IPositionsRepository _positionsRepository;
-    private readonly IValidator<SoftDeleteDepartmentCommand> _validator;
     private readonly HybridCache _cache;
+    private readonly IDepartmentsRepository _departmentsRepository;
+    private readonly ILocationsRepository _locationsRepository;
     private readonly ILogger<SoftDeleteDepartmentHandler> _logger;
+    private readonly IPositionsRepository _positionsRepository;
+    private readonly ITransactionManager _transactionManager;
+    private readonly IValidator<SoftDeleteDepartmentCommand> _validator;
 
     public SoftDeleteDepartmentHandler(
         IDepartmentsRepository departmentsRepository,
@@ -52,7 +52,8 @@ public class SoftDeleteDepartmentHandler : ICommandHandler<Guid, SoftDeleteDepar
             return validationResult.ToErrors();
         }
 
-        var transactionResult = await _transactionManager.BeginTransactionAsync(cancellationToken);
+        var transactionResult =
+            await _transactionManager.BeginTransactionAsync(cancellationToken);
         if (transactionResult.IsFailure)
         {
             return transactionResult.Error.ToErrors();

@@ -7,12 +7,12 @@ using SharedService.Core.Abstractions;
 
 namespace DirectoryService.Application.Departments.Queries.GetTopFiveDepartmentsWithMostPositions;
 
-public class GetTopFiveDepartmentsWithMostPositionsHandler : IQueryHandler<GetDepartmentDto[]>
+public class GetTopFiveDepartmentsWithMostPositionsHandler : IQueryHandler<DepartmentWithPositionCountDto[]>
 {
     private const int TOP_DEPARTMENTS_LIMIT = 5;
+    private readonly HybridCache _cache;
 
     private readonly IReadDbContext _readDbContext;
-    private readonly HybridCache _cache;
 
     public GetTopFiveDepartmentsWithMostPositionsHandler(IReadDbContext readDbContext, HybridCache cache)
     {
@@ -20,43 +20,40 @@ public class GetTopFiveDepartmentsWithMostPositionsHandler : IQueryHandler<GetDe
         _cache = cache;
     }
 
-    public async Task<GetDepartmentDto[]> Handle(CancellationToken cancellationToken)
-    {
-        return await GetPresignedTopFiveDepartmentsWithPositionsFromCache(cancellationToken);
-    }
+    public async Task<DepartmentWithPositionCountDto[]> Handle(CancellationToken cancellationToken) =>
+        await GetPresignedTopFiveDepartmentsWithPositionsFromCache(cancellationToken);
 
-    private async Task<GetDepartmentDto[]> GetPresignedTopFiveDepartmentsWithPositionsFromCache(
+    private async Task<DepartmentWithPositionCountDto[]> GetPresignedTopFiveDepartmentsWithPositionsFromCache(
         CancellationToken cancellationToken)
     {
         string key = CacheKeys.CreateDepartmentsKey("top", TOP_DEPARTMENTS_LIMIT.ToString());
 
         return await _cache.GetOrCreateAsync(
             key,
-            factory: async ct => await GetTopFiveDepartmentsWithPositions(ct),
+            async ct => await GetTopFiveDepartmentsWithPositions(ct),
             tags: [CacheKeys.DEPARTMENT_KEY],
             cancellationToken: cancellationToken);
     }
 
-    private async Task<GetDepartmentDto[]> GetTopFiveDepartmentsWithPositions(CancellationToken cancellationToken)
+    private async Task<DepartmentWithPositionCountDto[]> GetTopFiveDepartmentsWithPositions(CancellationToken cancellationToken)
     {
         var departmentsQuery = _readDbContext.DepartmentsRead;
 
         var departments = await departmentsQuery
-            .Select(
-                d => new GetDepartmentDto
-                {
-                    Id = d.Id.Value,
-                    ParentId = d.ParentId!.Value,
-                    Name = d.Name.Value,
-                    Identifier = d.Identifier.Value,
-                    IsActive = d.IsActive,
-                    Path = d.Path.Value,
-                    Depth = d.Path.Depth,
-                    CreatedAt = d.CreatedAt,
-                    UpdatedAt = d.UpdatedAt,
-                    PositionCount = d.Positions.Count,
-                    Locations = d.Locations.Select(l => l.LocationId.Value).ToList(),
-                })
+            .Select(d => new DepartmentWithPositionCountDto
+            {
+                Id = d.Id.Value,
+                ParentId = d.ParentId!.Value,
+                Name = d.Name.Value,
+                Identifier = d.Identifier.Value,
+                IsActive = d.IsActive,
+                Path = d.Path.Value,
+                Depth = d.Path.Depth,
+                CreatedAt = d.CreatedAt,
+                UpdatedAt = d.UpdatedAt,
+                PositionCount = d.Positions.Count,
+                Locations = d.Locations.Select(l => l.LocationId.Value).ToList(),
+            })
             .OrderByDescending(d => d.PositionCount)
             .Take(TOP_DEPARTMENTS_LIMIT)
             .ToListAsync(cancellationToken);

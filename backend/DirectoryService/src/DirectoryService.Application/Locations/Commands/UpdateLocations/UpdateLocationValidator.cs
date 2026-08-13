@@ -13,9 +13,8 @@ public class UpdateLocationValidator : AbstractValidator<UpdateLocationRequest>
             .MustBeValueObject(LocationName.Create);
 
         RuleFor(u => u.Address)
-            .MustBeValueObject(
-                a
-                    => Address.Create(a.Country, a.City, a.Street, a.House));
+            .MustBeValueObject(a
+                => Address.Create(a.Country, a.City, a.Street, a.House));
 
         RuleFor(u => u.Timezone)
             .MustBeValueObject(Timezone.Create);

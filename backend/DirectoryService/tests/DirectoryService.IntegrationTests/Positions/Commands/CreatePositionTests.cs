@@ -161,7 +161,8 @@ public class CreatePositionTests(DirectoryTestWebFactory factory) : PositionBase
         // arrange
         var emptyDepartmentIds = Array.Empty<Guid>();
 
-        var command = CreateCommand("name test position", "description test position", emptyDepartmentIds);
+        var command =
+            CreateCommand("name test position", "description test position", emptyDepartmentIds);
 
         // act
         var result = await Execute(command);
@@ -176,7 +177,7 @@ public class CreatePositionTests(DirectoryTestWebFactory factory) : PositionBase
     public async Task CreatePosition_WhenDescriptionExceedsMaxLength_ShouldFail()
     {
         // arrange
-        string description = new string('c', Constants.MAX_POSITION_DESCRIPTION_LENGTH + 1);
+        string description = new('c', Constants.MAX_POSITION_DESCRIPTION_LENGTH + 1);
 
         var department = await SeedActiveDepartment();
 
@@ -433,6 +434,5 @@ public class CreatePositionTests(DirectoryTestWebFactory factory) : PositionBase
         => new(new CreatePositionRequest(name, description, departmentIds));
 
     private Task<Result<Guid, Errors>> Execute(CreatePositionCommand command) =>
-        Execute<Result<Guid, Errors>, CreatePositionHandler>(
-            handler => handler.Handle(command));
+        Execute<Result<Guid, Errors>, CreatePositionHandler>(handler => handler.Handle(command));
 }

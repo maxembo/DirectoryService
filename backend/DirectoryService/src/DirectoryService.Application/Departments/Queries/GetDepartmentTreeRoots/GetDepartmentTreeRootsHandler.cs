@@ -17,9 +17,9 @@ public class
     GetDepartmentTreeRootsHandler : IQueryHandler<PaginationEnvelope<GetDepartmentTreeRootsDto>,
     GetDepartmentTreeRootsQuery>
 {
+    private readonly HybridCache _cache;
     private readonly IDbConnectionFactory _dbConnectionFactory;
     private readonly IValidator<GetDepartmentTreeRootsRequest> _validator;
-    private readonly HybridCache _cache;
 
     public GetDepartmentTreeRootsHandler(
         IDbConnectionFactory dbConnectionFactory,
@@ -53,9 +53,10 @@ public class
 
         return await _cache.GetOrCreateAsync(
             key,
-            factory: async _ =>
+            async _ =>
             {
-                var result = await GetDepartmentTreeRoots(query);
+                var result =
+                    await GetDepartmentTreeRoots(query);
                 return result.IsFailure
                     ? new PaginationEnvelope<GetDepartmentTreeRootsDto>([], 0, 0, 0)
                     : result.Value;

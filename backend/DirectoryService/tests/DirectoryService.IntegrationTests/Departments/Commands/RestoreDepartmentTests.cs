@@ -124,7 +124,8 @@ public class RestoreDepartmentTests(DirectoryTestWebFactory factory) : Directory
         var command = new RestoreDepartmentCommand(company.Id.Value);
 
         // soft delete
-        var softDeleteCompanyResult = await ExecuteSoftDelete(new SoftDeleteDepartmentCommand(company.Id.Value));
+        var softDeleteCompanyResult =
+            await ExecuteSoftDelete(new SoftDeleteDepartmentCommand(company.Id.Value));
 
         Assert.True(softDeleteCompanyResult.IsSuccess);
         Assert.Equal(softDeleteCompanyResult.Value, company.Id.Value);
@@ -167,7 +168,8 @@ public class RestoreDepartmentTests(DirectoryTestWebFactory factory) : Directory
         var command = new RestoreDepartmentCommand(company.Id.Value);
 
         // soft delete
-        var softDeleteCompanyResult = await ExecuteSoftDelete(new SoftDeleteDepartmentCommand(company.Id.Value));
+        var softDeleteCompanyResult =
+            await ExecuteSoftDelete(new SoftDeleteDepartmentCommand(company.Id.Value));
 
         Assert.True(softDeleteCompanyResult.IsSuccess);
         Assert.Equal(softDeleteCompanyResult.Value, company.Id.Value);
@@ -210,7 +212,8 @@ public class RestoreDepartmentTests(DirectoryTestWebFactory factory) : Directory
         var command = new RestoreDepartmentCommand(company.Id.Value);
 
         // soft delete
-        var softDeleteCompanyResult = await ExecuteSoftDelete(new SoftDeleteDepartmentCommand(company.Id.Value));
+        var softDeleteCompanyResult =
+            await ExecuteSoftDelete(new SoftDeleteDepartmentCommand(company.Id.Value));
 
         Assert.True(softDeleteCompanyResult.IsSuccess);
         Assert.Equal(softDeleteCompanyResult.Value, company.Id.Value);
@@ -257,7 +260,8 @@ public class RestoreDepartmentTests(DirectoryTestWebFactory factory) : Directory
         var command = new RestoreDepartmentCommand(company.Id.Value);
 
         // soft delete
-        var softDeleteCompanyResult = await ExecuteSoftDelete(new SoftDeleteDepartmentCommand(company.Id.Value));
+        var softDeleteCompanyResult =
+            await ExecuteSoftDelete(new SoftDeleteDepartmentCommand(company.Id.Value));
 
         Assert.True(softDeleteCompanyResult.IsSuccess);
         Assert.Equal(softDeleteCompanyResult.Value, company.Id.Value);

@@ -9,8 +9,8 @@ namespace DirectoryService.Infrastructure.Postgres.Database;
 public class TransactionManager : ITransactionManager
 {
     private readonly DirectoryServiceDbContext _dbContext;
-    private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<TransactionManager> _logger;
+    private readonly ILoggerFactory _loggerFactory;
 
     public TransactionManager(
         DirectoryServiceDbContext dbContext,

@@ -13,7 +13,7 @@ public class RestoreLocationTests(DirectoryTestWebFactory factory) : DirectoryBa
     public async Task RestoreLocation_WhenLocationIsAlreadyActive_ShouldSucceedWithoutChanges()
     {
         // arrange
-        var activeLocationId = await CreateLocation(name: "active location");
+        var activeLocationId = await CreateLocation("active location");
 
         var updatedAtBeforeRestore = await ExecuteInDb(async dbContext =>
         {
@@ -66,7 +66,7 @@ public class RestoreLocationTests(DirectoryTestWebFactory factory) : DirectoryBa
         // arrange
         const string name = "restore location";
 
-        var locationId = await CreateLocation(name: name);
+        var locationId = await CreateLocation(name);
 
         await MarkLocationAsDeleted(locationId);
 

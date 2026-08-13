@@ -14,9 +14,6 @@ trim_trailing_whitespace = false
 csharp_new_line_before_members_in_object_initializers = false
 csharp_preferred_modifier_order = public, private, protected, internal, file, new, static, abstract, virtual, sealed, readonly, override, extern, unsafe, volatile, async, required:suggestion
 csharp_style_prefer_utf8_string_literals = true:suggestion
-csharp_style_var_elsewhere = true:suggestion
-csharp_style_var_for_built_in_types = true:suggestion
-csharp_style_var_when_type_is_apparent = true:suggestion
 dotnet_style_parentheses_in_arithmetic_binary_operators = never_if_unnecessary:none
 dotnet_style_parentheses_in_other_binary_operators = always_for_clarity:none
 dotnet_style_parentheses_in_relational_binary_operators = never_if_unnecessary:none
@@ -143,20 +140,21 @@ csharp_preferred_modifier_order = public, private, protected, internal, static, 
 csharp_using_directive_placement = outside_namespace:error
 csharp_prefer_braces = true
 csharp_preserve_single_line_blocks = true
+resharper_csharp_empty_block_style = together
 csharp_preserve_single_line_statements = false
 csharp_prefer_static_local_function = true:suggestion
 csharp_prefer_simple_using_statement = false:none
 csharp_style_prefer_switch_expression = true:suggestion
 
 # Expression-bodied members
-csharp_style_expression_bodied_methods = true
-csharp_style_expression_bodied_constructors = true
-csharp_style_expression_bodied_operators = true
-csharp_style_expression_bodied_properties = true
-csharp_style_expression_bodied_indexers = true
-csharp_style_expression_bodied_accessors = true
-csharp_style_expression_bodied_lambdas = true
-csharp_style_expression_bodied_local_functions = true
+csharp_style_expression_bodied_methods = when_on_single_line:suggestion
+csharp_style_expression_bodied_constructors = false:suggestion
+csharp_style_expression_bodied_operators = when_on_single_line:suggestion
+csharp_style_expression_bodied_properties = true:suggestion
+csharp_style_expression_bodied_indexers = true:suggestion
+csharp_style_expression_bodied_accessors = true:suggestion
+csharp_style_expression_bodied_lambdas = true:suggestion
+csharp_style_expression_bodied_local_functions = when_on_single_line:suggestion
 
 # Pattern matching
 csharp_style_pattern_matching_over_is_with_cast_check = true:suggestion
@@ -198,10 +196,14 @@ csharp_space_between_method_declaration_parameter_list_parentheses = false
 csharp_space_between_parentheses = false
 csharp_space_between_square_brackets = false
 
-# Types: use keywords instead of BCL types, and permit var only when the type is clear
+# Require trailing comma in multiline initializers
+trailing_comma_in_multiline_lists = true
+dotnet_diagnostic.SA1413.severity = warning
+
+# Types: keep built-in types explicit and prefer var for custom and compound types
 csharp_style_var_for_built_in_types = false:suggestion
-csharp_style_var_when_type_is_apparent = false:none
-csharp_style_var_elsewhere = false:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_elsewhere = true:suggestion
 
 # Xml project files
 [*.{csproj,vbproj,vcxproj,vcxproj.filters,proj,nativeproj,locproj}]
@@ -333,3 +335,20 @@ dotnet_naming_style.enum_members_all_upper.word_separator = _
 dotnet_naming_rule.enum_members_should_be_all_upper.symbols = enum_members
 dotnet_naming_rule.enum_members_should_be_all_upper.style = enum_members_all_upper
 dotnet_naming_rule.enum_members_should_be_all_upper.severity = suggestion
+
+# EF Core migrations are generated and should not be cleaned up
+[**/Migrations/**]
+generated_code = true
+disable_formatter = true
+resharper_substitution_for_cleanup_profile = * => skip
+
+# Generated designer files
+[**/*.Designer.cs]
+generated_code = true
+disable_formatter = true
+resharper_substitution_for_cleanup_profile = * => skip
+
+# Do not format EditorConfig itself
+[.editorconfig]
+disable_formatter = true
+resharper_substitution_for_cleanup_profile = * => skip

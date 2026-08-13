@@ -1,7 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Constants;
 using DirectoryService.Application.Locations;
-using DirectoryService.Contracts.Departments.CreateDepartment;
+using DirectoryService.Contracts.Departments.CreateDepartments;
 using DirectoryService.Domain.DepartmentLocations;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Locations;
@@ -16,11 +16,11 @@ namespace DirectoryService.Application.Departments.Commands.CreateDepartments;
 
 public class CreateDepartmentHandler : ICommandHandler<Guid, CreateDepartmentCommand>
 {
-    private readonly ILocationsRepository _locationsRepository;
-    private readonly IDepartmentsRepository _departmentsRepository;
-    private readonly IValidator<CreateDepartmentRequest> _validator;
-    private readonly ILogger<CreateDepartmentHandler> _logger;
     private readonly HybridCache _cache;
+    private readonly IDepartmentsRepository _departmentsRepository;
+    private readonly ILocationsRepository _locationsRepository;
+    private readonly ILogger<CreateDepartmentHandler> _logger;
+    private readonly IValidator<CreateDepartmentRequest> _validator;
 
     public CreateDepartmentHandler(
         ILocationsRepository locationsRepository,
@@ -54,21 +54,26 @@ public class CreateDepartmentHandler : ICommandHandler<Guid, CreateDepartmentCom
         var parentId = command.Request.ParentId;
 
         var checkExistingIdsResult = await _locationsRepository.CheckExistingAndActiveIdsAsync(
-            command.Request.LocationsIds, cancellationToken);
+            command.Request.LocationIds, cancellationToken);
         if (checkExistingIdsResult.IsFailure)
+        {
             return checkExistingIdsResult.Error;
+        }
 
         var locationIds =
-            command.Request.LocationsIds.Select(
-                    l => new DepartmentLocation(DepartmentLocationId.CreateNew(), departmentId, LocationId.Create(l)))
+            command.Request.LocationIds.Select(l => new DepartmentLocation(
+                    DepartmentLocationId.CreateNew(), departmentId, LocationId.Create(l)))
                 .ToList();
 
         Department department;
         if (parentId == null)
         {
-            var createParentDepartmentResult = Department.CreateParent(name, identifier, locationIds, departmentId);
+            var createParentDepartmentResult =
+                Department.CreateParent(name, identifier, locationIds, departmentId);
             if (createParentDepartmentResult.IsFailure)
+            {
                 return createParentDepartmentResult.Error.ToErrors();
+            }
 
             department = createParentDepartmentResult.Value;
         }
@@ -79,12 +84,16 @@ public class CreateDepartmentHandler : ICommandHandler<Guid, CreateDepartmentCom
             var getParentDepartmentResult =
                 await _departmentsRepository.GetByIdAsync(parentDepartmentId, cancellationToken);
             if (getParentDepartmentResult.IsFailure)
+            {
                 return getParentDepartmentResult.Error.ToErrors();
+            }
 
             var childParentDepartmentResult = Department.CreateChild(
                 name, identifier, getParentDepartmentResult.Value, locationIds, departmentId);
             if (childParentDepartmentResult.IsFailure)
+            {
                 return childParentDepartmentResult.Error.ToErrors();
+            }
 
             department = childParentDepartmentResult.Value;
         }

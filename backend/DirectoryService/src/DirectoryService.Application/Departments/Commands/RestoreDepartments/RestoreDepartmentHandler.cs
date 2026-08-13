@@ -14,12 +14,12 @@ namespace DirectoryService.Application.Departments.Commands.RestoreDepartments;
 
 public class RestoreDepartmentHandler : ICommandHandler<Guid, RestoreDepartmentCommand>
 {
+    private readonly HybridCache _cache;
     private readonly IDepartmentsRepository _departmentsRepository;
     private readonly ILocationsRepository _locationsRepository;
+    private readonly ILogger<RestoreDepartmentHandler> _logger;
     private readonly IPositionsRepository _positionsRepository;
     private readonly ITransactionManager _transactionManager;
-    private readonly HybridCache _cache;
-    private readonly ILogger<RestoreDepartmentHandler> _logger;
 
     public RestoreDepartmentHandler(
         IDepartmentsRepository departmentsRepository,
@@ -42,7 +42,8 @@ public class RestoreDepartmentHandler : ICommandHandler<Guid, RestoreDepartmentC
     {
         var departmentId = DepartmentId.Create(command.DepartmentId);
 
-        var transactionResult = await _transactionManager.BeginTransactionAsync(cancellationToken);
+        var transactionResult =
+            await _transactionManager.BeginTransactionAsync(cancellationToken);
         if (transactionResult.IsFailure)
         {
             return transactionResult.Error.ToErrors();
@@ -50,7 +51,8 @@ public class RestoreDepartmentHandler : ICommandHandler<Guid, RestoreDepartmentC
 
         using var transaction = transactionResult.Value;
 
-        var departmentResult = await _departmentsRepository.GetByIdWithLock(departmentId, cancellationToken);
+        var departmentResult =
+            await _departmentsRepository.GetByIdWithLock(departmentId, cancellationToken);
         if (departmentResult.IsFailure)
         {
             transaction.Rollback();
