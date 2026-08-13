@@ -1,5 +1,6 @@
-import { DepartmentShortDto } from "@/entities/departments/model/types";
-import { RestoreDepartmentDialog } from "@/features/departments/restore-department/ui/restore-department-dialog";
+import type { DepartmentShortDto } from "@/entities/departments";
+import { resetDepartmentTreeData } from "@/features/department-tree";
+import { RestoreDepartmentDialog } from "@/features/restore-department";
 import { Badge } from "@/shared/components/ui/badge";
 import {
 	Card,
@@ -27,6 +28,7 @@ export function ArchivedDepartmentCard({ department }: Props) {
 						<RestoreDepartmentDialog
 							departmentId={department.id}
 							name={department.name}
+							onRestored={resetDepartmentTreeData}
 						/>
 					)}
 				</div>
@@ -63,7 +65,7 @@ export function ArchivedDepartmentCard({ department }: Props) {
 				</span>
 
 				<Separator />
-				<div className="flex min-w-0 items-center gap-3 text-sm text-muted-foreground">
+				<div className="text-muted-foreground flex min-w-0 items-center gap-3 text-sm">
 					<Clock3 className="h-4 w-4 shrink-0" />
 					<span className="min-w-0 truncate">
 						Дата удаления:{" "}

@@ -1,4 +1,4 @@
-import { DepartmentTreeRootsList } from "@/features/departments/department-tree/ui/department-tree-roots-list";
+import { DepartmentTreeRootsList } from "@/features/department-tree";
 import { DepartmentPositionsList } from "./department-positions-list";
 
 export function DepartmentPositions() {

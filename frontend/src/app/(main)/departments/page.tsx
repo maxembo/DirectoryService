@@ -1,5 +1,5 @@
 import { Spinner } from "@/shared/components/ui/spinner";
-import { DepartmentView } from "@/widgets/departments/ui/department-view";
+import { DepartmentView } from "@/widgets/departments";
 import { Suspense } from "react";
 
 export default function DepartmentsPage() {

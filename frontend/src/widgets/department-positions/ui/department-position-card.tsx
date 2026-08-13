@@ -1,4 +1,4 @@
-import { PositionDto } from "@/entities/positions/model/types";
+import type { PositionDto } from "@/entities/positions";
 import { Badge } from "@/shared/components/ui/badge";
 import {
 	Card,
@@ -43,7 +43,7 @@ export function DepartmentPositionCard({ position }: Props) {
 				</div>
 			</CardHeader>
 			<CardContent>
-				<div className="flex min-w-0 items-center gap-3 text-sm text-muted-foreground">
+				<div className="text-muted-foreground flex min-w-0 items-center gap-3 text-sm">
 					<Clock3 className="h-4 w-4 shrink-0" />
 					<span className="min-w-0 truncate">
 						Дата создания: {new Date(position.createdAt).toLocaleDateString()}
