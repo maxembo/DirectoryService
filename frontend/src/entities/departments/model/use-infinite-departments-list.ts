@@ -1,7 +1,12 @@
-import { departmentsApi } from "@/entities/departments/api/api";
-import { GetDepartmentsInfinityRequest } from "@/entities/departments/api/types";
 import {
-	DepartmentListId,
+	type GetDepartmentsInfinityRequest,
+	departmentsApi,
+} from "@/entities/departments";
+import { EnvelopeError } from "@/shared/api/errors";
+import { useCursorRef } from "@/shared/hooks/use-cursor-ref";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { useDebounce } from "use-debounce";
+import {
 	useDepartmentIsActive,
 	useDepartmentIsParent,
 	useDepartmentParentId,
@@ -9,11 +14,8 @@ import {
 	useDepartmentSelectedLocations,
 	useDepartmentSortBy,
 	useDepartmentSortDirection,
-} from "@/features/departments/department-list/model/department-list-store";
-import { EnvelopeError } from "@/shared/api/errors";
-import { useCursorRef } from "@/shared/hooks/use-cursor-ref";
-import { useInfiniteQuery } from "@tanstack/react-query";
-import { useDebounce } from "use-debounce";
+	type DepartmentListId,
+} from "./department-list-store";
 
 type Props = {
 	stateId?: DepartmentListId;
@@ -40,7 +42,7 @@ export function useInfiniteDepartmentsList({ stateId, request }: Props) {
 		fetchNextPage,
 	} = useInfiniteQuery({
 		...departmentsApi.getDepartmentsInfinityQueryOptions({
-			locationsIds: selectedLocations.map((location) => location.id),
+			locationsIds: selectedLocations,
 			search: debouncedSearch,
 			isParent: isParent === "all" ? undefined : isParent === "parent",
 			isActive: isActive === "all" ? undefined : isActive === "active",

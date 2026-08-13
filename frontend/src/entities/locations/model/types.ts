@@ -1,6 +1,6 @@
 export type LocationId = string;
 
-export type Location = {
+export type LocationDto = {
 	id: LocationId;
 	name: string;
 	timezone: string;

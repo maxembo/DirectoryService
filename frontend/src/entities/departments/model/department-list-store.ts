@@ -1,8 +1,7 @@
-import {
+import type {
 	DepartmentParentFilter,
 	DepartmentSortByFilter,
-} from "@/entities/departments/model/types";
-import { Location } from "@/entities/locations/model/types";
+} from "@/entities/departments";
 import { PAGE_SIZE } from "@/shared/api/pagination-request";
 import { ActiveFilter, SortDirectionFilter } from "@/shared/model/filter-types";
 import { create } from "zustand";
@@ -11,7 +10,7 @@ import { createJSONStorage, persist } from "zustand/middleware";
 export type DepartmentListId = string;
 
 type DepartmentsListState = {
-	selectedLocations: Location[];
+	selectedLocations: string[];
 	search: string;
 	parentId: string;
 	isParent: DepartmentParentFilter;
@@ -79,7 +78,7 @@ export const useDepartmentSelectedLocations = (stateId?: DepartmentListId) =>
 	);
 
 export const setDepartmentSelectedLocations = (
-	selectedLocations: Location[],
+	selectedLocations: string[],
 	stateId?: DepartmentListId,
 ) =>
 	useDepartmentListStore.setState((states) => ({

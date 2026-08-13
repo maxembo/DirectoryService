@@ -5,8 +5,8 @@ import {
 	PaginationEnvelope,
 } from "@/shared/api/envelops";
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
-import { Location, LocationId } from "../model/types";
-import {
+import { LocationDto, LocationId } from "../model/types";
+import type {
 	CreateLocationRequest,
 	GetLocationsInfinityRequest,
 	GetLocationsRequest,
@@ -21,7 +21,7 @@ export const locationsApi = {
 
 	getLocations: async (request: GetLocationsRequest) => {
 		const response = await apiClient.get<
-			Envelope<PaginationEnvelope<Location>>
+			Envelope<PaginationEnvelope<LocationDto>>
 		>(LOCATIONS_ENDPOINT, { params: request });
 
 		return response.data;
@@ -41,12 +41,12 @@ export const locationsApi = {
 			queryFn: ({ pageParam }) => {
 				return locationsApi.getLocations({ ...request, page: pageParam });
 			},
-			...envelopeInfinityQueryOptions<Location>(),
+			...envelopeInfinityQueryOptions<LocationDto>(),
 		});
 	},
 
 	createLocation: async (request: CreateLocationRequest) => {
-		const response = await apiClient.post<Envelope<Location>>(
+		const response = await apiClient.post<Envelope<LocationDto>>(
 			LOCATIONS_ENDPOINT,
 			request,
 		);
@@ -57,7 +57,7 @@ export const locationsApi = {
 	updateLocation: async (
 		request: UpdateLocationRequest & { locationId: LocationId },
 	) => {
-		const response = await apiClient.patch<Envelope<Location>>(
+		const response = await apiClient.patch<Envelope<LocationDto>>(
 			`${LOCATIONS_ENDPOINT}/${request.locationId}`,
 			request,
 		);
