@@ -1,4 +1,3 @@
-import { PositionSortByFilter } from "@/entities/positions/model/types";
 import { FilterSelect } from "@/shared/components/filter-select";
 import { SearchInput } from "@/shared/components/search-input";
 import {
@@ -17,6 +16,7 @@ import {
 	usePositionSortBy,
 	usePositionSortDirection,
 } from "../model/position-list-store";
+import type { PositionSortByFilter } from "@/entities/positions";
 
 const positionSortByOptions: Array<FilterOption<PositionSortByFilter>> = [
 	{ value: "name", label: "По имени" },
