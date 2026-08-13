@@ -4,11 +4,12 @@ import { queryClient } from "@/shared/api/query-client";
 import { SidebarProvider } from "@/shared/components/ui/sidebar";
 import { TooltipProvider } from "@/shared/components/ui/tooltip";
 import { QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Toaster } from "sonner";
-import { Header } from "../header/header";
-import { AppSidebar } from "../sidebar/app-sidebar";
+import { AppSidebar } from "./app-sidebar";
+import { Header } from "./header";
 
-export function Layout({
+export function AppShell({
 	children,
 }: Readonly<{
 	children: React.ReactNode;
@@ -19,7 +20,7 @@ export function Layout({
 				<TooltipProvider>
 					<div className="flex h-screen w-full">
 						<AppSidebar />
-						<div className="flex-1 flex flex-col min-w-0">
+						<div className="flex min-w-0 flex-1 flex-col">
 							<Header />
 							<main className="min-h-0 flex-1 overflow-auto p-10">
 								{children}
@@ -34,6 +35,7 @@ export function Layout({
 					</div>
 				</TooltipProvider>
 			</SidebarProvider>
+			<ReactQueryDevtools initialIsOpen={false} />
 		</QueryClientProvider>
 	);
 }
