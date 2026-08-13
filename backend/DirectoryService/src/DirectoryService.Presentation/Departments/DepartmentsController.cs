@@ -7,18 +7,17 @@ using DirectoryService.Application.Departments.Queries.GetDepartmentChildren;
 using DirectoryService.Application.Departments.Queries.GetDepartments;
 using DirectoryService.Application.Departments.Queries.GetDepartmentTreeRoots;
 using DirectoryService.Application.Departments.Queries.GetTopFiveDepartmentsWithMostPositions;
-using DirectoryService.Contracts.Departments.CreateDepartment;
+using DirectoryService.Contracts.Departments.CreateDepartments;
 using DirectoryService.Contracts.Departments.GetDepartments.Dtos;
 using DirectoryService.Contracts.Departments.GetDepartments.Requests;
+using DirectoryService.Contracts.Departments.GetTopFiveDepartmentsWithMostPositions.Dtos;
 using DirectoryService.Contracts.Departments.MoveDepartments;
-using DirectoryService.Contracts.Departments.UpdateDepartment;
+using DirectoryService.Contracts.Departments.UpdateDepartments;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SharedService.Core.Abstractions;
 using SharedService.Framework.EndpointResults;
 using SharedService.SharedKernel.Response;
-using GetDepartmentDto =
-    DirectoryService.Contracts.Departments.GetTopFiveDepartmentsWithMostPositions.Dtos.GetDepartmentDto;
 
 namespace DirectoryService.Presentation.Departments;
 
@@ -70,7 +69,7 @@ public class DepartmentsController : ControllerBase
     }
 
     [HttpGet("top-positions")]
-    public async Task<EndpointResult<GetDepartmentDto
+    public async Task<EndpointResult<DepartmentWithPositionCountDto
             []>>
         GetTopFiveDepartmentsWithMostPositions(
             [FromServices] GetTopFiveDepartmentsWithMostPositionsHandler handler,
@@ -78,7 +77,7 @@ public class DepartmentsController : ControllerBase
         await handler.Handle(cancellationToken);
 
     [HttpGet("top-positions/dapper")]
-    public async Task<EndpointResult<GetDepartmentDto
+    public async Task<EndpointResult<DepartmentWithPositionCountDto
             []>>
         GetTopFiveDepartmentsWithMostPositionsDapper(
             [FromServices] GetTopFiveDepartmentsWithMostPositionsHandlerDapper handler,

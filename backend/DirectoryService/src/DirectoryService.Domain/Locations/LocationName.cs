@@ -15,7 +15,7 @@ public sealed record LocationName
 
     public static Result<LocationName, Error> Create(string value)
     {
-        string valueTrim = value.Trim();
+        string? valueTrim = value?.Trim();
 
         if (string.IsNullOrWhiteSpace(valueTrim))
         {

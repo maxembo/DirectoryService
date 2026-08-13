@@ -22,5 +22,5 @@ public record GetDepartmentDto
 
     public bool HasMoreChildren { get; init; }
 
-    public List<Guid> Childrens { get; init; } = [];
+    public List<Guid> Children { get; init; } = [];
 }

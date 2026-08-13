@@ -1,7 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Constants;
 using DirectoryService.Application.Locations;
-using DirectoryService.Contracts.Departments.CreateDepartment;
+using DirectoryService.Contracts.Departments.CreateDepartments;
 using DirectoryService.Domain.DepartmentLocations;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Locations;
@@ -54,14 +54,14 @@ public class CreateDepartmentHandler : ICommandHandler<Guid, CreateDepartmentCom
         var parentId = command.Request.ParentId;
 
         var checkExistingIdsResult = await _locationsRepository.CheckExistingAndActiveIdsAsync(
-            command.Request.LocationsIds, cancellationToken);
+            command.Request.LocationIds, cancellationToken);
         if (checkExistingIdsResult.IsFailure)
         {
             return checkExistingIdsResult.Error;
         }
 
         var locationIds =
-            command.Request.LocationsIds.Select(l => new DepartmentLocation(
+            command.Request.LocationIds.Select(l => new DepartmentLocation(
                     DepartmentLocationId.CreateNew(), departmentId, LocationId.Create(l)))
                 .ToList();
 

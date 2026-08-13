@@ -15,17 +15,19 @@ public sealed record DepartmentName
 
     public static Result<DepartmentName, Error> Create(string value)
     {
-        if (string.IsNullOrWhiteSpace(value))
+        string valueTrim = value.Trim();
+
+        if (string.IsNullOrWhiteSpace(valueTrim))
         {
-            return GeneralErrors.Required("department name");
+            return GeneralErrors.Required("department.name");
         }
 
-        if (value.Length is > Constants.MAX_DEPARTMENT_NAME_LENGTH or < Constants.MIN_TEXT_LENGTH)
+        if (valueTrim.Length is > Constants.MAX_DEPARTMENT_NAME_LENGTH or < Constants.MIN_TEXT_LENGTH)
         {
             return GeneralErrors.LengthOutOfRange(
-                "department name", Constants.MAX_DEPARTMENT_NAME_LENGTH, Constants.MIN_TEXT_LENGTH);
+                "department.name", Constants.MIN_TEXT_LENGTH, Constants.MAX_DEPARTMENT_NAME_LENGTH);
         }
 
-        return new DepartmentName(value);
+        return new DepartmentName(valueTrim);
     }
 }

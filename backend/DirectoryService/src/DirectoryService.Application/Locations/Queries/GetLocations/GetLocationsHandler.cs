@@ -80,7 +80,7 @@ public class GetLocationsHandler : IQueryHandler<PaginationEnvelope<GetLocations
                 Id = l.Id.Value,
                 Name = l.Name.Value,
                 Timezone = l.Timezone.Value,
-                Address = new AddressDto(l.Address.Country, l.Address.City, l.Address.Street, l.Address.House),
+                Address = new AddressDto(l.Address.City, l.Address.Country, l.Address.Street, l.Address.House),
                 UpdatedAt = l.UpdatedAt,
                 CreatedAt = l.CreatedAt,
                 DeletedAt = l.DeletedAt,

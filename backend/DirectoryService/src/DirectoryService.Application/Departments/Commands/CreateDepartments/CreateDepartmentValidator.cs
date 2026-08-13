@@ -1,4 +1,4 @@
-﻿using DirectoryService.Contracts.Departments.CreateDepartment;
+﻿using DirectoryService.Contracts.Departments.CreateDepartments;
 using DirectoryService.Domain.Departments;
 using FluentValidation;
 using SharedService.Core.Validation;
@@ -18,12 +18,13 @@ public class CreateDepartmentValidator : AbstractValidator<CreateDepartmentReque
 
         RuleFor(c => c.ParentId)
             .Must(parentId => parentId != Guid.Empty || parentId == null)
-            .WithError(GeneralErrors.Required("department parentId"));
+            .WithError(GeneralErrors.Invalid("department.parentId"));
 
-        RuleFor(c => c.LocationsIds)
-            .Must(locationIds => locationIds.Distinct().Count() == locationIds.Length)
-            .WithError(GeneralErrors.ArrayContainsDuplicates("department.locationIds"))
+        RuleFor(c => c.LocationIds)
+            .Cascade(CascadeMode.Stop)
             .NotEmpty()
-            .WithError(GeneralErrors.Required("locationsIds"));
+            .WithError(GeneralErrors.Required("department.locationIds"))
+            .Must(locationIds => locationIds.Distinct().Count() == locationIds.Length)
+            .WithError(GeneralErrors.ArrayContainsDuplicates("department.locationIds"));
     }
 }

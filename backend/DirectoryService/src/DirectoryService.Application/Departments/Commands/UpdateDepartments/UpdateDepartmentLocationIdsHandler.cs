@@ -1,7 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Constants;
 using DirectoryService.Application.Locations;
-using DirectoryService.Contracts.Departments.UpdateDepartment;
+using DirectoryService.Contracts.Departments.UpdateDepartments;
 using DirectoryService.Domain.DepartmentLocations;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Locations;
@@ -81,16 +81,32 @@ public class UpdateDepartmentLocationIdsHandler : ICommandHandler<Guid, UpdateDe
             .Select(locationId => new DepartmentLocation(
                 DepartmentLocationId.CreateNew(), department.Id, LocationId.Create(locationId)));
 
-        department.UpdateLocationIds(locationIds);
-
-        await _departmentsRepository.DeleteLocationsAsync(departmentId, cancellationToken);
-
-        await _transactionManager.SaveChangeAsync(cancellationToken);
-
-        var commitedResult = transaction.Commit();
-        if (commitedResult.IsFailure)
+        var updateLocationIdsResult = department.UpdateLocationIds(locationIds);
+        if (updateLocationIdsResult.IsFailure)
         {
-            return commitedResult.Error.ToErrors();
+            transaction.Rollback();
+            return updateLocationIdsResult.Error.ToErrors();
+        }
+
+        var deleteLocationsResult =
+            await _departmentsRepository.DeleteLocationsAsync(departmentId, cancellationToken);
+        if (deleteLocationsResult.IsFailure)
+        {
+            transaction.Rollback();
+            return deleteLocationsResult.Error.ToErrors();
+        }
+
+        var saveChangeResult = await _transactionManager.SaveChangeAsync(cancellationToken);
+        if (saveChangeResult.IsFailure)
+        {
+            transaction.Rollback();
+            return saveChangeResult.Error.ToErrors();
+        }
+
+        var commitResult = transaction.Commit();
+        if (commitResult.IsFailure)
+        {
+            return commitResult.Error.ToErrors();
         }
 
         await _cache.RemoveByTagAsync(CacheKeys.DEPARTMENT_KEY, cancellationToken);

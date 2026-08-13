@@ -7,7 +7,7 @@ namespace DirectoryService.Domain.Departments;
 
 public sealed class Department : BaseEntity<DepartmentId>, ISoftDeletable
 {
-    private readonly List<Department> _childrens = [];
+    private readonly List<Department> _children = [];
 
     private readonly List<DepartmentPosition> _positions = [];
 
@@ -36,7 +36,7 @@ public sealed class Department : BaseEntity<DepartmentId>, ISoftDeletable
 
     public IReadOnlyList<DepartmentLocation> Locations => _locations.AsReadOnly();
 
-    public IReadOnlyList<Department> Childrens => _childrens.AsReadOnly();
+    public IReadOnlyList<Department> Children => _children.AsReadOnly();
 
     public IReadOnlyList<DepartmentPosition> Positions => _positions.AsReadOnly();
 
@@ -61,7 +61,7 @@ public sealed class Department : BaseEntity<DepartmentId>, ISoftDeletable
         var locationsList = locations.ToList();
         if (locationsList.Count == 0)
         {
-            return GeneralErrors.Required("locations");
+            return GeneralErrors.Required("department.locations");
         }
 
         var path = Path.CreateParent(identifier);
@@ -79,7 +79,7 @@ public sealed class Department : BaseEntity<DepartmentId>, ISoftDeletable
         var locationsList = locations.ToList();
         if (locationsList.Count == 0)
         {
-            return GeneralErrors.Required("locations");
+            return GeneralErrors.Required("department.locations");
         }
 
         var path = parent.Path.CreateChild(identifier);
@@ -104,7 +104,7 @@ public sealed class Department : BaseEntity<DepartmentId>, ISoftDeletable
 
         if (nameResult.IsFailure)
         {
-            return GeneralErrors.Invalid("department rename");
+            return nameResult.Error;
         }
 
         Name = nameResult.Value;
@@ -120,10 +120,10 @@ public sealed class Department : BaseEntity<DepartmentId>, ISoftDeletable
 
         if (locationsList.Count == 0)
         {
-            return GeneralErrors.Required("locationsIds");
+            return GeneralErrors.Required("department.locationIds");
         }
 
-        _locations = locationsList.ToList();
+        _locations = locationsList;
 
         return UnitResult.Success<Error>();
     }
@@ -132,7 +132,7 @@ public sealed class Department : BaseEntity<DepartmentId>, ISoftDeletable
     {
         if (_locations.Contains(location))
         {
-            return GeneralErrors.Invalid("department location");
+            return GeneralErrors.Invalid("department.location");
         }
 
         _locations.Add(location);
@@ -144,7 +144,7 @@ public sealed class Department : BaseEntity<DepartmentId>, ISoftDeletable
     {
         if (!_locations.Contains(location))
         {
-            return GeneralErrors.Invalid("department location");
+            return GeneralErrors.Invalid("department.location");
         }
 
         _locations.Remove(location);
@@ -154,24 +154,24 @@ public sealed class Department : BaseEntity<DepartmentId>, ISoftDeletable
 
     public UnitResult<Error> AddChild(Department department)
     {
-        if (_childrens.Contains(department))
+        if (_children.Contains(department))
         {
-            return GeneralErrors.Invalid("department child");
+            return GeneralErrors.Invalid("department.child");
         }
 
-        _childrens.Add(department);
+        _children.Add(department);
 
         return UnitResult.Success<Error>();
     }
 
     public UnitResult<Error> RemoveChild(Department department)
     {
-        if (!_childrens.Contains(department))
+        if (!_children.Contains(department))
         {
-            return GeneralErrors.Invalid("department child");
+            return GeneralErrors.Invalid("department.child");
         }
 
-        _childrens.Remove(department);
+        _children.Remove(department);
 
         return UnitResult.Success<Error>();
     }
@@ -180,7 +180,7 @@ public sealed class Department : BaseEntity<DepartmentId>, ISoftDeletable
     {
         if (_positions.Contains(position))
         {
-            return GeneralErrors.Invalid("department position");
+            return GeneralErrors.Invalid("department.position");
         }
 
         _positions.Add(position);
@@ -192,7 +192,7 @@ public sealed class Department : BaseEntity<DepartmentId>, ISoftDeletable
     {
         if (!_positions.Contains(position))
         {
-            return GeneralErrors.Invalid("department position");
+            return GeneralErrors.Invalid("department.position");
         }
 
         _positions.Remove(position);

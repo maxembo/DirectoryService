@@ -1,6 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Departments.Commands.CreateDepartments;
-using DirectoryService.Contracts.Departments.CreateDepartment;
+using DirectoryService.Contracts.Departments.CreateDepartments;
 using DirectoryService.Domain.Departments;
 using DirectoryService.IntegrationTests.Infrastructure;
 using Microsoft.EntityFrameworkCore;

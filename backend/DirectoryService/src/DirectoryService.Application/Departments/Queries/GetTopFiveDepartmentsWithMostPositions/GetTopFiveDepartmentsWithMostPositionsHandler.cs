@@ -7,7 +7,7 @@ using SharedService.Core.Abstractions;
 
 namespace DirectoryService.Application.Departments.Queries.GetTopFiveDepartmentsWithMostPositions;
 
-public class GetTopFiveDepartmentsWithMostPositionsHandler : IQueryHandler<GetDepartmentDto[]>
+public class GetTopFiveDepartmentsWithMostPositionsHandler : IQueryHandler<DepartmentWithPositionCountDto[]>
 {
     private const int TOP_DEPARTMENTS_LIMIT = 5;
     private readonly HybridCache _cache;
@@ -20,10 +20,10 @@ public class GetTopFiveDepartmentsWithMostPositionsHandler : IQueryHandler<GetDe
         _cache = cache;
     }
 
-    public async Task<GetDepartmentDto[]> Handle(CancellationToken cancellationToken) =>
+    public async Task<DepartmentWithPositionCountDto[]> Handle(CancellationToken cancellationToken) =>
         await GetPresignedTopFiveDepartmentsWithPositionsFromCache(cancellationToken);
 
-    private async Task<GetDepartmentDto[]> GetPresignedTopFiveDepartmentsWithPositionsFromCache(
+    private async Task<DepartmentWithPositionCountDto[]> GetPresignedTopFiveDepartmentsWithPositionsFromCache(
         CancellationToken cancellationToken)
     {
         string key = CacheKeys.CreateDepartmentsKey("top", TOP_DEPARTMENTS_LIMIT.ToString());
@@ -35,12 +35,12 @@ public class GetTopFiveDepartmentsWithMostPositionsHandler : IQueryHandler<GetDe
             cancellationToken: cancellationToken);
     }
 
-    private async Task<GetDepartmentDto[]> GetTopFiveDepartmentsWithPositions(CancellationToken cancellationToken)
+    private async Task<DepartmentWithPositionCountDto[]> GetTopFiveDepartmentsWithPositions(CancellationToken cancellationToken)
     {
         var departmentsQuery = _readDbContext.DepartmentsRead;
 
         var departments = await departmentsQuery
-            .Select(d => new GetDepartmentDto
+            .Select(d => new DepartmentWithPositionCountDto
             {
                 Id = d.Id.Value,
                 ParentId = d.ParentId!.Value,

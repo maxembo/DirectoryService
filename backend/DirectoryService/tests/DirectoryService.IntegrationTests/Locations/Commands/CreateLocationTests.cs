@@ -1,5 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Locations.Commands.CreateLocations;
+using DirectoryService.Contracts.Locations;
 using DirectoryService.Contracts.Locations.CreateLocations;
 using DirectoryService.Domain.Locations;
 using DirectoryService.Domain.Shared;
@@ -90,7 +91,7 @@ public class CreateLocationTests(DirectoryTestWebFactory factory) : DirectoryBas
     {
         // arrange
         const string existingName = "test name 1";
-        var conflictingAddress = new AddressDto(
+        var conflictingAddress = new AddressRequest(
             "test city",
             "test country",
             "test street",
@@ -340,7 +341,7 @@ public class CreateLocationTests(DirectoryTestWebFactory factory) : DirectoryBas
         return new CreateLocationCommand(
             new CreateLocationRequest(
                 name,
-                new AddressDto(city, country, street, house),
+                new AddressRequest(city, country, street, house),
                 timezone));
     }
 

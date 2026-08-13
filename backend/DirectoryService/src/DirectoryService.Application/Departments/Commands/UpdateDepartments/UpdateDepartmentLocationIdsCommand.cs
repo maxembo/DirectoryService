@@ -1,4 +1,4 @@
-﻿using DirectoryService.Contracts.Departments.UpdateDepartment;
+﻿using DirectoryService.Contracts.Departments.UpdateDepartments;
 using SharedService.Core.Abstractions;
 
 namespace DirectoryService.Application.Departments.Commands.UpdateDepartments;

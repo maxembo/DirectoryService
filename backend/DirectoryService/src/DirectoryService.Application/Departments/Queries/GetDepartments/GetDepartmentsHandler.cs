@@ -26,16 +26,16 @@ public class GetDepartmentsHandler : IQueryHandler<PaginationEnvelope<Department
 
         var request = query.Request;
 
-        if (request.LocationsIds is { Length: > 0 } locationsIds)
+        if (request.LocationIds is { Length: > 0 } locationIds)
         {
-            parameters.Add("locationsIds", locationsIds, DbType.Object);
+            parameters.Add("locationIds", locationIds, DbType.Object);
             conditions.Add(
                 """
                 EXISTS
                 (SELECT 1
                  FROM department_locations dl
                  WHERE dl.department_id = d.id
-                   AND dl.location_id = ANY (@locationsIds)
+                   AND dl.location_id = ANY (@locationIds)
                    )
                 """);
         }

@@ -74,13 +74,32 @@ public class DepartmentsRepository : IDepartmentsRepository
     }
 
     public async Task<UnitResult<Error>> DeleteLocationsAsync(
-        DepartmentId departmentId, CancellationToken cancellationToken = default)
+        DepartmentId departmentId,
+        CancellationToken cancellationToken = default)
     {
-        await _dbContext.DepartmentLocations
-            .Where(dl => dl.DepartmentId == departmentId)
-            .ExecuteDeleteAsync(cancellationToken);
+        try
+        {
+            await _dbContext.DepartmentLocations
+                .Where(location => location.DepartmentId == departmentId)
+                .ExecuteDeleteAsync(cancellationToken);
 
-        return UnitResult.Success<Error>();
+            return UnitResult.Success<Error>();
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(
+                exception,
+                "Failed to delete location links for department {DepartmentId}",
+                departmentId.Value);
+
+            return GeneralErrors.Database(
+                code: "department.locations.delete.failed",
+                message: "Не удалось удалить связи подразделения с локациями.");
+        }
     }
 
     public async Task<Result<Department, Error>> GetActiveByIdWithLock(

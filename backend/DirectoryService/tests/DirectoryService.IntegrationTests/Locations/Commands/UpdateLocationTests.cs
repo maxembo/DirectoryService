@@ -1,5 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Locations.Commands.UpdateLocations;
+using DirectoryService.Contracts.Locations;
 using DirectoryService.Contracts.Locations.CreateLocations;
 using DirectoryService.Contracts.Locations.UpdateLocations;
 using DirectoryService.IntegrationTests.Infrastructure;
@@ -67,13 +68,13 @@ public class UpdateLocationTests(DirectoryTestWebFactory factory) : DirectoryBas
     public async Task UpdateLocation_WhenAddressAlreadyExists_ShouldFail()
     {
         // arrange
-        var conflictingAddress = new AddressDto(
+        var conflictingAddress = new AddressRequest(
             "test city",
             "test country",
             "test street",
             "1 test house");
 
-        var existingAddress = new AddressDto(
+        var existingAddress = new AddressRequest(
             "another city",
             "another country",
             "another street",
@@ -246,7 +247,7 @@ public class UpdateLocationTests(DirectoryTestWebFactory factory) : DirectoryBas
     {
         return new UpdateLocationRequest(
             name,
-            new AddressDto(city, country, street, house),
+            new AddressRequest(city, country, street, house),
             timezone);
     }
 
