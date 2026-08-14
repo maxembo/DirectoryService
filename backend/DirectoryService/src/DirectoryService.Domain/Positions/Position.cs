@@ -5,6 +5,8 @@ namespace DirectoryService.Domain.Positions;
 
 public sealed class Position : BaseEntity<PositionId>, ISoftDeletable
 {
+    private readonly List<DepartmentPosition> _departments = [];
+
     public Position(
         PositionId id,
         PositionName name,
@@ -20,10 +22,7 @@ public sealed class Position : BaseEntity<PositionId>, ISoftDeletable
     // ef core
     private Position(PositionId id)
         : base(id)
-    {
-    }
-
-    private readonly List<DepartmentPosition> _departments = [];
+    { }
 
     public IReadOnlyList<DepartmentPosition> Departments => _departments.AsReadOnly();
 
@@ -31,16 +30,13 @@ public sealed class Position : BaseEntity<PositionId>, ISoftDeletable
 
     public Description? Description { get; private set; }
 
+    public DeletionReason? DeletionReason { get; private set; }
+
     public bool IsActive { get; private set; } = true;
 
     public DateTime? DeletedAt { get; private set; }
 
-    public DeletionReason? DeletionReason { get; private set; }
-
-    public void MarkAsDelete()
-    {
-        ApplySoftDelete(Domain.DeletionReason.MANUAL);
-    }
+    public void MarkAsDelete() => ApplySoftDelete(Domain.DeletionReason.MANUAL);
 
     public void Update(PositionName name, Description? description)
     {

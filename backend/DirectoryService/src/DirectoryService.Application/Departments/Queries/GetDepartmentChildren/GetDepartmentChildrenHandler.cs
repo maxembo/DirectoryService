@@ -15,9 +15,9 @@ namespace DirectoryService.Application.Departments.Queries.GetDepartmentChildren
 public class GetDepartmentChildrenHandler
     : IQueryHandler<PaginationEnvelope<GetDepartmentChildrenDto>, GetDepartmentChildrenQuery>
 {
+    private readonly HybridCache _cache;
     private readonly IDbConnectionFactory _dbConnectionFactory;
     private readonly IValidator<GetDepartmentChildrenQuery> _validator;
-    private readonly HybridCache _cache;
 
     public GetDepartmentChildrenHandler(
         IDbConnectionFactory dbConnectionFactory,
@@ -51,7 +51,7 @@ public class GetDepartmentChildrenHandler
 
         return await _cache.GetOrCreateAsync(
             key,
-            factory: async _ =>
+            async _ =>
             {
                 var result = await GetDepartmentChildren(query);
 

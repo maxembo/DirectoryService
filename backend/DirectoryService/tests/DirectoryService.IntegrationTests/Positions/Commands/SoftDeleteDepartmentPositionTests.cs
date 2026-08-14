@@ -102,6 +102,6 @@ public class SoftDeleteDepartmentPositionTests(DirectoryTestWebFactory factory) 
     }
 
     private Task<Result<Guid, Errors>> Execute(SoftDeleteDepartmentCommand command) =>
-        Execute<Result<Guid, Errors>, SoftDeleteDepartmentHandler>(
-            handler => handler.Handle(command, CancellationToken.None));
+        Execute<Result<Guid, Errors>, SoftDeleteDepartmentHandler>(handler => handler.Handle(
+            command, CancellationToken.None));
 }

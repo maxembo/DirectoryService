@@ -5,6 +5,8 @@ namespace DirectoryService.Domain.Locations;
 
 public sealed class Location : BaseEntity<LocationId>, ISoftDeletable
 {
+    private readonly List<DepartmentLocation> _departments = [];
+
     public Location(LocationId id, LocationName name, Timezone timezone, Address address)
         : base(id)
     {
@@ -18,26 +20,21 @@ public sealed class Location : BaseEntity<LocationId>, ISoftDeletable
         : base(id)
     { }
 
-    private readonly List<DepartmentLocation> _departments = [];
-
     public IReadOnlyList<DepartmentLocation> Departments => _departments.AsReadOnly();
 
     public LocationName Name { get; private set; } = null!;
 
     public Timezone Timezone { get; private set; } = null!;
 
-    public bool IsActive { get; private set; } = true;
-
     public Address Address { get; private set; } = null!;
-
-    public DateTime? DeletedAt { get; private set; }
 
     public DeletionReason? DeletionReason { get; private set; }
 
-    public void MarkAsDelete()
-    {
-        ApplySoftDelete(Domain.DeletionReason.MANUAL);
-    }
+    public bool IsActive { get; private set; } = true;
+
+    public DateTime? DeletedAt { get; private set; }
+
+    public void MarkAsDelete() => ApplySoftDelete(Domain.DeletionReason.MANUAL);
 
     public void Update(LocationName name, Timezone timezone, Address address)
     {

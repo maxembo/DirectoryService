@@ -12,8 +12,8 @@ namespace DirectoryService.Application.Locations.Commands.CreateLocations;
 public class CreateLocationHandler : ICommandHandler<Guid, CreateLocationCommand>
 {
     private readonly ILocationsRepository _locationsRepository;
-    private readonly IValidator<CreateLocationRequest> _validator;
     private readonly ILogger<CreateLocationHandler> _logger;
+    private readonly IValidator<CreateLocationRequest> _validator;
 
     public CreateLocationHandler(
         ILocationsRepository locationsRepository,

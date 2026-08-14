@@ -132,9 +132,8 @@ public class GetLocationsDapperTests(DirectoryTestWebFactory factory) : Director
         // arrange
         const string matchedName = "location 1";
 
-        await CreateLocation(name: matchedName);
-        await CreateLocation(
-            name: "another location", city: "city", country: "country", street: "street", house: "1 house");
+        await CreateLocation(matchedName);
+        await CreateLocation("another location", "city", "country", "street", "1 house");
 
         var query = CreateQuery([], matchedName, null, null, null);
 
@@ -176,9 +175,9 @@ public class GetLocationsDapperTests(DirectoryTestWebFactory factory) : Director
 
         const string matchedName = "location";
 
-        await CreateLocation(name: name);
-        await CreateLocation(name: name1, city: "city", country: "country", street: "street", house: "1 house");
-        await CreateLocation(name: name2, city: "city", country: "country", street: "street", house: "2 house");
+        await CreateLocation(name);
+        await CreateLocation(name1, "city", "country", "street", "1 house");
+        await CreateLocation(name2, "city", "country", "street", "2 house");
 
         var query = CreateQuery([], matchedName, null, null, null);
 
@@ -210,9 +209,9 @@ public class GetLocationsDapperTests(DirectoryTestWebFactory factory) : Director
         const string name1 = "Location 2";
         const string name2 = "LOCATION 3";
 
-        await CreateLocation(name: name);
-        await CreateLocation(name: name1, city: "city", country: "country", street: "street", house: "1 house");
-        await CreateLocation(name: name2, city: "city", country: "country", street: "street", house: "2 house");
+        await CreateLocation(name);
+        await CreateLocation(name1, "city", "country", "street", "1 house");
+        await CreateLocation(name2, "city", "country", "street", "2 house");
 
         var query = CreateQuery([], string.Empty, null, null, null);
 
@@ -239,9 +238,9 @@ public class GetLocationsDapperTests(DirectoryTestWebFactory factory) : Director
         const string name1 = "Location 2";
         const string name2 = "LOCATION 3";
 
-        await CreateLocation(name: name);
-        await CreateLocation(name: name1, city: "city", country: "country", street: "street", house: "1 house");
-        await CreateLocation(name: name2, city: "city", country: "country", street: "street", house: "2 house");
+        await CreateLocation(name);
+        await CreateLocation(name1, "city", "country", "street", "1 house");
+        await CreateLocation(name2, "city", "country", "street", "2 house");
 
         var query = CreateQuery([], "  location  ", null, null, null);
 
@@ -267,9 +266,8 @@ public class GetLocationsDapperTests(DirectoryTestWebFactory factory) : Director
     public async Task GetLocations_WhenIsActiveIsTrue_ShouldReturnOnlyActiveLocations()
     {
         // arrange
-        var activeLocationId = await CreateLocation(name: "active location");
-        var inactiveLocationId = await CreateLocation(
-            name: "inactive location", city: "city", country: "country", street: "street", house: "1");
+        var activeLocationId = await CreateLocation("active location");
+        var inactiveLocationId = await CreateLocation("inactive location", "city", "country", "street", "1");
 
         await MarkLocationAsDeleted(inactiveLocationId);
 
@@ -289,9 +287,8 @@ public class GetLocationsDapperTests(DirectoryTestWebFactory factory) : Director
     public async Task GetLocations_WhenIsActiveIsFalse_ShouldReturnOnlyInactiveLocations()
     {
         // arrange
-        var activeLocationId = await CreateLocation(name: "active location");
-        var inactiveLocationId = await CreateLocation(
-            name: "inactive location", city: "city", country: "country", street: "street", house: "1");
+        var activeLocationId = await CreateLocation("active location");
+        var inactiveLocationId = await CreateLocation("inactive location", "city", "country", "street", "1");
 
         await MarkLocationAsDeleted(inactiveLocationId);
 
@@ -315,9 +312,9 @@ public class GetLocationsDapperTests(DirectoryTestWebFactory factory) : Director
         const string name1 = "Test name 1";
         const string name2 = "Test name 2";
 
-        await CreateLocation(name: name);
-        await CreateLocation(name: name1, city: "city", country: "country", street: "street", house: "1");
-        await CreateLocation(name: name2, city: "city", country: "country", street: "street", house: "2");
+        await CreateLocation(name);
+        await CreateLocation(name1, "city", "country", "street", "1");
+        await CreateLocation(name2, "city", "country", "street", "2");
 
         var query = CreateQuery([], null, null, "name", "asc");
 
@@ -340,9 +337,9 @@ public class GetLocationsDapperTests(DirectoryTestWebFactory factory) : Director
         const string name1 = "Test name 1";
         const string name2 = "Test name 2";
 
-        await CreateLocation(name: name);
-        await CreateLocation(name: name1, city: "city", country: "country", street: "street", house: "1");
-        await CreateLocation(name: name2, city: "city", country: "country", street: "street", house: "2");
+        await CreateLocation(name);
+        await CreateLocation(name1, "city", "country", "street", "1");
+        await CreateLocation(name2, "city", "country", "street", "2");
 
         var query = CreateQuery([], null, null, "name", "desc");
 
@@ -362,12 +359,10 @@ public class GetLocationsDapperTests(DirectoryTestWebFactory factory) : Director
         string? search,
         bool? isActive,
         string? sortBy,
-        string? sortDirection)
-    {
-        return new GetLocationsQuery(new GetLocationsRequest(departmentIds, search, isActive, sortBy, sortDirection));
-    }
+        string? sortDirection) =>
+        new(new GetLocationsRequest(departmentIds, search, isActive, sortBy, sortDirection));
 
     private Task<Result<PaginationEnvelope<GetLocationsDto>, Errors>> Execute(GetLocationsQuery query)
-        => Execute<Result<PaginationEnvelope<GetLocationsDto>, Errors>, GetLocationsHandlerDapper>(
-            handler => handler.Handle(query, CancellationToken.None));
+        => Execute<Result<PaginationEnvelope<GetLocationsDto>, Errors>, GetLocationsHandlerDapper>(handler =>
+            handler.Handle(query, CancellationToken.None));
 }

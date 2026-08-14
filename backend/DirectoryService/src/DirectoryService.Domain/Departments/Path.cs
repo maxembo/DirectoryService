@@ -20,12 +20,16 @@ public sealed record Path
     public static Result<Path, Error> Create(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
+        {
             return GeneralErrors.Required("path");
+        }
 
         string[] values = value.Split(SEPARATOR);
 
         if (values.Any(string.IsNullOrWhiteSpace))
+        {
             return GeneralErrors.Required("path");
+        }
 
         short depth = (short)values.Length;
 
@@ -34,10 +38,7 @@ public sealed record Path
         return new Path(joinValue, depth);
     }
 
-    public static Path CreateParent(Identifier identifier)
-    {
-        return new Path(identifier.Value, 0);
-    }
+    public static Path CreateParent(Identifier identifier) => new(identifier.Value, 0);
 
     public Path CreateChild(Identifier identifier)
     {

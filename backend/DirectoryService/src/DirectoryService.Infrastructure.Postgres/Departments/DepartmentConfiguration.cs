@@ -73,7 +73,7 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
             .IsRequired(false)
             .HasColumnName("parent_id");
 
-        builder.HasMany(d => d.Childrens)
+        builder.HasMany(d => d.Children)
             .WithOne()
             .HasForeignKey(d => d.ParentId)
             .OnDelete(DeleteBehavior.Restrict)

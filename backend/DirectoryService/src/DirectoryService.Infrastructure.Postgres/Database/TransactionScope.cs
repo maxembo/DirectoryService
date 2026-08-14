@@ -8,8 +8,8 @@ namespace DirectoryService.Infrastructure.Postgres.Database;
 
 public class TransactionScope : ITransactionScope
 {
-    private readonly IDbTransaction _transaction;
     private readonly ILogger<TransactionScope> _logger;
+    private readonly IDbTransaction _transaction;
 
     public TransactionScope(IDbTransaction transaction, ILogger<TransactionScope> logger)
     {

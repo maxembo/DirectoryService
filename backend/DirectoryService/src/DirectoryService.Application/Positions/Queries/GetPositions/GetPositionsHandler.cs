@@ -38,7 +38,7 @@ public class GetPositionsHandler : IQueryHandler<PaginationEnvelope<GetPositions
         var parameters = new DynamicParameters();
         var conditions = new List<string>();
 
-        if (request.DepartmentsIds is { Length: > 0 } departmentIds)
+        if (request.DepartmentIds is { Length: > 0 } departmentIds)
         {
             parameters.Add("@departmentIds", departmentIds, DbType.Object);
             conditions.Add(

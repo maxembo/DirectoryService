@@ -6,6 +6,7 @@ Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
     .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
     .CreateLogger();
+
 try
 {
     Log.Information("Starting DirectoryService.Web");

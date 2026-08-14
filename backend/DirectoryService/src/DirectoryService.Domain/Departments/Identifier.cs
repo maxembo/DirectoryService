@@ -10,7 +10,10 @@ public sealed record Identifier
     private static readonly Regex _identifierRegex =
         new("^[A-Za-z-]+$", RegexOptions.Compiled);
 
-    private Identifier(string value) => Value = value;
+    private Identifier(string value)
+    {
+        Value = value;
+    }
 
     public string Value { get; }
 
@@ -18,18 +21,18 @@ public sealed record Identifier
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            return GeneralErrors.Required("identifier");
+            return GeneralErrors.Required("department.identifier");
         }
 
         if (!_identifierRegex.IsMatch(value))
         {
-            return GeneralErrors.MismatchRegex("identifier");
+            return GeneralErrors.MismatchRegex("department.identifier");
         }
 
         if (value.Length is < Constants.MIN_TEXT_LENGTH or > Constants.MAX_DEPARTMENT_IDENTIFIER_LENGTH)
         {
             return GeneralErrors.LengthOutOfRange(
-                "identifier", Constants.MIN_TEXT_LENGTH, Constants.MAX_DEPARTMENT_IDENTIFIER_LENGTH);
+                "department.identifier", Constants.MIN_TEXT_LENGTH, Constants.MAX_DEPARTMENT_IDENTIFIER_LENGTH);
         }
 
         return new Identifier(value);

@@ -75,12 +75,12 @@ public class GetLocationsHandler : IQueryHandler<PaginationEnvelope<GetLocations
             .Skip((query.Request.Page - 1) * query.Request.PageSize)
             .Take(query.Request.PageSize);
 
-        var locations = await locationQuery.Select(l => new GetLocationsDto()
+        var locations = await locationQuery.Select(l => new GetLocationsDto
             {
                 Id = l.Id.Value,
                 Name = l.Name.Value,
                 Timezone = l.Timezone.Value,
-                Address = new AddressDto(l.Address.Country, l.Address.City, l.Address.Street, l.Address.House),
+                Address = new AddressDto(l.Address.City, l.Address.Country, l.Address.Street, l.Address.House),
                 UpdatedAt = l.UpdatedAt,
                 CreatedAt = l.CreatedAt,
                 DeletedAt = l.DeletedAt,

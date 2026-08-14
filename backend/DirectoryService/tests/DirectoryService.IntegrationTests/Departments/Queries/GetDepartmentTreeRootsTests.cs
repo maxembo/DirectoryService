@@ -1,12 +1,9 @@
 ﻿using CSharpFunctionalExtensions;
-using DirectoryService.Application.Constants;
 using DirectoryService.Application.Departments.Commands.SoftDeleteDepartments;
 using DirectoryService.Application.Departments.Queries.GetDepartmentTreeRoots;
 using DirectoryService.Contracts.Departments.GetDepartments.Dtos;
 using DirectoryService.Contracts.Departments.GetDepartments.Requests;
 using DirectoryService.IntegrationTests.Infrastructure;
-using Microsoft.Extensions.Caching.Hybrid;
-using Microsoft.Extensions.DependencyInjection;
 using SharedService.SharedKernel;
 using SharedService.SharedKernel.Response;
 
@@ -32,7 +29,8 @@ public class GetDepartmentTreeRootsTests(DirectoryTestWebFactory factory) : Dire
         var query = new GetDepartmentTreeRootsQuery(new GetDepartmentTreeRootsRequest());
 
         // soft delete
-        var deleteFrontendResult = await ExecuteSoftDelete(new SoftDeleteDepartmentCommand(frontend.Id.Value));
+        var deleteFrontendResult =
+            await ExecuteSoftDelete(new SoftDeleteDepartmentCommand(frontend.Id.Value));
 
         Assert.True(deleteFrontendResult.IsSuccess);
 
@@ -100,7 +98,8 @@ public class GetDepartmentTreeRootsTests(DirectoryTestWebFactory factory) : Dire
         var query = new GetDepartmentTreeRootsQuery(new GetDepartmentTreeRootsRequest());
 
         // soft delete
-        var deleteBackendResult = await ExecuteSoftDelete(new SoftDeleteDepartmentCommand(backend.Id.Value));
+        var deleteBackendResult =
+            await ExecuteSoftDelete(new SoftDeleteDepartmentCommand(backend.Id.Value));
 
         Assert.True(deleteBackendResult.IsSuccess);
 
@@ -132,7 +131,8 @@ public class GetDepartmentTreeRootsTests(DirectoryTestWebFactory factory) : Dire
         var query = new GetDepartmentTreeRootsQuery(new GetDepartmentTreeRootsRequest());
 
         // soft delete
-        var deleteCompanyResult = await ExecuteSoftDelete(new SoftDeleteDepartmentCommand(company.Id.Value));
+        var deleteCompanyResult =
+            await ExecuteSoftDelete(new SoftDeleteDepartmentCommand(company.Id.Value));
 
         Assert.True(deleteCompanyResult.IsSuccess);
 
@@ -146,8 +146,6 @@ public class GetDepartmentTreeRootsTests(DirectoryTestWebFactory factory) : Dire
         Assert.Equal(0, result.Value.TotalCount);
         Assert.Equal(0, result.Value.TotalPages);
     }
-
-
 
     private Task<Result<PaginationEnvelope<GetDepartmentTreeRootsDto>, Errors>> Execute(
         GetDepartmentTreeRootsQuery query)

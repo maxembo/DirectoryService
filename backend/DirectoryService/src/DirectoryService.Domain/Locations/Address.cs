@@ -7,6 +7,9 @@ namespace DirectoryService.Domain.Locations;
 
 public sealed partial record Address
 {
+    private static readonly Regex _houseRegex =
+        HouseRegex();
+
     private Address(string city, string country, string street, string house)
     {
         City = city;
@@ -14,9 +17,6 @@ public sealed partial record Address
         Street = street;
         House = house;
     }
-
-    private static readonly Regex _houseRegex =
-        HouseRegex();
 
     public string City { get; }
 
@@ -67,10 +67,14 @@ public sealed partial record Address
         string trimmed = value?.Trim() ?? string.Empty;
 
         if (string.IsNullOrWhiteSpace(trimmed))
+        {
             return GeneralErrors.Required(fieldName);
+        }
 
         if (trimmed.Length > Constants.MAX_LOCATION_ADDRESS_LENGTH)
+        {
             return GeneralErrors.LengthOutOfRange(fieldName, 0, Constants.MAX_LOCATION_ADDRESS_LENGTH);
+        }
 
         return trimmed;
     }
@@ -81,10 +85,14 @@ public sealed partial record Address
 
         var baseValidationResult = ValidateAndTrim(value, fieldName);
         if (baseValidationResult.IsFailure)
+        {
             return baseValidationResult.Error;
+        }
 
         if (!_houseRegex.IsMatch(baseValidationResult.Value))
+        {
             return GeneralErrors.MismatchRegex(fieldName);
+        }
 
         return baseValidationResult.Value;
     }

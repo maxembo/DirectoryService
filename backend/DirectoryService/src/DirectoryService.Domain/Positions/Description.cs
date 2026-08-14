@@ -6,7 +6,10 @@ namespace DirectoryService.Domain.Positions;
 
 public record Description
 {
-    private Description(string? value) => Value = value;
+    private Description(string? value)
+    {
+        Value = value;
+    }
 
     public string? Value { get; }
 

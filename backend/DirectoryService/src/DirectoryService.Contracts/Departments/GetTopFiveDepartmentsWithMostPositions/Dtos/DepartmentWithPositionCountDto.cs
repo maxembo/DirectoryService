@@ -1,6 +1,6 @@
 ﻿namespace DirectoryService.Contracts.Departments.GetTopFiveDepartmentsWithMostPositions.Dtos;
 
-public record GetDepartmentDto()
+public record DepartmentWithPositionCountDto()
 {
     public Guid Id { get; init; }
 

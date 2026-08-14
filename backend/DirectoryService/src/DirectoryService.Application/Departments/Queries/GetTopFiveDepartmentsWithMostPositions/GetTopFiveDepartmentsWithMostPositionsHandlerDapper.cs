@@ -7,10 +7,10 @@ using SharedService.Core.Database;
 
 namespace DirectoryService.Application.Departments.Queries.GetTopFiveDepartmentsWithMostPositions;
 
-public class GetTopFiveDepartmentsWithMostPositionsHandlerDapper : IQueryHandler<GetDepartmentDto[]>
+public class GetTopFiveDepartmentsWithMostPositionsHandlerDapper : IQueryHandler<DepartmentWithPositionCountDto[]>
 {
-    private readonly IDbConnectionFactory _dbConnectionFactory;
     private readonly HybridCache _cache;
+    private readonly IDbConnectionFactory _dbConnectionFactory;
 
     public GetTopFiveDepartmentsWithMostPositionsHandlerDapper(
         IDbConnectionFactory dbConnectionFactory, HybridCache cache)
@@ -19,23 +19,21 @@ public class GetTopFiveDepartmentsWithMostPositionsHandlerDapper : IQueryHandler
         _cache = cache;
     }
 
-    public async Task<GetDepartmentDto[]> Handle(CancellationToken cancellationToken)
-    {
-        return await GetPresignedTopFiveDepartmentsWithPositionsFromCache(cancellationToken);
-    }
+    public async Task<DepartmentWithPositionCountDto[]> Handle(CancellationToken cancellationToken) =>
+        await GetPresignedTopFiveDepartmentsWithPositionsFromCache(cancellationToken);
 
-    private async Task<GetDepartmentDto[]> GetPresignedTopFiveDepartmentsWithPositionsFromCache(
+    private async Task<DepartmentWithPositionCountDto[]> GetPresignedTopFiveDepartmentsWithPositionsFromCache(
         CancellationToken cancellationToken)
     {
         string key = CacheKeys.CreateDepartmentsKey("top_5");
 
         return await _cache.GetOrCreateAsync(
             key,
-            factory: async ct => await GetTopFiveDepartmentsWithPositions(ct),
+            async ct => await GetTopFiveDepartmentsWithPositions(ct),
             cancellationToken: cancellationToken);
     }
 
-    private async Task<GetDepartmentDto[]> GetTopFiveDepartmentsWithPositions(CancellationToken cancellationToken)
+    private async Task<DepartmentWithPositionCountDto[]> GetTopFiveDepartmentsWithPositions(CancellationToken cancellationToken)
     {
         var dbConnection = _dbConnectionFactory.GetDbConnection();
 
@@ -63,7 +61,7 @@ public class GetTopFiveDepartmentsWithMostPositionsHandlerDapper : IQueryHandler
                            """;
 
         var departments = await dbConnection
-            .QueryAsync<GetDepartmentDto, long, Guid[], GetDepartmentDto>(
+            .QueryAsync<DepartmentWithPositionCountDto, long, Guid[], DepartmentWithPositionCountDto>(
                 sql, splitOn: "positions_count, locations", map:
                 (department, count, locations)
                     => department with { PositionCount = count, Locations = locations.ToList() });

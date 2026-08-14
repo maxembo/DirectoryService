@@ -3,7 +3,7 @@ import { PaginationRequest } from "@/shared/api/pagination-request";
 import { SortDirectionFilter } from "@/shared/model/filter-types";
 
 export interface GetPositionsRequest extends PaginationRequest {
-	departmentsIds?: string[];
+	departmentIds?: string[];
 	search?: string;
 	isActive?: boolean;
 	sortBy?: string;
@@ -11,7 +11,7 @@ export interface GetPositionsRequest extends PaginationRequest {
 }
 
 export interface GetPositionsInfinityRequest extends InfinityScrollRequest {
-	departmentsIds?: string[];
+	departmentIds?: string[];
 	search?: string;
 	isActive?: boolean;
 	sortBy?: string;

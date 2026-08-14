@@ -6,13 +6,16 @@ namespace DirectoryService.Domain.Locations;
 
 public sealed record LocationName
 {
-    private LocationName(string value) => Value = value;
+    private LocationName(string value)
+    {
+        Value = value;
+    }
 
     public string Value { get; }
 
     public static Result<LocationName, Error> Create(string value)
     {
-        string valueTrim = value.Trim();
+        string? valueTrim = value?.Trim();
 
         if (string.IsNullOrWhiteSpace(valueTrim))
         {

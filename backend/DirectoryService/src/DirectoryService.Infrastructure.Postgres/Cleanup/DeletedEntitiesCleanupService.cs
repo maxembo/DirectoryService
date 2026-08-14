@@ -10,10 +10,10 @@ namespace DirectoryService.Infrastructure.Postgres.Cleanup;
 
 public class DeletedEntitiesCleanupService : IDeletedEntitiesCleanupService
 {
-    private readonly ITransactionManager _transactionManager;
     private readonly IDepartmentsRepository _departmentsRepository;
-    private readonly IPositionsRepository _positionsRepository;
     private readonly ILocationsRepository _locationsRepository;
+    private readonly IPositionsRepository _positionsRepository;
+    private readonly ITransactionManager _transactionManager;
 
     public DeletedEntitiesCleanupService(
         ITransactionManager transactionManager,
@@ -29,7 +29,8 @@ public class DeletedEntitiesCleanupService : IDeletedEntitiesCleanupService
 
     public async Task<UnitResult<Error>> Process(CancellationToken cancellationToken = default)
     {
-        var transactionResult = await _transactionManager.BeginTransactionAsync(cancellationToken);
+        var transactionResult =
+            await _transactionManager.BeginTransactionAsync(cancellationToken);
         if (transactionResult.IsFailure)
         {
             return transactionResult.Error;
@@ -53,28 +54,32 @@ public class DeletedEntitiesCleanupService : IDeletedEntitiesCleanupService
             return deleteDepartmentPositionsResult.Error;
         }
 
-        var updatePathsDeleteResult = await _departmentsRepository.UpdatePathsAfterDelete(cancellationToken);
+        var updatePathsDeleteResult =
+            await _departmentsRepository.UpdatePathsAfterDelete(cancellationToken);
         if (updatePathsDeleteResult.IsFailure)
         {
             transaction.Rollback();
             return updatePathsDeleteResult.Error;
         }
 
-        var deleteDepartmentsResult = await _departmentsRepository.DeleteDepartmentsMarkDelete(cancellationToken);
+        var deleteDepartmentsResult =
+            await _departmentsRepository.DeleteDepartmentsMarkDelete(cancellationToken);
         if (deleteDepartmentsResult.IsFailure)
         {
             transaction.Rollback();
             return deleteDepartmentsResult.Error;
         }
 
-        var deleteLocationsResult = await _locationsRepository.DeleteLocationsMarkDelete(cancellationToken);
+        var deleteLocationsResult =
+            await _locationsRepository.DeleteLocationsMarkDelete(cancellationToken);
         if (deleteLocationsResult.IsFailure)
         {
             transaction.Rollback();
             return deleteLocationsResult.Error;
         }
 
-        var deletePositionsResult = await _positionsRepository.DeletePositionsMarkDelete(cancellationToken);
+        var deletePositionsResult =
+            await _positionsRepository.DeletePositionsMarkDelete(cancellationToken);
         if (deletePositionsResult.IsFailure)
         {
             transaction.Rollback();

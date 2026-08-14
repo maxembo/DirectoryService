@@ -28,7 +28,9 @@ public class LocationsRepository : ILocationsRepository
 
         var saveChangesResult = await _dbContext.SaveChangesResultAsync(cancellationToken);
         if (saveChangesResult.IsFailure)
+        {
             return saveChangesResult.Error;
+        }
 
         return location.Id.Value;
     }
@@ -41,7 +43,9 @@ public class LocationsRepository : ILocationsRepository
             .FirstOrDefaultAsync(l => l.Id == locationId, cancellationToken);
 
         if (location == null)
+        {
             return GeneralErrors.NotFound("location", locationId.Value);
+        }
 
         return location;
     }
@@ -53,7 +57,9 @@ public class LocationsRepository : ILocationsRepository
             .FirstOrDefaultAsync(l => l.Id == locationId, cancellationToken);
 
         if (location is null)
+        {
             return GeneralErrors.NotFound("location", locationId.Value);
+        }
 
         return location;
     }
@@ -108,7 +114,7 @@ public class LocationsRepository : ILocationsRepository
         {
             await dbConnection.ExecuteAsync(
                 sql,
-                param: new
+                new
                 {
                     departmentId = departmentId.Value,
                     deletionReason = DeletionReason.NO_ACTIVE_DEPARTMENTS.ToString(),
@@ -123,8 +129,7 @@ public class LocationsRepository : ILocationsRepository
                 "Failed to soft delete locations for department {DepartmentId}",
                 departmentId.Value);
 
-            return GeneralErrors.Database(
-                message: "Не удалось пометить как мягкое удаление локации подразделения.");
+            return GeneralErrors.Database(message: "Не удалось пометить как мягкое удаление локации подразделения.");
         }
     }
 
@@ -150,7 +155,7 @@ public class LocationsRepository : ILocationsRepository
         {
             await dbConnection.ExecuteAsync(
                 sql,
-                param: new
+                new
                 {
                     departmentId = departmentId.Value,
                     deletionReason = DeletionReason.NO_ACTIVE_DEPARTMENTS.ToString(),
@@ -165,8 +170,7 @@ public class LocationsRepository : ILocationsRepository
                 "Failed to restore locations for department {DepartmentId}",
                 departmentId.Value);
 
-            return GeneralErrors.Database(
-                message: "Не удалось восстановить локации подразделения.");
+            return GeneralErrors.Database(message: "Не удалось восстановить локации подразделения.");
         }
     }
 

@@ -1,5 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Locations.Commands.UpdateLocations;
+using DirectoryService.Contracts.Locations;
 using DirectoryService.Contracts.Locations.CreateLocations;
 using DirectoryService.Contracts.Locations.UpdateLocations;
 using DirectoryService.IntegrationTests.Infrastructure;
@@ -16,7 +17,7 @@ public class UpdateLocationTests(DirectoryTestWebFactory factory) : DirectoryBas
         // arrange
         var command = CreateCommand(
             Guid.NewGuid(),
-            CreateRequest(name: "updated name"));
+            CreateRequest("updated name"));
 
         // act
         var result = await Execute(command);
@@ -34,31 +35,30 @@ public class UpdateLocationTests(DirectoryTestWebFactory factory) : DirectoryBas
         const string conflictingName = "update name";
         const string existingName = "test name 2";
 
-        await CreateLocation(name: conflictingName);
+        await CreateLocation(conflictingName);
 
         var locationToUpdateId = await CreateLocation(
-            name: existingName,
-            city: "test city 2",
-            country: "test country 2",
-            street: "test street 2",
-            house: "2 test house");
+            existingName,
+            "test city 2",
+            "test country 2",
+            "test street 2",
+            "2 test house");
 
         var command = CreateCommand(
             locationToUpdateId.Value,
-            CreateRequest(name: conflictingName));
+            CreateRequest(conflictingName));
 
         var result = await Execute(command);
 
         Assert.True(result.IsFailure);
 
-        await ExecuteInDb(
-            async dbContext =>
-            {
-                var location = await dbContext.Locations
-                    .SingleAsync(l => l.Id == locationToUpdateId, CancellationToken.None);
+        await ExecuteInDb(async dbContext =>
+        {
+            var location = await dbContext.Locations
+                .SingleAsync(l => l.Id == locationToUpdateId, CancellationToken.None);
 
-                Assert.Equal(existingName, location.Name.Value);
-            });
+            Assert.Equal(existingName, location.Name.Value);
+        });
 
         Assert.Contains(
             result.Error, e => e is { Code: "value.already.exist", Type: ErrorType.CONFLICT, InvalidField: "name" });
@@ -68,40 +68,40 @@ public class UpdateLocationTests(DirectoryTestWebFactory factory) : DirectoryBas
     public async Task UpdateLocation_WhenAddressAlreadyExists_ShouldFail()
     {
         // arrange
-        var conflictingAddress = new AddressDto(
+        var conflictingAddress = new AddressRequest(
             "test city",
             "test country",
             "test street",
             "1 test house");
 
-        var existingAddress = new AddressDto(
+        var existingAddress = new AddressRequest(
             "another city",
             "another country",
             "another street",
             "1 another house");
 
         await CreateLocation(
-            name: "existing Name",
-            city: conflictingAddress.City,
-            country: conflictingAddress.Country,
-            street: conflictingAddress.Street,
-            house: conflictingAddress.House);
+            "existing Name",
+            conflictingAddress.City,
+            conflictingAddress.Country,
+            conflictingAddress.Street,
+            conflictingAddress.House);
 
         var locationToUpdateId = await CreateLocation(
-            name: "location to update",
-            city: existingAddress.City,
-            country: existingAddress.Country,
-            street: existingAddress.Street,
-            house: existingAddress.House);
+            "location to update",
+            existingAddress.City,
+            existingAddress.Country,
+            existingAddress.Street,
+            existingAddress.House);
 
         var command = CreateCommand(
             locationToUpdateId.Value,
             CreateRequest(
-                name: "updated name",
-                city: conflictingAddress.City,
-                country: conflictingAddress.Country,
-                street: conflictingAddress.Street,
-                house: conflictingAddress.House));
+                "updated name",
+                conflictingAddress.City,
+                conflictingAddress.Country,
+                conflictingAddress.Street,
+                conflictingAddress.House));
 
         // act
         var result = await Execute(command);
@@ -109,17 +109,16 @@ public class UpdateLocationTests(DirectoryTestWebFactory factory) : DirectoryBas
         // assert
         Assert.True(result.IsFailure);
 
-        await ExecuteInDb(
-            async dbContext =>
-            {
-                var location = await dbContext.Locations
-                    .SingleAsync(l => l.Id == locationToUpdateId, CancellationToken.None);
+        await ExecuteInDb(async dbContext =>
+        {
+            var location = await dbContext.Locations
+                .SingleAsync(l => l.Id == locationToUpdateId, CancellationToken.None);
 
-                Assert.Equal(existingAddress.City, location.Address.City);
-                Assert.Equal(existingAddress.Country, location.Address.Country);
-                Assert.Equal(existingAddress.Street, location.Address.Street);
-                Assert.Equal(existingAddress.House, location.Address.House);
-            });
+            Assert.Equal(existingAddress.City, location.Address.City);
+            Assert.Equal(existingAddress.Country, location.Address.Country);
+            Assert.Equal(existingAddress.Street, location.Address.Street);
+            Assert.Equal(existingAddress.House, location.Address.House);
+        });
 
         Assert.Contains(
             result.Error,
@@ -144,20 +143,19 @@ public class UpdateLocationTests(DirectoryTestWebFactory factory) : DirectoryBas
         // assert
         Assert.True(result.IsFailure);
 
-        await ExecuteInDb(
-            async dbContext =>
-            {
-                var location = await dbContext.Locations
-                    .SingleAsync(l => l.Id == locationToUpdateId, CancellationToken.None);
+        await ExecuteInDb(async dbContext =>
+        {
+            var location = await dbContext.Locations
+                .SingleAsync(l => l.Id == locationToUpdateId, CancellationToken.None);
 
-                Assert.Equal(existingHouse, location.Address.House);
-            });
+            Assert.Equal(existingHouse, location.Address.House);
+        });
 
         Assert.Contains(
             result.Error,
             e => e is
             {
-                Code: "value.mismatch.regex", Type: ErrorType.VALIDATION, InvalidField: "location.address.house"
+                Code: "value.mismatch.regex", Type: ErrorType.VALIDATION, InvalidField: "location.address.house",
             });
     }
 
@@ -167,7 +165,7 @@ public class UpdateLocationTests(DirectoryTestWebFactory factory) : DirectoryBas
         // arrange
         const string existingTimezone = "Europe/Moscow";
 
-        var locationToUpdateId = await CreateLocation(name: "test name 1", timezone: existingTimezone);
+        var locationToUpdateId = await CreateLocation("test name 1", timezone: existingTimezone);
 
         var command = CreateCommand(
             locationToUpdateId.Value,
@@ -179,14 +177,13 @@ public class UpdateLocationTests(DirectoryTestWebFactory factory) : DirectoryBas
         // assert
         Assert.True(result.IsFailure);
 
-        await ExecuteInDb(
-            async dbContext =>
-            {
-                var location = await dbContext.Locations.SingleAsync(
-                    l => l.Id == locationToUpdateId, CancellationToken.None);
+        await ExecuteInDb(async dbContext =>
+        {
+            var location = await dbContext.Locations.SingleAsync(
+                l => l.Id == locationToUpdateId, CancellationToken.None);
 
-                Assert.Equal(existingTimezone, location.Timezone.Value);
-            });
+            Assert.Equal(existingTimezone, location.Timezone.Value);
+        });
 
         Assert.Contains(
             result.Error,
@@ -204,17 +201,17 @@ public class UpdateLocationTests(DirectoryTestWebFactory factory) : DirectoryBas
         string name, string city, string country, string street, string house, string timezone)
     {
         // arrange
-        var locationToUpdateId = await CreateLocation(name: "test name 1");
+        var locationToUpdateId = await CreateLocation("test name 1");
 
         var command = CreateCommand(
             locationToUpdateId.Value,
             CreateRequest(
-                name: name,
-                city: city,
-                country: country,
-                street: street,
-                house: house,
-                timezone: timezone));
+                name,
+                city,
+                country,
+                street,
+                house,
+                timezone));
 
         // act
         var result = await Execute(command);
@@ -223,25 +220,22 @@ public class UpdateLocationTests(DirectoryTestWebFactory factory) : DirectoryBas
         Assert.True(result.IsSuccess);
         Assert.NotEqual(result.Value, Guid.Empty);
 
-        await ExecuteInDb(
-            async dbContext =>
-            {
-                var location = await dbContext.Locations.SingleAsync(
-                    l => l.Id == locationToUpdateId, CancellationToken.None);
+        await ExecuteInDb(async dbContext =>
+        {
+            var location = await dbContext.Locations.SingleAsync(
+                l => l.Id == locationToUpdateId, CancellationToken.None);
 
-                Assert.Equal(name.Trim(), location.Name.Value);
-                Assert.Equal(city.Trim(), location.Address.City);
-                Assert.Equal(country.Trim(), location.Address.Country);
-                Assert.Equal(street.Trim(), location.Address.Street);
-                Assert.Equal(house.Trim(), location.Address.House);
-                Assert.Equal(timezone.Trim(), location.Timezone.Value);
-            });
+            Assert.Equal(name.Trim(), location.Name.Value);
+            Assert.Equal(city.Trim(), location.Address.City);
+            Assert.Equal(country.Trim(), location.Address.Country);
+            Assert.Equal(street.Trim(), location.Address.Street);
+            Assert.Equal(house.Trim(), location.Address.House);
+            Assert.Equal(timezone.Trim(), location.Timezone.Value);
+        });
     }
 
-    private static UpdateLocationCommand CreateCommand(Guid id, UpdateLocationRequest? request = null)
-    {
-        return new UpdateLocationCommand(id, request ?? CreateRequest());
-    }
+    private static UpdateLocationCommand CreateCommand(Guid id, UpdateLocationRequest request) =>
+        new(id, request);
 
     private static UpdateLocationRequest CreateRequest(
         string name = "Test Name 1",
@@ -253,11 +247,11 @@ public class UpdateLocationTests(DirectoryTestWebFactory factory) : DirectoryBas
     {
         return new UpdateLocationRequest(
             name,
-            new AddressDto(city, country, street, house),
+            new AddressRequest(city, country, street, house),
             timezone);
     }
 
     private Task<Result<Guid, Errors>> Execute(UpdateLocationCommand command) =>
-        Execute<Result<Guid, Errors>, UpdateLocationHandler>(
-            handler => handler.Handle(command, CancellationToken.None));
+        Execute<Result<Guid, Errors>, UpdateLocationHandler>(handler => handler.Handle(
+            command, CancellationToken.None));
 }

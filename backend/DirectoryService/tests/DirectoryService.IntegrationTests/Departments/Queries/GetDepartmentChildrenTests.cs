@@ -25,7 +25,8 @@ public class GetDepartmentChildrenTests(DirectoryTestWebFactory factory) : Direc
         var query = new GetDepartmentChildrenQuery(company.Id.Value, new GetDepartmentChildrenRequest());
 
         // soft delete
-        var deleteTeamResult = await ExecuteSoftDelete(new SoftDeleteDepartmentCommand(backend.Id.Value));
+        var deleteTeamResult =
+            await ExecuteSoftDelete(new SoftDeleteDepartmentCommand(backend.Id.Value));
 
         Assert.True(deleteTeamResult.IsSuccess);
 

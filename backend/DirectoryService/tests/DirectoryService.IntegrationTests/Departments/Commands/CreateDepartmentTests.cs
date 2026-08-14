@@ -1,8 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Departments.Commands.CreateDepartments;
-using DirectoryService.Contracts.Departments.CreateDepartment;
+using DirectoryService.Contracts.Departments.CreateDepartments;
 using DirectoryService.Domain.Departments;
-using DirectoryService.Domain.Locations;
 using DirectoryService.IntegrationTests.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using SharedService.SharedKernel;
@@ -60,7 +59,8 @@ public class CreateDepartmentTests : DirectoryBaseTests
 
         // act
         var result = await Execute(
-            new CreateDepartmentCommand(new CreateDepartmentRequest(string.Empty, "company", null, [locationId.Value])));
+            new CreateDepartmentCommand(
+                new CreateDepartmentRequest(string.Empty, "company", null, [locationId.Value])));
 
         // assert
         Assert.NotEmpty(result.Error);
@@ -71,7 +71,7 @@ public class CreateDepartmentTests : DirectoryBaseTests
     public async Task CreateDepartmentWithParentAndChildShouldSucceed()
     {
         // arrange
-        LocationId locationId = await CreateLocation("Location 1");
+        var locationId = await CreateLocation("Location 1");
 
         var cancellationToken = CancellationToken.None;
 
@@ -83,15 +83,14 @@ public class CreateDepartmentTests : DirectoryBaseTests
                 new CreateDepartmentRequest("подразделение 1", "sales", parent.Id.Value, [locationId.Value])));
 
         // assert
-        await ExecuteInDb(
-            async dbContext =>
-            {
-                var department = await dbContext.Departments.FirstAsync(
-                    d => d.Id == DepartmentId.Create(result.Value), cancellationToken);
+        await ExecuteInDb(async dbContext =>
+        {
+            var department = await dbContext.Departments.FirstAsync(
+                d => d.Id == DepartmentId.Create(result.Value), cancellationToken);
 
-                Assert.NotNull(department);
-                Assert.Equal(department.Id.Value, result.Value);
-            });
+            Assert.NotNull(department);
+            Assert.Equal(department.Id.Value, result.Value);
+        });
 
         Assert.True(result.IsSuccess);
         Assert.NotEqual(Guid.Empty, result.Value);
@@ -101,7 +100,7 @@ public class CreateDepartmentTests : DirectoryBaseTests
     public async Task CreateDepartmentWithoutParentShouldSucceed()
     {
         // arrange
-        LocationId locationId = await CreateLocation("Location 1");
+        var locationId = await CreateLocation("Location 1");
 
         var cancellationToken = CancellationToken.None;
 
@@ -111,21 +110,20 @@ public class CreateDepartmentTests : DirectoryBaseTests
                 new CreateDepartmentRequest("подразделение", "company", null, [locationId.Value])));
 
         // assert
-        await ExecuteInDb(
-            async dbContext =>
-            {
-                var department = await dbContext.Departments.FirstAsync(
-                    d => d.Id == DepartmentId.Create(result.Value), cancellationToken);
+        await ExecuteInDb(async dbContext =>
+        {
+            var department = await dbContext.Departments.FirstAsync(
+                d => d.Id == DepartmentId.Create(result.Value), cancellationToken);
 
-                Assert.NotNull(department);
-                Assert.Equal(department.Id.Value, result.Value);
-            });
+            Assert.NotNull(department);
+            Assert.Equal(department.Id.Value, result.Value);
+        });
 
         Assert.True(result.IsSuccess);
         Assert.NotEqual(Guid.Empty, result.Value);
     }
 
     private Task<Result<Guid, Errors>> Execute(CreateDepartmentCommand command)
-        => Execute<Result<Guid, Errors>, CreateDepartmentHandler>(
-            handler => handler.Handle(command, CancellationToken.None));
+        => Execute<Result<Guid, Errors>, CreateDepartmentHandler>(handler => handler.Handle(
+            command, CancellationToken.None));
 }

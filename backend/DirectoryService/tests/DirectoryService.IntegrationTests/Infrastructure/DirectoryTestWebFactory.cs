@@ -24,9 +24,9 @@ public class DirectoryTestWebFactory : WebApplicationFactory<Program>, IAsyncLif
         .WithPassword("postgres")
         .Build();
 
-    private Respawner _respawner = null!;
-
     private DbConnection _dbConnection = null!;
+
+    private Respawner _respawner = null!;
 
     public async Task InitializeAsync()
     {
@@ -53,35 +53,30 @@ public class DirectoryTestWebFactory : WebApplicationFactory<Program>, IAsyncLif
         await _dbConnection.DisposeAsync();
     }
 
-    public async Task ResetDatabaseAsync()
-    {
-        await _respawner.ResetAsync(_dbConnection);
-    }
+    public async Task ResetDatabaseAsync() => await _respawner.ResetAsync(_dbConnection);
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.ConfigureTestServices(
-            services =>
-            {
-                services.RemoveAll<DirectoryServiceDbContext>();
-                services.RemoveAll<IReadDbContext>();
-                services.RemoveAll<IDbConnectionFactory>();
+        builder.ConfigureTestServices(services =>
+        {
+            services.RemoveAll<DirectoryServiceDbContext>();
+            services.RemoveAll<IReadDbContext>();
+            services.RemoveAll<IDbConnectionFactory>();
 
-                services.AddScoped<DirectoryServiceDbContext>(
-                    _ => new DirectoryServiceDbContext(_dbContainer.GetConnectionString()));
+            services.AddScoped<DirectoryServiceDbContext>(_ =>
+                new DirectoryServiceDbContext(_dbContainer.GetConnectionString()));
 
-                services.AddScoped<IReadDbContext>(
-                    _ => new DirectoryServiceDbContext(_dbContainer.GetConnectionString()));
+            services.AddScoped<IReadDbContext>(_ => new DirectoryServiceDbContext(_dbContainer.GetConnectionString()));
 
-                services.AddScoped<IDbConnectionFactory>(
-                    _ => new DirectoryServiceDbContext(_dbContainer.GetConnectionString()));
-            });
+            services.AddScoped<IDbConnectionFactory>(_ =>
+                new DirectoryServiceDbContext(_dbContainer.GetConnectionString()));
+        });
     }
 
     private async Task InitializeRespawnerAsync()
     {
         _respawner = await Respawner.CreateAsync(
             _dbConnection,
-            new RespawnerOptions() { DbAdapter = DbAdapter.Postgres, SchemasToInclude = ["public"], });
+            new RespawnerOptions { DbAdapter = DbAdapter.Postgres, SchemasToInclude = ["public"] });
     }
 }

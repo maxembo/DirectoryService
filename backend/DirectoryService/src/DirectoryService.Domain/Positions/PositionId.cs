@@ -2,7 +2,10 @@ namespace DirectoryService.Domain.Positions;
 
 public sealed record PositionId
 {
-    private PositionId(Guid value) => Value = value;
+    private PositionId(Guid value)
+    {
+        Value = value;
+    }
 
     public Guid Value { get; }
 

@@ -93,6 +93,5 @@ public class SoftDeletePositionTests(DirectoryTestWebFactory factory) : Position
     }
 
     private Task<Result<Guid, Errors>> Execute(SoftDeletePositionCommand command) =>
-        Execute<Result<Guid, Errors>, SoftDeletePositionHandler>(
-            handler => handler.Handle(command));
+        Execute<Result<Guid, Errors>, SoftDeletePositionHandler>(handler => handler.Handle(command));
 }

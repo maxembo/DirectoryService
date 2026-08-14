@@ -28,7 +28,9 @@ public class PositionsRepository : IPositionsRepository
 
         var saveChangesResult = await _dbContext.SaveChangesResultAsync(cancellationToken);
         if (saveChangesResult.IsFailure)
+        {
             return saveChangesResult.Error;
+        }
 
         return position.Id.Value;
     }
@@ -60,7 +62,7 @@ public class PositionsRepository : IPositionsRepository
         {
             await dbConnection.ExecuteAsync(
                 sql,
-                param: new
+                new
                 {
                     departmentId = departmentId.Value,
                     deletionReason = DeletionReason.NO_ACTIVE_DEPARTMENTS.ToString(),
@@ -101,7 +103,7 @@ public class PositionsRepository : IPositionsRepository
         {
             await dbConnection.ExecuteAsync(
                 sql,
-                param: new
+                new
                 {
                     departmentId = departmentId.Value,
                     deletionReason = DeletionReason.NO_ACTIVE_DEPARTMENTS.ToString(),

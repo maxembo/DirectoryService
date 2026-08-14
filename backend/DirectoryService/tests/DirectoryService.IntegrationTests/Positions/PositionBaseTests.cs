@@ -24,10 +24,10 @@ public class PositionBaseTests(DirectoryTestWebFactory factory) : DirectoryBaseT
         string departmentIdentifier = "department-default")
     {
         var locationId = await CreateLocation(
-            name: $"test location {suffix}",
-            city: suffix,
-            country: suffix,
-            street: suffix);
+            $"test location {suffix}",
+            suffix,
+            suffix,
+            suffix);
 
         return await CreateParentDepartment(
             $"test department {suffix}",

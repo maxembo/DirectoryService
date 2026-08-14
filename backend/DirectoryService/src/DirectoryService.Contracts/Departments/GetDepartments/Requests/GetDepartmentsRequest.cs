@@ -1,7 +1,7 @@
 ﻿namespace DirectoryService.Contracts.Departments.GetDepartments.Requests;
 
 public record GetDepartmentsRequest(
-    Guid[]? LocationsIds,
+    Guid[]? LocationIds,
     string? Search,
     bool? IsActive,
     Guid? ParentId,

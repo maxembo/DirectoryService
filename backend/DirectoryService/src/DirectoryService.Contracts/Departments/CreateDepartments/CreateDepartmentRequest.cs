@@ -1,7 +1,7 @@
-﻿namespace DirectoryService.Contracts.Departments.CreateDepartment;
+﻿namespace DirectoryService.Contracts.Departments.CreateDepartments;
 
 public record CreateDepartmentRequest(
     string Name,
     string Identifier,
     Guid? ParentId,
-    Guid[] LocationsIds);
+    Guid[] LocationIds);

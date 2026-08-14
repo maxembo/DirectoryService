@@ -136,7 +136,7 @@ public class DeletedEntitiesCleanupServiceTests(DirectoryTestWebFactory factory)
     {
         // arrange
         var expiredLocationId = await CreateLocation();
-        var recentLocationId = await CreateLocation(name: "expired", country: "expired");
+        var recentLocationId = await CreateLocation("expired", country: "expired");
 
         var department = await CreateParentDepartment(
             "department", "department", [expiredLocationId, recentLocationId]);
@@ -362,6 +362,5 @@ public class DeletedEntitiesCleanupServiceTests(DirectoryTestWebFactory factory)
     }
 
     private Task<UnitResult<Error>> ExecuteCleanup() =>
-        Execute<UnitResult<Error>, IDeletedEntitiesCleanupService>(
-            service => service.Process(CancellationToken.None));
+        Execute<UnitResult<Error>, IDeletedEntitiesCleanupService>(service => service.Process(CancellationToken.None));
 }

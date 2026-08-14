@@ -13,9 +13,9 @@ namespace DirectoryService.Application.Locations.Commands.UpdateLocations;
 public class UpdateLocationHandler : ICommandHandler<Guid, UpdateLocationCommand>
 {
     private readonly ILocationsRepository _locationsRepository;
+    private readonly ILogger<UpdateLocationHandler> _logger;
     private readonly ITransactionManager _transactionManager;
     private readonly IValidator<UpdateLocationRequest> _validator;
-    private readonly ILogger<UpdateLocationHandler> _logger;
 
     public UpdateLocationHandler(
         ILocationsRepository locationsRepository,

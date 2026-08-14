@@ -27,11 +27,11 @@ public static class DependencyInjection
     private static IServiceCollection AddSerilogLogging(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddSerilog((sp, ls) => ls
-                .ReadFrom.Configuration(configuration)
-                .ReadFrom.Services(sp)
-                .Enrich.FromLogContext()
-                .Enrich.WithExceptionDetails()
-                .Enrich.WithProperty("Application", "DirectoryService"));
+            .ReadFrom.Configuration(configuration)
+            .ReadFrom.Services(sp)
+            .Enrich.FromLogContext()
+            .Enrich.WithExceptionDetails()
+            .Enrich.WithProperty("Application", "DirectoryService"));
 
         return services;
     }

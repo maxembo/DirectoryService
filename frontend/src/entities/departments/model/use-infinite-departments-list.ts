@@ -42,7 +42,7 @@ export function useInfiniteDepartmentsList({ stateId, request }: Props) {
 		fetchNextPage,
 	} = useInfiniteQuery({
 		...departmentsApi.getDepartmentsInfinityQueryOptions({
-			locationsIds: selectedLocations,
+			locationIds: selectedLocations,
 			search: debouncedSearch,
 			isParent: isParent === "all" ? undefined : isParent === "parent",
 			isActive: isActive === "all" ? undefined : isActive === "active",
