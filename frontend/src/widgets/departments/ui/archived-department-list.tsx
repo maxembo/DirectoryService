@@ -1,10 +1,10 @@
-import { useInfiniteDepartmentsList } from "@/features/departments/department-list/model/use-infinite-departments-list";
-import { DepartmentFilters } from "@/features/departments/department-list/ui/department-filters";
 import { Spinner } from "@/shared/components/ui/spinner";
-import { ListEmpty } from "@/widgets/list-empty";
-import { ListError } from "@/widgets/list-error";
+import { ListEmpty } from "@/shared/ui/list-empty";
+import { ListError } from "@/shared/ui/list-error";
 import { useState } from "react";
 import { useDebounce } from "use-debounce";
+import { DepartmentFilters } from "@/features/department-list";
+import { useInfiniteDepartmentsList } from "@/entities/departments";
 import { ArchivedDepartmentCard } from "./archived-department-card";
 
 export function ArchivedDepartmentList() {

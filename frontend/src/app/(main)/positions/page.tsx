@@ -1,9 +1,9 @@
-import { Positions } from "@/features/positions/positions";
+import { Positions } from "@/features/positions";
 
 export default function PositionsPage() {
-  return (
-    <div>
-      <Positions />
-    </div>
-  );
+	return (
+		<div>
+			<Positions />
+		</div>
+	);
 }

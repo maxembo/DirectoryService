@@ -11,7 +11,7 @@ export function ArchiveViewSwitch({ value, onValueChange, title }: Props) {
 	return (
 		<div
 			role="group"
-			className="flex gap-2 justify-end rounded-2xl border bg-muted p-2"
+			className="bg-muted flex justify-end gap-2 rounded-2xl border p-2"
 			title={title ?? "Режим отображения"}
 		>
 			<Button

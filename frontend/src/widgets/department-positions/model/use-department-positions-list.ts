@@ -1,20 +1,22 @@
-import { positionsApi } from "@/entities/positions/api/api";
-import { GetPositionsInfinityRequest } from "@/entities/positions/api/types";
-import {
-	DepartmentTreeId,
-	useDepartmentTreeSelectedId,
-} from "@/features/departments/department-tree/model/department-tree-store";
 import { EnvelopeError } from "@/shared/api/errors";
 import { useCursorRef } from "@/shared/hooks/use-cursor-ref";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useDebounce } from "use-debounce";
 import {
-	PositionListId,
+	positionsApi,
+	type GetPositionsInfinityRequest,
+} from "@/entities/positions";
+import {
+	useDepartmentTreeSelectedId,
+	type DepartmentTreeId,
+} from "@/features/department-tree";
+import {
 	usePositionIsActive,
 	usePositionSearch,
 	usePositionSortBy,
 	usePositionSortDirection,
-} from "../../../features/positions/model/position-list-store";
+	type PositionListId,
+} from "@/features/positions";
 
 type Props = {
 	stateId?: PositionListId;

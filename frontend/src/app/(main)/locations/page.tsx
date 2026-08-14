@@ -1,5 +1,6 @@
 import { Spinner } from "@/shared/components/ui/spinner";
-import { InfiniteLocationsList } from "@/widgets/locations-list/ui/infinite-locations-list";
+import { InfiniteLocationsList } from "@/widgets/locations-list";
+
 import { Suspense } from "react";
 
 export default function LocationsPage() {

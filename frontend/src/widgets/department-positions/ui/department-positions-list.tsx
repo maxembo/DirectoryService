@@ -1,14 +1,15 @@
 "use client";
-import {
-	DepartmentTreeId,
-	useDepartmentTreeSelectedId,
-} from "@/features/departments/department-tree/model/department-tree-store";
-import { PositionFilters } from "@/features/positions/ui/position-filters";
+
 import { Spinner } from "@/shared/components/ui/spinner";
-import { useDepartmentPositionsList } from "@/widgets/department-positions/model/use-department-positions-list";
-import { ListEmpty } from "@/widgets/list-empty";
-import { ListError } from "@/widgets/list-error";
+import { ListEmpty } from "@/shared/ui/list-empty";
+import { ListError } from "@/shared/ui/list-error";
 import { DepartmentPositionCard } from "./department-position-card";
+import { useDepartmentPositionsList } from "../model/use-department-positions-list";
+import {
+	useDepartmentTreeSelectedId,
+	type DepartmentTreeId,
+} from "@/features/department-tree";
+import { PositionFilters } from "@/features/positions";
 
 const POSITIONS_DEPARTMENT_SELECT_STATE_ID = "positions-select-department";
 
@@ -51,7 +52,7 @@ export function DepartmentPositionsList({ departmentTreeStateId }: Props) {
 			) : positions.length === 0 ? (
 				<ListEmpty title="Позиции не найдены" />
 			) : (
-				<div className="min-h-0 flex-1 overflow-y-auto overscroll-contain rounded-md border bg-background/40">
+				<div className="bg-background/40 min-h-0 flex-1 overflow-y-auto overscroll-contain rounded-md border">
 					<div className="flex flex-col gap-3 p-2 pr-3">
 						{positions.map((position) => (
 							<DepartmentPositionCard key={position.id} position={position} />

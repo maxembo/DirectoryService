@@ -1,4 +1,4 @@
-type PositionId = string;
+export type PositionId = string;
 
 export type PositionDto = {
 	id: PositionId;
@@ -11,8 +11,4 @@ export type PositionDto = {
 };
 
 export type PositionSortByFilter =
-	| "name"
-	| "created"
-	| "updated"
-	| "status"
-	| "department_count";
+	"name" | "created" | "updated" | "status" | "department_count";

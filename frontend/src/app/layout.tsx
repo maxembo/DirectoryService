@@ -1,5 +1,5 @@
-import { Layout } from "@/features/layout/app-layout";
 import { cn } from "@/shared/lib/utils";
+import { AppShell } from "@/widgets/app-shell";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./styles/globals.css";
@@ -26,11 +26,11 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang="en" className={cn("font-sans dark", inter.variable)}>
+		<html lang="en" className={cn("dark font-sans", inter.variable)}>
 			<body
 				className={`${geistSans.variable} ${geistMono.variable} antialiased`}
 			>
-				<Layout>{children}</Layout>
+				<AppShell>{children}</AppShell>
 			</body>
 		</html>
 	);

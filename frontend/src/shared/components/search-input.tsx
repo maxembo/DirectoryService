@@ -17,7 +17,7 @@ export function SearchInput({
 	return (
 		<div className={className}>
 			<div className="relative">
-				<Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+				<Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2" />
 
 				<Input
 					value={value}

@@ -1,5 +1,5 @@
-import { DepartmentId } from "@/entities/departments/model/types";
-import { PositionSortByFilter } from "@/entities/positions/model/types";
+import type { DepartmentId } from "@/entities/departments";
+import type { PositionSortByFilter } from "@/entities/positions";
 import { ActiveFilter, SortDirectionFilter } from "@/shared/model/filter-types";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";

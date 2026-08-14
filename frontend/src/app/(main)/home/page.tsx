@@ -1,10 +1,9 @@
-import Home from "@/features/home/home";
-
+import { Home } from "@/widgets/home";
 
 export default function DepartmensPage() {
-  return (
-    <div>
-      <Home />
-    </div>
-  );
+	return (
+		<div>
+			<Home />
+		</div>
+	);
 }
