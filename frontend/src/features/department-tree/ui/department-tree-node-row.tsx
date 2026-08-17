@@ -114,13 +114,6 @@ export function DepartmentTreeNodeRow({
 				>
 					{department.identifier}
 				</span>
-
-				{!department.isActive && (
-					<span
-						className="size-2 shrink-0 rounded-full bg-amber-500"
-						title="Неактивное подразделение"
-					/>
-				)}
 			</button>
 		</div>
 	);
