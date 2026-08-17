@@ -34,6 +34,7 @@ export function useInfiniteLocationsList({ stateId, request }: Props) {
 		hasNextPage,
 		isFetchingNextPage,
 		fetchNextPage,
+		refetch,
 	} = useInfiniteQuery({
 		...locationsApi.getLocationsInfinityQueryOptions({
 			departmentIds: selectedDepartments.map((department) => department.id),
@@ -58,5 +59,6 @@ export function useInfiniteLocationsList({ stateId, request }: Props) {
 		isFetchingNextPage,
 		cursorRef,
 		hasNextPage,
+		refetch,
 	};
 }

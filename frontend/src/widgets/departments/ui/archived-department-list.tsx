@@ -18,6 +18,7 @@ export function ArchivedDepartmentList() {
 		error,
 		cursorRef,
 		isFetchingNextPage,
+		refetch,
 	} = useInfiniteDepartmentsList({
 		request: {
 			isActive: false,
@@ -35,6 +36,7 @@ export function ArchivedDepartmentList() {
 			) : isError ? (
 				<ListError
 					message={error?.message ?? "Ошибка загрузки удалённых отделов"}
+					onRetry={refetch}
 				/>
 			) : departments?.length === 0 ? (
 				<ListEmpty title="Удалённые отделы" />

@@ -40,6 +40,7 @@ export function useInfiniteDepartmentsList({ stateId, request }: Props) {
 		hasNextPage,
 		isFetchingNextPage,
 		fetchNextPage,
+		refetch,
 	} = useInfiniteQuery({
 		...departmentsApi.getDepartmentsInfinityQueryOptions({
 			locationIds: selectedLocations,
@@ -66,5 +67,6 @@ export function useInfiniteDepartmentsList({ stateId, request }: Props) {
 		error: error instanceof EnvelopeError ? error : undefined,
 		isFetchingNextPage,
 		cursorRef,
+		refetch,
 	};
 }

@@ -36,6 +36,7 @@ export function SelectDepartmentList({
 		isPending,
 		isError,
 		isFetchingNextPage,
+		refetch,
 	} = useInfiniteDepartmentsList({ stateId });
 
 	const filteredDepartments = useMemo(() => {
@@ -86,7 +87,10 @@ export function SelectDepartmentList({
 						<Spinner />
 					</div>
 				) : isError ? (
-					<ListError message={error?.message ?? "Неизвестная ошибка"} />
+					<ListError
+						message={error?.message ?? "Неизвестная ошибка"}
+						onRetry={refetch}
+					/>
 				) : departments?.length === 0 ? (
 					<ListEmpty title="Подразделение" />
 				) : (
