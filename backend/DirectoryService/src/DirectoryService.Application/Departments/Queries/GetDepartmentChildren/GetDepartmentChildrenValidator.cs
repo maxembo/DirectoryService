@@ -10,9 +10,9 @@ public class GetDepartmentChildrenValidator : AbstractValidator<GetDepartmentChi
     {
         RuleFor(g => g.ParentId)
             .NotEmpty()
-            .WithError(GeneralErrors.Required("parentId"))
+            .WithError(GeneralErrors.Required("department.parentId"))
             .Must(parentId => parentId != Guid.Empty)
-            .WithError(GeneralErrors.Invalid("parentId"));
+            .WithError(GeneralErrors.Invalid("department.parentId"));
 
         RuleFor(g => g.Request.Page)
             .GreaterThanOrEqualTo(1)

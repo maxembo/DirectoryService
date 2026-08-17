@@ -235,4 +235,25 @@ public abstract class DirectoryBaseTests : IClassFixture<DirectoryTestWebFactory
 
         await cache.RemoveByTagAsync(CacheKeys.DEPARTMENT_KEY, CancellationToken.None);
     }
+
+    protected async Task<DepartmentId> CreateParentDepartmentWithChildren(int count)
+    {
+        var locationId = await CreateLocation();
+
+        var company = await CreateParentDepartment("company", "company", [locationId]);
+
+        for (int index = 0; index < count; index++)
+        {
+            string suffix =
+                $"{(char)('a' + (index / 26))}{(char)('a' + (index % 26))}";
+
+            await CreateChildDepartment(
+                $"department {suffix}",
+                $"department-{suffix}",
+                company,
+                [locationId]);
+        }
+
+        return company.Id;
+    }
 }

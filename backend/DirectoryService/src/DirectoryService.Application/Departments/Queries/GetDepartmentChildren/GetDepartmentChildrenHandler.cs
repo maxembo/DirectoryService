@@ -75,6 +75,7 @@ public class GetDepartmentChildrenHandler
                                   d.is_active,
                                   d.created_at,
                                   d.updated_at,
+                                  d.deleted_at,
 
                                   (EXISTS(SELECT 1
                                           FROM departments child
@@ -85,7 +86,7 @@ public class GetDepartmentChildrenHandler
                            FROM departments d
                            WHERE d.parent_id = @ParentId
                              AND d.is_active = true
-                           ORDER BY d.created_at
+                           ORDER BY d.created_at, d.id
                            LIMIT @ChildSize OFFSET @ChildPage
                            """;
 
