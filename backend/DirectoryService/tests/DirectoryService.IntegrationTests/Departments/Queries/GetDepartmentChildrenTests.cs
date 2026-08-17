@@ -361,7 +361,7 @@ public class GetDepartmentChildrenTests(DirectoryTestWebFactory factory) : Direc
         int pageSize = 20) =>
         new(
             parentId,
-            new GetDepartmentChildrenRequest { Page = page, PageSize = pageSize, });
+            new GetDepartmentChildrenRequest { Page = page, PageSize = pageSize });
 
     private Task<Result<PaginationEnvelope<GetDepartmentChildrenDto>, Errors>> Execute(GetDepartmentChildrenQuery query)
         => Execute<Result<PaginationEnvelope<GetDepartmentChildrenDto>, Errors>,

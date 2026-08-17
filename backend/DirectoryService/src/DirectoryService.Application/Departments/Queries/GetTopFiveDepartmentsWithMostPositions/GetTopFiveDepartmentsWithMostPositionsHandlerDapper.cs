@@ -33,7 +33,8 @@ public class GetTopFiveDepartmentsWithMostPositionsHandlerDapper : IQueryHandler
             cancellationToken: cancellationToken);
     }
 
-    private async Task<DepartmentWithPositionCountDto[]> GetTopFiveDepartmentsWithPositions(CancellationToken cancellationToken)
+    private async Task<DepartmentWithPositionCountDto[]> GetTopFiveDepartmentsWithPositions(
+        CancellationToken cancellationToken)
     {
         var dbConnection = _dbConnectionFactory.GetDbConnection();
 

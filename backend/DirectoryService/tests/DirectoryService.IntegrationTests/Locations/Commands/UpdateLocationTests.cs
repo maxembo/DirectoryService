@@ -1,7 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Locations.Commands.UpdateLocations;
 using DirectoryService.Contracts.Locations;
-using DirectoryService.Contracts.Locations.CreateLocations;
 using DirectoryService.Contracts.Locations.UpdateLocations;
 using DirectoryService.IntegrationTests.Infrastructure;
 using Microsoft.EntityFrameworkCore;
