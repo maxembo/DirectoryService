@@ -1,8 +1,4 @@
-import {
-	type DepartmentId,
-	type DepartmentTreeDto,
-	departmentsApi,
-} from "@/entities/departments";
+import { type DepartmentId } from "@/entities/departments";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
@@ -11,9 +7,6 @@ export type DepartmentTreeId = string;
 type DepartmentTreeState = {
 	selectedId: DepartmentId | null;
 	expandedIds: DepartmentId[];
-	loadingIds: DepartmentId[];
-	childrenByParentId: Record<DepartmentId, DepartmentTreeDto[]>;
-	nextPageByParentId: Record<DepartmentId, number | null>;
 };
 
 type DepartmentTreeStates = Record<
@@ -24,9 +17,6 @@ type DepartmentTreeStates = Record<
 const initialState: DepartmentTreeState = {
 	selectedId: null,
 	expandedIds: [],
-	childrenByParentId: {},
-	loadingIds: [],
-	nextPageByParentId: {},
 };
 
 const DEFAULT_STATE_ID = "__default__";
@@ -36,18 +26,10 @@ const initialStates: DepartmentTreeStates = {};
 const resolveStateId = (stateId?: DepartmentTreeId) =>
 	stateId ?? DEFAULT_STATE_ID;
 
-const getOrCreate = (
+const getDepartmentTreeState = (
 	states: DepartmentTreeStates,
 	stateId?: DepartmentTreeId,
-) => {
-	const id = resolveStateId(stateId);
-
-	if (!states[id]) {
-		states[id] = { ...initialState };
-	}
-
-	return states[id];
-};
+) => states[resolveStateId(stateId)] ?? initialState;
 
 const useDepartmentTreeStore = create<DepartmentTreeStates>()(
 	persist(() => ({ ...initialStates }), {
@@ -56,13 +38,12 @@ const useDepartmentTreeStore = create<DepartmentTreeStates>()(
 		partialize: (states) => {
 			const tree = states[DEFAULT_STATE_ID];
 
-			if (!tree) return;
+			if (!tree) return {};
 
 			return {
 				[DEFAULT_STATE_ID]: {
 					...tree,
 					selectedId: null,
-					loadingIds: [],
 				},
 			};
 		},
@@ -70,7 +51,9 @@ const useDepartmentTreeStore = create<DepartmentTreeStates>()(
 );
 
 export const useDepartmentTreeSelectedId = (stateId?: DepartmentTreeId) =>
-	useDepartmentTreeStore((state) => getOrCreate(state, stateId).selectedId);
+	useDepartmentTreeStore(
+		(state) => getDepartmentTreeState(state, stateId).selectedId,
+	);
 
 export const setDepartmentTreeSelectedId = (
 	selectedId: DepartmentId,
@@ -78,173 +61,47 @@ export const setDepartmentTreeSelectedId = (
 ) =>
 	useDepartmentTreeStore.setState((states) => ({
 		[resolveStateId(stateId)]: {
-			...getOrCreate(states, stateId),
+			...getDepartmentTreeState(states, stateId),
 			selectedId,
 		},
 	}));
 
 export const useDepartmentTreeExpandedIds = (stateId?: DepartmentTreeId) =>
-	useDepartmentTreeStore((state) => getOrCreate(state, stateId).expandedIds);
+	useDepartmentTreeStore(
+		(state) => getDepartmentTreeState(state, stateId).expandedIds,
+	);
 
-export const toggleDepartmentTreeExpandedId = async (
-	parentId: DepartmentId,
+export const toggleDepartmentTreeExpandedId = (
+	departmentId: DepartmentId,
 	hasChildren: boolean,
 	stateId?: DepartmentTreeId,
 ) => {
 	if (!hasChildren) return;
 
 	const id = resolveStateId(stateId);
-	const currentState = getOrCreate(useDepartmentTreeStore.getState(), stateId);
-	const isExpanded = currentState.expandedIds.includes(parentId);
-
 	useDepartmentTreeStore.setState((states) => {
-		const currentState = getOrCreate(states, stateId);
-		const isExpanded = currentState.expandedIds.includes(parentId);
+		const currentState = getDepartmentTreeState(states, stateId);
+		const isExpanded = currentState.expandedIds.includes(departmentId);
 
 		return {
 			...states,
 			[id]: {
 				...currentState,
 				expandedIds: isExpanded
-					? currentState.expandedIds.filter((id) => id !== parentId)
-					: [...currentState.expandedIds, parentId],
+					? currentState.expandedIds.filter((id) => id !== departmentId)
+					: [...currentState.expandedIds, departmentId],
 			},
 		};
 	});
-	if (!isExpanded) {
-		await loadNextDepartmentChildrenPage(parentId, stateId);
-	}
 };
-
-export const useDepartmentTreeChildrenByParentId = (
-	stateId?: DepartmentTreeId,
-) =>
-	useDepartmentTreeStore(
-		(state) => getOrCreate(state, stateId).childrenByParentId,
-	);
-
-export const useDepartmentTreeLoadingIds = (stateId?: DepartmentTreeId) =>
-	useDepartmentTreeStore((state) => getOrCreate(state, stateId).loadingIds);
 
 export const collapseAllDepartments = (stateId?: DepartmentTreeId) =>
 	useDepartmentTreeStore.setState((states) => ({
 		[resolveStateId(stateId)]: {
-			...getOrCreate(states, stateId),
+			...getDepartmentTreeState(states, stateId),
 			expandedIds: [],
 		},
 	}));
-
-export const expandLoadedDepartments = (stateId?: DepartmentTreeId) =>
-	useDepartmentTreeStore.setState((states) => {
-		const currentState = getOrCreate(states, stateId);
-		const loadedParentIds = Object.entries(currentState.childrenByParentId)
-			.filter(([, children]) => children.length > 0)
-			.map(([parentId]) => parentId);
-
-		return {
-			[resolveStateId(stateId)]: {
-				...currentState,
-				expandedIds: loadedParentIds,
-			},
-		};
-	});
-
-export const useNextPageByParentId = (stateId?: DepartmentTreeId) =>
-	useDepartmentTreeStore(
-		(state) => getOrCreate(state, stateId).nextPageByParentId,
-	);
-
-export const loadNextDepartmentChildrenPage = async (
-	parentId: DepartmentId,
-	stateId?: DepartmentTreeId,
-) => {
-	const storeId = resolveStateId(stateId);
-
-	const currentState = getOrCreate(useDepartmentTreeStore.getState(), stateId);
-
-	const hasLoaded = Object.prototype.hasOwnProperty.call(
-		currentState.childrenByParentId,
-		parentId,
-	);
-
-	const isLoading = currentState.loadingIds.includes(parentId);
-
-	const page = hasLoaded ? currentState.nextPageByParentId[parentId] : 1;
-
-	if (page == null || isLoading) {
-		return;
-	}
-
-	useDepartmentTreeStore.setState((states) => {
-		const current = getOrCreate(states, stateId);
-
-		return {
-			...states,
-			[storeId]: {
-				...current,
-				loadingIds: [...current.loadingIds, parentId],
-			},
-		};
-	});
-
-	try {
-		const response = await departmentsApi.getDepartmentChildren({
-			parentId,
-			page,
-			pageSize: 20,
-		});
-
-		const result = response.result;
-
-		if (!result) return;
-
-		useDepartmentTreeStore.setState((states) => {
-			const current = getOrCreate(states, stateId);
-
-			const existingChildren = current.childrenByParentId[parentId] ?? [];
-
-			const children = Array.from(
-				new Map(
-					[...existingChildren, ...result.items].map((child) => [
-						child.id,
-						child,
-					]),
-				).values(),
-			);
-
-			const nextPage = result.page < result.totalPages ? result.page + 1 : null;
-
-			return {
-				...states,
-				[storeId]: {
-					...current,
-
-					childrenByParentId: {
-						...current.childrenByParentId,
-						[parentId]: children,
-					},
-
-					nextPageByParentId: {
-						...current.nextPageByParentId,
-						[parentId]: nextPage,
-					},
-				},
-			};
-		});
-	} finally {
-		useDepartmentTreeStore.setState((states) => {
-			const current = getOrCreate(states, stateId);
-
-			return {
-				...states,
-				[storeId]: {
-					...current,
-					loadingIds: current.loadingIds.filter((id) => id !== parentId),
-				},
-			};
-		});
-	}
-};
 
 export const resetDepartmentTreeData = () =>
 	useDepartmentTreeStore.setState((states) => {
@@ -255,9 +112,6 @@ export const resetDepartmentTreeData = () =>
 				? {
 						...state,
 						expandedIds: [],
-						loadingIds: [],
-						childrenByParentId: {},
-						nextPageByParentId: {},
 					}
 				: undefined;
 		}

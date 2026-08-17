@@ -56,7 +56,7 @@ export const departmentsApi = {
 		request: GetDepartmentsInfinityRequest,
 	) => {
 		return infiniteQueryOptions({
-			queryKey: [departmentsApi.baseKey, request],
+			queryKey: [departmentsApi.baseKey, "list", request],
 			queryFn: ({ pageParam }) => {
 				return departmentsApi.getDepartmentsShort({
 					...request,
@@ -71,9 +71,24 @@ export const departmentsApi = {
 		request: GetDepartmentTreeRootsRequest,
 	) => {
 		return infiniteQueryOptions({
-			queryKey: [departmentsApi.baseKey, request],
+			queryKey: [departmentsApi.baseKey, "tree-roots", request],
 			queryFn: ({ pageParam }) => {
 				return departmentsApi.getDepartmentsTreeRoots({
+					...request,
+					page: pageParam,
+				});
+			},
+			...envelopeInfinityQueryOptions<DepartmentTreeDto>(),
+		});
+	},
+
+	getDepartmentChildrenInfinityOptions: (
+		request: GetDepartmentChildrenRequest,
+	) => {
+		return infiniteQueryOptions({
+			queryKey: [departmentsApi.baseKey, "children", request],
+			queryFn: ({ pageParam }) => {
+				return departmentsApi.getDepartmentChildren({
 					...request,
 					page: pageParam,
 				});

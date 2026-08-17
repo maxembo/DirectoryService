@@ -1,13 +1,16 @@
 "use client";
 
-import { Button } from "@/shared/components/ui/button";
-import { cn } from "@/shared/lib/utils";
-import { ChevronRight, LoaderCircle } from "lucide-react";
-import { DepartmentTreeId } from "../model/department-tree-store";
-import { useDepartmentTreeNode } from "../model/use-department-tree-node";
 import type { DepartmentTreeDto } from "@/entities/departments";
-
-const TREE_INDENT = 22;
+import { Button } from "@/shared/components/ui/button";
+import { Spinner } from "@/shared/components/ui/spinner";
+import type { DepartmentTreeId } from "../model/department-tree-store";
+import { useDepartmentTreeNode } from "../model/use-department-tree-node";
+import { DepartmentTreeNodeRow } from "./department-tree-node-row";
+import {
+	TREE_BASE_PADDING,
+	TREE_CONTENT_OFFSET,
+	TREE_INDENT,
+} from "./department-tree.constants";
 
 type Props = {
 	department: DepartmentTreeDto;
@@ -16,168 +19,132 @@ type Props = {
 };
 
 export function DepartmentTreeNode({ stateId, department, depth }: Props) {
-	const {
-		children,
-		isSelected,
-		isExpanded,
-		hasChildren,
-		isLoading,
-		canLoadMore,
-		handleSelect,
-		handleToggle,
-		handleLoadMore,
-	} = useDepartmentTreeNode({ department, stateId });
+	const node = useDepartmentTreeNode({ department, stateId });
 
 	return (
 		<li className="relative list-none">
-			<div
-				className={cn(
-					"group relative flex min-h-10 items-center gap-1 rounded-md pr-2 transition-colors",
-					isSelected
-						? "bg-accent text-accent-foreground ring-border ring-1 ring-inset"
-						: "hover:bg-muted/70",
-				)}
-				style={{
-					paddingLeft: 8 + depth * TREE_INDENT,
-				}}
-			>
-				<TreeGuideLines depth={depth} />
+			<DepartmentTreeNodeRow
+				department={department}
+				isSelected={node.isSelected}
+				depth={depth}
+				isLoading={node.isLoading}
+				isExpanded={node.isExpanded}
+				hasChildren={node.hasChildren}
+				onToggle={node.handleToggle}
+				onSelect={node.handleSelect}
+			/>
 
-				<div className="relative z-10 flex size-6 shrink-0 items-center justify-center">
-					{hasChildren ? (
-						<button
-							type="button"
-							className={cn(
-								"text-muted-foreground flex size-6 items-center justify-center rounded-sm",
-								"hover:bg-background hover:text-foreground",
-								"focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none",
-							)}
-							onClick={handleToggle}
-						>
-							{isLoading ? (
-								<LoaderCircle className="size-4 animate-spin" />
-							) : (
-								<ChevronRight
-									className={cn(
-										"size-4 transition-transform duration-150",
-										isExpanded && "rotate-90",
-									)}
-								/>
-							)}
-						</button>
-					) : (
-						<span
-							className="bg-muted-foreground/40 size-1.5 rounded-full"
-							aria-hidden="true"
-						/>
-					)}
-				</div>
-
-				<button
-					type="button"
-					className={cn(
-						"relative z-10 flex min-w-0 flex-1 items-center gap-3 py-2 text-left",
-						"focus-visible:outline-none",
-					)}
-					onClick={handleSelect}
-				>
-					<span className="min-w-0 flex-1">
-						<span
-							className={cn(
-								"block truncate text-sm",
-								isSelected ? "font-semibold" : "font-medium",
-							)}
-						>
-							{department.name}
-						</span>
-					</span>
-
-					<span
-						className={cn(
-							"max-w-32 shrink-0 truncate rounded px-1.5 py-0.5",
-							"font-mono text-[10px] leading-none",
-							isSelected
-								? "bg-background/70 text-foreground"
-								: "bg-muted text-muted-foreground",
-						)}
-						title={department.identifier}
-					>
-						{department.identifier}
-					</span>
-
-					{!department.isActive && (
-						<span
-							className="size-2 shrink-0 rounded-full bg-amber-500"
-							title="Неактивное подразделение"
-						/>
-					)}
-				</button>
-			</div>
-
-			{isExpanded && (
-				<ul className="space-y-0.5">
-					{children.map((child) => (
-						<DepartmentTreeNode
-							key={child.id}
-							department={child}
-							stateId={stateId}
-							depth={depth + 1}
-						/>
-					))}
-
-					{isLoading && children.length === 0 && (
-						<TreeNodeLoading depth={depth + 1} />
-					)}
-					{canLoadMore && (
-						<li>
-							<Button onClick={handleLoadMore}>
-								{isLoading ? "Загрузка..." : "Показать ещё"}
-							</Button>
-						</li>
-					)}
-				</ul>
+			{node.isExpanded && (
+				<DepartmentTreeChildren
+					departmentChildren={node.departmentChildren}
+					stateId={stateId}
+					depth={depth}
+					isError={node.isError}
+					errorMessage={node.errorMessage}
+					hasNextPage={node.hasNextPage}
+					isFetchingNextPage={node.isFetchingNextPage}
+					isFetchNextPageError={node.isFetchNextPageError}
+					onRetry={node.handleRetry}
+					onLoadMore={node.handleLoadMore}
+				/>
 			)}
 		</li>
 	);
 }
 
-type TreeGuideLinesProps = {
+type DepartmentTreeChildrenProps = {
+	departmentChildren: DepartmentTreeDto[];
+	stateId?: DepartmentTreeId;
 	depth: number;
+	isError: boolean;
+	errorMessage: string;
+	hasNextPage: boolean;
+	isFetchingNextPage: boolean;
+	isFetchNextPageError: boolean;
+	onRetry: () => void;
+	onLoadMore: () => void;
 };
 
-function TreeGuideLines({ depth }: TreeGuideLinesProps) {
-	if (depth === 0) return null;
-
+function DepartmentTreeChildren({
+	departmentChildren,
+	stateId,
+	depth,
+	isError,
+	errorMessage,
+	hasNextPage,
+	isFetchingNextPage,
+	isFetchNextPageError,
+	onRetry,
+	onLoadMore,
+}: DepartmentTreeChildrenProps) {
 	return (
-		<>
-			{Array.from({ length: depth }).map((_, index) => (
-				<span
-					key={index}
-					className="pointer-events-none absolute inset-y-0 w-px bg-blue-400"
-					style={{
-						left: 18 + index * TREE_INDENT,
-					}}
-					aria-hidden="true"
+		<ul className="space-y-0.5">
+			{departmentChildren.map((child) => (
+				<DepartmentTreeNode
+					key={child.id}
+					department={child}
+					stateId={stateId}
+					depth={depth + 1}
 				/>
 			))}
-		</>
+
+			{isError && departmentChildren.length === 0 && (
+				<TreeNodeError
+					depth={depth + 1}
+					message={errorMessage}
+					onRetry={onRetry}
+				/>
+			)}
+			{hasNextPage && departmentChildren.length > 0 && (
+				<li
+					style={{
+						paddingLeft:
+							TREE_BASE_PADDING +
+							(depth + 1) * TREE_INDENT +
+							TREE_CONTENT_OFFSET,
+					}}
+				>
+					<Button
+						type="button"
+						variant="ghost"
+						size="sm"
+						onClick={onLoadMore}
+						disabled={isFetchingNextPage}
+					>
+						{isFetchingNextPage ? (
+							<Spinner />
+						) : isFetchNextPageError ? (
+							"Повторить загрузку"
+						) : (
+							"Показать ещё"
+						)}
+					</Button>
+				</li>
+			)}
+		</ul>
 	);
 }
 
-type TreeNodeLoadingProps = {
+type TreeNodeErrorProps = {
 	depth: number;
+	message: string;
+	onRetry: () => void;
 };
 
-function TreeNodeLoading({ depth }: TreeNodeLoadingProps) {
+function TreeNodeError({ depth, message, onRetry }: TreeNodeErrorProps) {
 	return (
 		<li
-			className="text-muted-foreground flex h-9 items-center gap-2 text-xs"
+			className="text-destructive flex items-center gap-2 py-2 text-xs"
 			style={{
-				paddingLeft: 8 + depth * TREE_INDENT + 30,
+				paddingLeft:
+					TREE_BASE_PADDING + depth * TREE_INDENT + TREE_CONTENT_OFFSET,
 			}}
 		>
-			<LoaderCircle className="size-3.5 animate-spin" />
-			Загрузка…
+			<span>{message}</span>
+
+			<Button type="button" variant="outline" size="sm" onClick={onRetry}>
+				Повторить
+			</Button>
 		</li>
 	);
 }
