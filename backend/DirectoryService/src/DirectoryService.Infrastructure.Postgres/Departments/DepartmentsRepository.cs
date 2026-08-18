@@ -97,8 +97,8 @@ public class DepartmentsRepository : IDepartmentsRepository
                 departmentId.Value);
 
             return GeneralErrors.Database(
-                code: "department.locations.delete.failed",
-                message: "Не удалось удалить связи подразделения с локациями.");
+                "department.locations.delete.failed",
+                "Не удалось удалить связи подразделения с локациями.");
         }
     }
 

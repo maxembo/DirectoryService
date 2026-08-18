@@ -35,7 +35,8 @@ public class GetTopFiveDepartmentsWithMostPositionsHandler : IQueryHandler<Depar
             cancellationToken: cancellationToken);
     }
 
-    private async Task<DepartmentWithPositionCountDto[]> GetTopFiveDepartmentsWithPositions(CancellationToken cancellationToken)
+    private async Task<DepartmentWithPositionCountDto[]> GetTopFiveDepartmentsWithPositions(
+        CancellationToken cancellationToken)
     {
         var departmentsQuery = _readDbContext.DepartmentsRead;
 

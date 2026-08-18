@@ -43,6 +43,7 @@ export function InfiniteLocationsList() {
 		error,
 		isFetchingNextPage,
 		cursorRef,
+		refetch,
 	} = useInfiniteLocationsList({
 		request: {
 			isActive: view === "active",
@@ -114,7 +115,10 @@ export function InfiniteLocationsList() {
 					<Spinner />
 				</div>
 			) : isError ? (
-				<ListError message={error?.message ?? "Неизвестная ошибка"} />
+				<ListError
+					message={error?.message ?? "Неизвестная ошибка"}
+					onRetry={refetch}
+				/>
 			) : locations?.length === 0 ? (
 				<ListEmpty title="Локация" />
 			) : (

@@ -25,6 +25,7 @@ export function DepartmentPositionsList({ departmentTreeStateId }: Props) {
 		isError,
 		error,
 		isPending,
+		refetch,
 	} = useDepartmentPositionsList({
 		stateId: POSITIONS_DEPARTMENT_SELECT_STATE_ID,
 		departmentTreeStateId,
@@ -48,7 +49,10 @@ export function DepartmentPositionsList({ departmentTreeStateId }: Props) {
 					<Spinner />
 				</div>
 			) : isError ? (
-				<ListError message={error?.message ?? "Неизвестная ошибка"} />
+				<ListError
+					message={error?.message ?? "Неизвестная ошибка"}
+					onRetry={refetch}
+				/>
 			) : positions.length === 0 ? (
 				<ListEmpty title="Позиции не найдены" />
 			) : (

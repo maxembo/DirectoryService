@@ -1,15 +1,12 @@
 import type { DepartmentTreeDto } from "@/entities/departments";
 import {
 	DepartmentTreeId,
-	loadNextDepartmentChildrenPage,
 	setDepartmentTreeSelectedId,
 	toggleDepartmentTreeExpandedId,
-	useDepartmentTreeChildrenByParentId,
 	useDepartmentTreeExpandedIds,
-	useDepartmentTreeLoadingIds,
 	useDepartmentTreeSelectedId,
-	useNextPageByParentId,
 } from "./department-tree-store";
+import { useInfiniteDepartmentChildren } from "./use-infinite-department-children";
 
 type Props = {
 	department: DepartmentTreeDto;
@@ -19,22 +16,28 @@ type Props = {
 export function useDepartmentTreeNode({ department, stateId }: Props) {
 	const selectedId = useDepartmentTreeSelectedId(stateId);
 	const expandedIds = useDepartmentTreeExpandedIds(stateId);
-	const loadingIds = useDepartmentTreeLoadingIds(stateId);
-	const childrenByParentId = useDepartmentTreeChildrenByParentId(stateId);
-	const nextPageByParentId = useNextPageByParentId(stateId);
 
-	const children = childrenByParentId[department.id] ?? [];
 	const isSelected = selectedId === department.id;
 	const isExpanded = expandedIds.includes(department.id);
-	const isLoading = loadingIds.includes(department.id);
 	const hasChildren = department.hasChildren;
 
-	const nextPage = nextPageByParentId[department.id];
-
-	const canLoadMore = typeof nextPage === "number";
+	const {
+		departmentChildren,
+		isLoading,
+		isError,
+		errorMessage,
+		hasNextPage,
+		isFetchingNextPage,
+		isFetchNextPageError,
+		fetchNextPage,
+		refetch,
+	} = useInfiniteDepartmentChildren({
+		request: { parentId: department.id },
+		enabled: isExpanded && hasChildren,
+	});
 
 	const handleToggle = () => {
-		void toggleDepartmentTreeExpandedId(department.id, hasChildren, stateId);
+		toggleDepartmentTreeExpandedId(department.id, hasChildren, stateId);
 	};
 
 	const handleSelect = () => {
@@ -42,17 +45,29 @@ export function useDepartmentTreeNode({ department, stateId }: Props) {
 	};
 
 	const handleLoadMore = () => {
-		loadNextDepartmentChildrenPage(department.id, stateId);
+		if (!hasNextPage || isFetchingNextPage) return;
+
+		void fetchNextPage();
 	};
+
+	const handleRetry = () => {
+		void refetch();
+	};
+
 	return {
-		children,
+		departmentChildren,
+		isLoading,
+		isError,
+		errorMessage,
 		isSelected,
 		isExpanded,
-		isLoading,
-		canLoadMore,
 		hasChildren,
+		hasNextPage,
+		isFetchingNextPage,
+		isFetchNextPageError,
 		handleToggle,
 		handleSelect,
 		handleLoadMore,
+		handleRetry,
 	};
 }

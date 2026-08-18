@@ -1,5 +1,4 @@
 ﻿using CSharpFunctionalExtensions;
-using DirectoryService.Application.Departments.Commands.SoftDeleteDepartments;
 using DirectoryService.Application.Departments.Queries.GetDepartmentTreeRoots;
 using DirectoryService.Contracts.Departments.GetDepartments.Dtos;
 using DirectoryService.Contracts.Departments.GetDepartments.Requests;
@@ -26,13 +25,9 @@ public class GetDepartmentTreeRootsTests(DirectoryTestWebFactory factory) : Dire
         var frontend =
             await CreateChildDepartment("frontend", "frontend", company, [locationId]);
 
-        var query = new GetDepartmentTreeRootsQuery(new GetDepartmentTreeRootsRequest());
+        await MarkDepartmentAsDeleted(frontend.Id);
 
-        // soft delete
-        var deleteFrontendResult =
-            await ExecuteSoftDelete(new SoftDeleteDepartmentCommand(frontend.Id.Value));
-
-        Assert.True(deleteFrontendResult.IsSuccess);
+        var query = CreateQuery();
 
         // act
         var result = await Execute(query);
@@ -65,7 +60,7 @@ public class GetDepartmentTreeRootsTests(DirectoryTestWebFactory factory) : Dire
 
         await ClearDepartmentCache();
 
-        var query = new GetDepartmentTreeRootsQuery(new GetDepartmentTreeRootsRequest());
+        var query = CreateQuery();
 
         // act
         var result = await Execute(query);
@@ -95,13 +90,11 @@ public class GetDepartmentTreeRootsTests(DirectoryTestWebFactory factory) : Dire
         var backend =
             await CreateChildDepartment("backend", "backend", company, [locationId]);
 
-        var query = new GetDepartmentTreeRootsQuery(new GetDepartmentTreeRootsRequest());
+        await MarkDepartmentAsDeleted(backend.Id);
 
-        // soft delete
-        var deleteBackendResult =
-            await ExecuteSoftDelete(new SoftDeleteDepartmentCommand(backend.Id.Value));
+        await ClearDepartmentCache();
 
-        Assert.True(deleteBackendResult.IsSuccess);
+        var query = CreateQuery();
 
         // act
         var result = await Execute(query);
@@ -128,13 +121,11 @@ public class GetDepartmentTreeRootsTests(DirectoryTestWebFactory factory) : Dire
         var company =
             await CreateParentDepartment("company", "company", [locationId]);
 
-        var query = new GetDepartmentTreeRootsQuery(new GetDepartmentTreeRootsRequest());
+        await MarkDepartmentAsDeleted(company.Id);
 
-        // soft delete
-        var deleteCompanyResult =
-            await ExecuteSoftDelete(new SoftDeleteDepartmentCommand(company.Id.Value));
+        await ClearDepartmentCache();
 
-        Assert.True(deleteCompanyResult.IsSuccess);
+        var query = CreateQuery();
 
         // act
         var result = await Execute(query);
@@ -147,13 +138,40 @@ public class GetDepartmentTreeRootsTests(DirectoryTestWebFactory factory) : Dire
         Assert.Equal(0, result.Value.TotalPages);
     }
 
+    [Fact]
+    public async Task GetDepartmentTreeRoots_WhenPrefetchIsSpecified_ShouldReturnLimitedDirectChildren()
+    {
+        // arrange
+        const int prefetch = 4;
+
+        var companyId = await CreateParentDepartmentWithChildren(10);
+
+        var query = CreateQuery(prefetch);
+
+        // act
+        var result = await Execute(query);
+
+        // assert
+        Assert.True(result.IsSuccess);
+
+        var root = Assert.Single(result.Value.Items);
+
+        Assert.Equal(prefetch, root.Children.Count);
+
+        Assert.Equal(1, result.Value.TotalCount);
+        Assert.Equal(1, result.Value.TotalPages);
+
+        Assert.Equal(companyId.Value, root.Id);
+        Assert.True(root.HasChildren);
+        Assert.Equal(prefetch, root.Children.Count);
+    }
+
+    private static GetDepartmentTreeRootsQuery CreateQuery(int prefetch = 3) =>
+        new(new GetDepartmentTreeRootsRequest(prefetch));
+
     private Task<Result<PaginationEnvelope<GetDepartmentTreeRootsDto>, Errors>> Execute(
         GetDepartmentTreeRootsQuery query)
         => Execute<Result<PaginationEnvelope<GetDepartmentTreeRootsDto>, Errors>,
             GetDepartmentTreeRootsHandler>(handler =>
             handler.Handle(query, CancellationToken.None));
-
-    private Task<Result<Guid, Errors>> ExecuteSoftDelete(SoftDeleteDepartmentCommand command) =>
-        Execute<Result<Guid, Errors>, SoftDeleteDepartmentHandler>(handler => handler.Handle(
-            command, CancellationToken.None));
 }

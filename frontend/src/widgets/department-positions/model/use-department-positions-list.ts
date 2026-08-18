@@ -46,6 +46,7 @@ export function useDepartmentPositionsList({
 		isFetchingNextPage,
 		fetchNextPage,
 		hasNextPage,
+		refetch,
 	} = useInfiniteQuery({
 		...positionsApi.getPositionsInfiniteQueryOptions({
 			...request,
@@ -72,5 +73,6 @@ export function useDepartmentPositionsList({
 		isFetchingNextPage,
 		fetchNextPage,
 		cursorRef,
+		refetch,
 	};
 }

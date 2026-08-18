@@ -18,6 +18,8 @@ export function useDepartmentTreeRoots({ request }: Props) {
 		fetchNextPage,
 		hasNextPage,
 		isFetchingNextPage,
+		isFetchNextPageError,
+		refetch,
 	} = useInfiniteQuery({
 		...departmentsApi.getDepartmentTreeRootsInfinityQueryOptions({
 			...request,
@@ -36,5 +38,8 @@ export function useDepartmentTreeRoots({ request }: Props) {
 		error,
 		cursorRef,
 		isFetchingNextPage,
+		isFetchNextPageError,
+		fetchNextPage,
+		refetch,
 	};
 }

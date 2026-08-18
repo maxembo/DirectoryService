@@ -4,12 +4,10 @@ import { Button } from "@/shared/components/ui/button";
 import { Spinner } from "@/shared/components/ui/spinner";
 import { ListEmpty } from "@/shared/ui/list-empty";
 import { ListError } from "@/shared/ui/list-error";
-import { ChevronsDownUp, ChevronsUpDown } from "lucide-react";
+import { ChevronsDownUp } from "lucide-react";
 import {
 	collapseAllDepartments,
 	DepartmentTreeId,
-	expandLoadedDepartments,
-	useDepartmentTreeChildrenByParentId,
 	useDepartmentTreeExpandedIds,
 } from "../model/department-tree-store";
 import { useDepartmentTreeRoots } from "../model/use-department-tree-roots";
@@ -27,18 +25,12 @@ export function DepartmentTreeRootsList({ stateId }: Props) {
 		error,
 		cursorRef,
 		isFetchingNextPage,
+		isFetchNextPageError,
+		fetchNextPage,
+		refetch,
 	} = useDepartmentTreeRoots({});
 
 	const expandedIds = useDepartmentTreeExpandedIds(stateId);
-	const childrenByParentId = useDepartmentTreeChildrenByParentId(stateId);
-
-	const loadedExpandableIds = Object.entries(childrenByParentId)
-		.filter(([, children]) => children.length > 0)
-		.map(([parentId]) => parentId);
-
-	const hasCollapsedLoadedBranches = loadedExpandableIds.some(
-		(parentId) => !expandedIds.includes(parentId),
-	);
 
 	const hasExpandedBranches = expandedIds.length > 0;
 	return (
@@ -56,18 +48,8 @@ export function DepartmentTreeRootsList({ stateId }: Props) {
 						type="button"
 						variant="ghost"
 						size="icon"
-						title="Развернуть загруженные ветки"
-						disabled={!hasCollapsedLoadedBranches}
-						onClick={() => expandLoadedDepartments(stateId)}
-					>
-						<ChevronsUpDown className="h-4 w-4" />
-					</Button>
-
-					<Button
-						type="button"
-						variant="ghost"
-						size="icon"
 						title="Свернуть ветки"
+						aria-label="Свернуть все ветки"
 						disabled={!hasExpandedBranches}
 						onClick={() => collapseAllDepartments(stateId)}
 					>
@@ -80,9 +62,12 @@ export function DepartmentTreeRootsList({ stateId }: Props) {
 				<div className="flex min-h-0 flex-1 items-center justify-center">
 					<Spinner />
 				</div>
-			) : isError ? (
+			) : isError && departmentRoots.length === 0 ? (
 				<div className="p-4">
-					<ListError message={error?.message ?? "Неизвестная ошибка"} />
+					<ListError
+						message={error?.message ?? "Неизвестная ошибка"}
+						onRetry={refetch}
+					/>
 				</div>
 			) : departmentRoots.length === 0 ? (
 				<div className="p-4">
@@ -101,8 +86,21 @@ export function DepartmentTreeRootsList({ stateId }: Props) {
 						))}
 					</ul>
 
-					<div ref={cursorRef} className="flex justify-center py-6">
-						{isFetchingNextPage && <Spinner />}
+					<div className="flex justify-center py-6">
+						{isFetchNextPageError ? (
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								onClick={() => void fetchNextPage()}
+							>
+								Повторить загрузку
+							</Button>
+						) : isFetchingNextPage ? (
+							<Spinner />
+						) : (
+							<div ref={cursorRef} />
+						)}
 					</div>
 				</div>
 			)}
