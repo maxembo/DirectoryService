@@ -15,6 +15,7 @@ import {
 	GetDepartmentsInfinityRequest,
 	GetDepartmentsRequest,
 	GetDepartmentTreeRootsRequest,
+	type MoveDepartmentRequest,
 } from "./types";
 
 const DEPARTMENTS_KEY = "departments";
@@ -100,6 +101,15 @@ export const departmentsApi = {
 	restoreDepartment: async (departmentId: DepartmentId) => {
 		const response = await apiClient.patch<Envelope<DepartmentId>>(
 			`${DEPARTMENTS_ENDPOINT}/${departmentId}/restore`,
+		);
+
+		return response.data;
+	},
+
+	moveDepartment: async (request: MoveDepartmentRequest) => {
+		const response = await apiClient.put<Envelope<DepartmentId>>(
+			`${DEPARTMENTS_ENDPOINT}/${request.departmentId}/parent`,
+			{ parentId: request.parentId },
 		);
 
 		return response.data;

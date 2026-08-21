@@ -1,9 +1,9 @@
+import { SearchInput } from "@/shared/components/search-input";
 import {
 	setDepartmentSearch,
 	useDepartmentSearch,
 	type DepartmentListId,
 } from "@/entities/departments";
-import { SearchInput } from "@/shared/components/search-input";
 
 export function SelectDepartmentSearch({
 	stateId,

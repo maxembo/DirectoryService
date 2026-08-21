@@ -2,18 +2,18 @@
 
 import type { DepartmentId, DepartmentShortDto } from "@/entities/departments";
 import type { LocationDto } from "@/entities/locations";
+import { CreateLocationDialog } from "@/features/create-location";
+import {
+	SelectDepartmentDialog,
+	SelectedDepartment,
+} from "@/features/select-department";
+import { UpdateLocationDialog } from "@/features/update-location";
 import { ArchiveViewSwitch } from "@/shared/components/archive-view-switch";
 import { Spinner } from "@/shared/components/ui/spinner";
 import { useArchiveView } from "@/shared/hooks/use-archive-view";
 import { ListEmpty } from "@/shared/ui/list-empty";
 import { ListError } from "@/shared/ui/list-error";
 import { useState } from "react";
-import {
-	SelectDepartmentDialog,
-	SelectedDepartment,
-} from "@/features/select-department";
-import { CreateLocationDialog } from "@/features/create-location";
-import { UpdateLocationDialog } from "@/features/update-location";
 import { LocationCard } from "./location-card";
 import { useInfiniteLocationsList } from "../model/use-infinite-locations-list";
 import {

@@ -127,9 +127,11 @@ public class GetDepartmentChildrenTests(DirectoryTestWebFactory factory) : Direc
 
         Assert.Equal(backend.Id.Value, companyChild.Id);
         Assert.Equal(company.Id.Value, companyChild.ParentId);
+        Assert.Equal("company.backend", companyChild.Path);
 
         Assert.Equal(sales.Id.Value, officeChild.Id);
         Assert.Equal(office.Id.Value, officeChild.ParentId);
+        Assert.Equal("office.sales", officeChild.Path);
 
         Assert.DoesNotContain(resultCompany.Value.Items, child => child.Id == office.Id.Value);
         Assert.DoesNotContain(resultOffice.Value.Items, child => child.Id == company.Id.Value);

@@ -1,7 +1,5 @@
-import {
-	type GetDepartmentsInfinityRequest,
-	departmentsApi,
-} from "@/entities/departments";
+import { departmentsApi } from "../api/api";
+import type { GetDepartmentsInfinityRequest } from "../api/types";
 import { EnvelopeError } from "@/shared/api/errors";
 import { useCursorRef } from "@/shared/hooks/use-cursor-ref";
 import { useInfiniteQuery } from "@tanstack/react-query";

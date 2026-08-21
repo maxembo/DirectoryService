@@ -11,14 +11,21 @@ import {
 	TREE_CONTENT_OFFSET,
 	TREE_INDENT,
 } from "./department-tree.constants";
+import type { ReactNode } from "react";
 
 type Props = {
 	department: DepartmentTreeDto;
 	depth: number;
 	stateId?: DepartmentTreeId;
+	renderActions?: (department: DepartmentTreeDto) => ReactNode;
 };
 
-export function DepartmentTreeNode({ stateId, department, depth }: Props) {
+export function DepartmentTreeNode({
+	stateId,
+	department,
+	depth,
+	renderActions,
+}: Props) {
 	const node = useDepartmentTreeNode({ department, stateId });
 
 	return (
@@ -32,6 +39,7 @@ export function DepartmentTreeNode({ stateId, department, depth }: Props) {
 				hasChildren={node.hasChildren}
 				onToggle={node.handleToggle}
 				onSelect={node.handleSelect}
+				actions={renderActions?.(department)}
 			/>
 
 			{node.isExpanded && (
@@ -46,6 +54,7 @@ export function DepartmentTreeNode({ stateId, department, depth }: Props) {
 					isFetchNextPageError={node.isFetchNextPageError}
 					onRetry={node.handleRetry}
 					onLoadMore={node.handleLoadMore}
+					renderActions={renderActions}
 				/>
 			)}
 		</li>
@@ -63,6 +72,7 @@ type DepartmentTreeChildrenProps = {
 	isFetchNextPageError: boolean;
 	onRetry: () => void;
 	onLoadMore: () => void;
+	renderActions?: (department: DepartmentTreeDto) => ReactNode;
 };
 
 function DepartmentTreeChildren({
@@ -76,6 +86,7 @@ function DepartmentTreeChildren({
 	isFetchNextPageError,
 	onRetry,
 	onLoadMore,
+	renderActions,
 }: DepartmentTreeChildrenProps) {
 	return (
 		<ul className="space-y-0.5">
@@ -85,6 +96,7 @@ function DepartmentTreeChildren({
 					department={child}
 					stateId={stateId}
 					depth={depth + 1}
+					renderActions={renderActions}
 				/>
 			))}
 

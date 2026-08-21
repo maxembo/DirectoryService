@@ -150,7 +150,6 @@ public class DepartmentsRepository : IDepartmentsRepository
     }
 
     public async Task<UnitResult<Error>> MoveDepartments(
-        DepartmentId parentId,
         Path parentPath,
         Path departmentPath,
         CancellationToken cancellationToken = default)
@@ -168,7 +167,8 @@ public class DepartmentsRepository : IDepartmentsRepository
         {
             var sqlUpdatePathAndDepthParams = new
             {
-                parentPath = parentPath.Value, departmentPath = departmentPath.Value,
+                parentPath = parentPath.Value,
+                departmentPath = departmentPath.Value,
             };
 
             await dbConnection.ExecuteAsync(sqlUpdatePathAndDepth, sqlUpdatePathAndDepthParams);
@@ -230,7 +230,7 @@ public class DepartmentsRepository : IDepartmentsRepository
 
             if (result.Any())
             {
-                return GeneralErrors.Invalid("department.parentId");
+                return DepartmentErrors.MoveWouldCreateCycle();
             }
 
             return UnitResult.Success<Error>();

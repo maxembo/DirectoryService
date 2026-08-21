@@ -1,7 +1,4 @@
-import type {
-	DepartmentParentFilter,
-	DepartmentSortByFilter,
-} from "@/entities/departments";
+import type { DepartmentParentFilter, DepartmentSortByFilter } from "./types";
 import { PAGE_SIZE } from "@/shared/api/pagination-request";
 import { ActiveFilter, SortDirectionFilter } from "@/shared/model/filter-types";
 import { create } from "zustand";

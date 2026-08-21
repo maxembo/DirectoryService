@@ -24,7 +24,6 @@ public interface IDepartmentsRepository
     Task LockDescendants(Path path, CancellationToken cancellationToken = default);
 
     Task<UnitResult<Error>> MoveDepartments(
-        DepartmentId parentId,
         Path parentPath,
         Path departmentPath,
         CancellationToken cancellationToken = default);
