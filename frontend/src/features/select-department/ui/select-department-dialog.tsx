@@ -7,17 +7,19 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/shared/components/ui/dialog";
-import { SelectDepartmentList } from "./select-department-list";
 import type {
 	DepartmentListId,
 	DepartmentShortDto,
 } from "@/entities/departments";
+import { SelectDepartmentList } from "./select-department-list";
 
 type Props = {
 	selectedDepartments: DepartmentShortDto[];
 	onChange: (selectedDepartments: DepartmentShortDto[]) => void;
 	multiSelect?: boolean;
 	excludeIds?: string[];
+	excludeSubtreePath?: string;
+	activeOnly?: boolean;
 	stateId?: DepartmentListId;
 	open: boolean;
 	setOpen: (open: boolean) => void;
@@ -28,6 +30,8 @@ export function SelectDepartmentDialog({
 	onChange,
 	multiSelect = false,
 	excludeIds = [],
+	excludeSubtreePath,
+	activeOnly = false,
 	stateId,
 	open,
 	setOpen,
@@ -35,7 +39,9 @@ export function SelectDepartmentDialog({
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>
-				<Button variant="outline">Выбрать подразделение</Button>
+				<Button type="button" variant="outline">
+					Выбрать подразделение
+				</Button>
 			</DialogTrigger>
 
 			<DialogContent className="flex h-[75dvh] flex-col sm:max-w-2xl">
@@ -53,6 +59,8 @@ export function SelectDepartmentDialog({
 						onChange={onChange}
 						multiSelect={multiSelect}
 						excludeIds={excludeIds}
+						excludeSubtreePath={excludeSubtreePath}
+						activeOnly={activeOnly}
 					/>
 				</div>
 			</DialogContent>

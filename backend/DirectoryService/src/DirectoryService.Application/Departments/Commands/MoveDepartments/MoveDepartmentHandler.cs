@@ -69,15 +69,21 @@ public class MoveDepartmentHandler : ICommandHandler<Guid, MoveDepartmentCommand
 
         if (parentId != null)
         {
-            var parentResult = await _departmentsRepository.GetActiveByIdWithLock(
+            var parentResult = await _departmentsRepository.GetByIdWithLock(
                 DepartmentId.Create(parentId.Value), cancellationToken);
             if (parentResult.IsFailure)
             {
                 transaction.Rollback();
-                return parentResult.Error.ToErrors();
+                return DepartmentErrors.MoveParentNotFound(parentId.Value).ToErrors();
             }
 
             var parent = parentResult.Value;
+
+            if (!parent.IsActive)
+            {
+                transaction.Rollback();
+                return DepartmentErrors.MoveParentIsArchived().ToErrors();
+            }
 
             var checkParentIsChildResult = await _departmentsRepository.CheckParentIsChild(
                 parent.Path, department.Path, cancellationToken);
@@ -88,8 +94,9 @@ public class MoveDepartmentHandler : ICommandHandler<Guid, MoveDepartmentCommand
             }
 
             var moveDepartmentResult = await _departmentsRepository.MoveDepartments(
-                DepartmentId.Create(parentId.Value),
-                parent.Path, department.Path, cancellationToken);
+                parent.Path,
+                department.Path,
+                cancellationToken);
             if (moveDepartmentResult.IsFailure)
             {
                 transaction.Rollback();

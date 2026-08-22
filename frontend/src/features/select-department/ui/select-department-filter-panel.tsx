@@ -1,3 +1,9 @@
+import { FilterSelect } from "@/shared/components/filter-select";
+import {
+	activeFilterOptions,
+	sortDirectionOptions,
+} from "@/shared/model/filter-options";
+import type { FilterOption } from "@/shared/model/filter-types";
 import {
 	setDepartmentIsActive,
 	setDepartmentIsParent,
@@ -12,17 +18,10 @@ import {
 	type DepartmentSortByFilter,
 } from "@/entities/departments";
 
-import { FilterSelect } from "@/shared/components/filter-select";
-import {
-	activeFilterOptions,
-	sortDirectionOptions,
-} from "@/shared/model/filter-options";
-import { FilterOption } from "@/shared/model/filter-types";
-
 const departmentSortByOptions: Array<FilterOption<DepartmentSortByFilter>> = [
 	{ value: "name", label: "По имени" },
 	{ value: "path", label: "По пути" },
-	{ value: "created", label: "По создании" },
+	{ value: "created", label: "По созданию" },
 ];
 
 const departmentParentOptions: Array<FilterOption<DepartmentParentFilter>> = [
@@ -31,11 +30,15 @@ const departmentParentOptions: Array<FilterOption<DepartmentParentFilter>> = [
 	{ value: "children", label: "Дочерние" },
 ];
 
+type Props = {
+	stateId?: DepartmentListId;
+	hideStatusFilter?: boolean;
+};
+
 export function SelectDepartmentFilterPanel({
 	stateId,
-}: {
-	stateId?: DepartmentListId;
-}) {
+	hideStatusFilter = false,
+}: Props) {
 	const isParent = useDepartmentIsParent(stateId);
 	const isActive = useDepartmentIsActive(stateId);
 	const sortBy = useDepartmentSortBy(stateId);
@@ -43,12 +46,14 @@ export function SelectDepartmentFilterPanel({
 
 	return (
 		<aside className="bg-muted/20 h-fit space-y-2 rounded-2xl border p-5">
-			<FilterSelect
-				value={isActive}
-				label="Статус"
-				onValueChange={(value) => setDepartmentIsActive(value, stateId)}
-				items={activeFilterOptions}
-			/>
+			{!hideStatusFilter && (
+				<FilterSelect
+					value={isActive}
+					label="Статус"
+					onValueChange={(value) => setDepartmentIsActive(value, stateId)}
+					items={activeFilterOptions}
+				/>
+			)}
 
 			<FilterSelect
 				value={isParent}

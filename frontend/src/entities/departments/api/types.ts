@@ -29,3 +29,8 @@ export interface GetDepartmentTreeRootsRequest extends PaginationRequest {
 export interface GetDepartmentChildrenRequest extends PaginationRequest {
 	parentId: string;
 }
+
+export interface MoveDepartmentRequest {
+	departmentId: string;
+	parentId: string | null;
+}

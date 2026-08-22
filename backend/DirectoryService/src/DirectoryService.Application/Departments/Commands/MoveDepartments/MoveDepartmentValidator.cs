@@ -10,12 +10,12 @@ public class MoveDepartmentValidator : AbstractValidator<MoveDepartmentCommand>
     {
         RuleFor(m => m.DepartmentId)
             .NotEmpty()
-            .WithError(GeneralErrors.Required("DepartmentId"));
+            .WithError(GeneralErrors.Required("departmentId"));
 
         RuleFor(m => m.Request.ParentId)
             .Must(parentId => parentId == null || parentId != Guid.Empty)
             .WithError(GeneralErrors.Required("department.parentId"))
             .Must((m, parentId) => m.DepartmentId != parentId)
-            .WithError(GeneralErrors.Invalid("department.parentId"));
+            .WithError(DepartmentErrors.MoveWouldCreateCycle());
     }
 }

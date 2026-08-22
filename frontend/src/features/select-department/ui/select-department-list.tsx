@@ -1,18 +1,16 @@
+import { Spinner } from "@/shared/components/ui/spinner";
+import { ListEmpty } from "@/shared/ui/list-empty";
+import { ListError } from "@/shared/ui/list-error";
 import {
 	useInfiniteDepartmentsList,
 	type DepartmentId,
 	type DepartmentListId,
 	type DepartmentShortDto,
 } from "@/entities/departments";
-
-import { Spinner } from "@/shared/components/ui/spinner";
-import { ListEmpty } from "@/shared/ui/list-empty";
-import { ListError } from "@/shared/ui/list-error";
-import { useMemo } from "react";
-import { SelectDepartmentSearch } from "./select-department-filter-search";
-import { SelectedDepartment } from "./selected-department";
 import { SelectDepartmentCard } from "./select-department-card";
+import { SelectDepartmentSearch } from "./select-department-filter-search";
 import { SelectDepartmentFilterPanel } from "./select-department-filter-panel";
+import { SelectedDepartment } from "./selected-department";
 
 type Props = {
 	stateId?: DepartmentListId;
@@ -20,7 +18,23 @@ type Props = {
 	onChange: (selectedDepartments: DepartmentShortDto[]) => void;
 	multiSelect?: boolean;
 	excludeIds?: string[];
+	excludeSubtreePath?: string;
+	activeOnly?: boolean;
 };
+
+export function isDepartmentExcluded(
+	candidate: DepartmentShortDto,
+	excludeIds: string[],
+	excludeSubtreePath?: string,
+) {
+	if (excludeIds.includes(candidate.id)) return true;
+	if (excludeSubtreePath === undefined) return false;
+
+	return (
+		candidate.path === excludeSubtreePath ||
+		candidate.path.startsWith(`${excludeSubtreePath}.`)
+	);
+}
 
 export function SelectDepartmentList({
 	stateId,
@@ -28,6 +42,8 @@ export function SelectDepartmentList({
 	onChange,
 	multiSelect,
 	excludeIds = [],
+	excludeSubtreePath,
+	activeOnly = false,
 }: Props) {
 	const {
 		departments,
@@ -37,11 +53,15 @@ export function SelectDepartmentList({
 		isError,
 		isFetchingNextPage,
 		refetch,
-	} = useInfiniteDepartmentsList({ stateId });
+	} = useInfiniteDepartmentsList({
+		stateId,
+		request: activeOnly ? { isActive: true } : undefined,
+	});
 
-	const filteredDepartments = useMemo(() => {
-		return departments.filter((dep) => !excludeIds.includes(dep.id));
-	}, [departments, excludeIds]);
+	const filteredDepartments = departments.filter(
+		(candidate) =>
+			!isDepartmentExcluded(candidate, excludeIds, excludeSubtreePath),
+	);
 
 	const handleCheckedChange = (
 		selected: boolean,
@@ -56,11 +76,7 @@ export function SelectDepartmentList({
 			return;
 		}
 
-		if (selected) {
-			onChange([department]);
-		} else {
-			onChange([]);
-		}
+		onChange(selected ? [department] : []);
 	};
 
 	const handleRemoveDepartment = (id: DepartmentId) => {
@@ -70,6 +86,7 @@ export function SelectDepartmentList({
 	const isSelected = (departmentId: DepartmentId) => {
 		return selectedDepartments.some((dep) => dep.id === departmentId);
 	};
+
 	return (
 		<div className="grid h-full min-h-0 gap-6 lg:grid-cols-[1fr_210px]">
 			<div className="flex h-full min-h-0 flex-col gap-4">
@@ -91,7 +108,7 @@ export function SelectDepartmentList({
 						message={error?.message ?? "Неизвестная ошибка"}
 						onRetry={refetch}
 					/>
-				) : departments?.length === 0 ? (
+				) : departments.length === 0 ? (
 					<ListEmpty title="Подразделение" />
 				) : (
 					<div className="min-h-0 flex-1 overflow-y-auto">
@@ -113,7 +130,10 @@ export function SelectDepartmentList({
 				)}
 			</div>
 
-			<SelectDepartmentFilterPanel stateId={stateId} />
+			<SelectDepartmentFilterPanel
+				stateId={stateId}
+				hideStatusFilter={activeOnly}
+			/>
 		</div>
 	);
 }

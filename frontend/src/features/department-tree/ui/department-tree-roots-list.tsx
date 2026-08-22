@@ -1,10 +1,12 @@
 "use client";
 
+import type { DepartmentTreeDto } from "@/entities/departments";
 import { Button } from "@/shared/components/ui/button";
 import { Spinner } from "@/shared/components/ui/spinner";
 import { ListEmpty } from "@/shared/ui/list-empty";
 import { ListError } from "@/shared/ui/list-error";
 import { ChevronsDownUp } from "lucide-react";
+import type { ReactNode } from "react";
 import {
 	collapseAllDepartments,
 	DepartmentTreeId,
@@ -15,9 +17,10 @@ import { DepartmentTreeNode } from "./department-tree-node";
 
 type Props = {
 	stateId?: DepartmentTreeId;
+	renderActions?: (department: DepartmentTreeDto) => ReactNode;
 };
 
-export function DepartmentTreeRootsList({ stateId }: Props) {
+export function DepartmentTreeRootsList({ stateId, renderActions }: Props) {
 	const {
 		departmentRoots,
 		isPending,
@@ -82,6 +85,7 @@ export function DepartmentTreeRootsList({ stateId }: Props) {
 								stateId={stateId}
 								department={department}
 								depth={0}
+								renderActions={renderActions}
 							/>
 						))}
 					</ul>

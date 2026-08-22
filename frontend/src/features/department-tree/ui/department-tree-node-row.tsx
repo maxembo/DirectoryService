@@ -6,6 +6,7 @@ import {
 	TREE_GUIDE_OFFSET,
 	TREE_INDENT,
 } from "./department-tree.constants";
+import type { ReactNode } from "react";
 
 type Props = {
 	department: DepartmentTreeDto;
@@ -16,6 +17,7 @@ type Props = {
 	hasChildren: boolean;
 	onToggle: () => void;
 	onSelect: () => void;
+	actions?: ReactNode;
 };
 
 export function DepartmentTreeNodeRow({
@@ -27,6 +29,7 @@ export function DepartmentTreeNodeRow({
 	hasChildren,
 	onToggle,
 	onSelect,
+	actions,
 }: Props) {
 	return (
 		<div
@@ -115,6 +118,7 @@ export function DepartmentTreeNodeRow({
 					{department.identifier}
 				</span>
 			</button>
+			{actions}
 		</div>
 	);
 }

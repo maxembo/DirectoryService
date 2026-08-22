@@ -19,6 +19,7 @@ export type DepartmentTreeDto = {
 	isActive: boolean;
 	depth: number;
 	hasChildren: boolean;
+	path: string;
 };
 
 export type DepartmentSortByFilter = "name" | "path" | "created";

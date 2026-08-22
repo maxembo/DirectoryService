@@ -1,4 +1,3 @@
-import type { DepartmentShortDto } from "@/entities/departments";
 import { Badge } from "@/shared/components/ui/badge";
 import {
 	Card,
@@ -8,6 +7,7 @@ import {
 } from "@/shared/components/ui/card";
 import { Checkbox } from "@/shared/components/ui/checkbox";
 import { CircleCheckBig, CircleX } from "lucide-react";
+import type { DepartmentShortDto } from "@/entities/departments";
 
 type Props = {
 	department: DepartmentShortDto;
@@ -23,6 +23,7 @@ export function SelectDepartmentCard({
 	const handleCheckedChange = (checked: boolean) => {
 		onCheckedChange(checked, department);
 	};
+
 	return (
 		<Card className="hover:bg-muted/50 transition-colors">
 			<CardHeader className="flex items-center gap-4 p-4">
@@ -30,6 +31,7 @@ export function SelectDepartmentCard({
 					className="shrink-0"
 					checked={checked}
 					onCheckedChange={handleCheckedChange}
+					aria-label={`Выбрать подразделение ${department.name}`}
 				/>
 
 				<CardTitle className="min-w-0 flex-1 text-sm leading-5 font-medium">

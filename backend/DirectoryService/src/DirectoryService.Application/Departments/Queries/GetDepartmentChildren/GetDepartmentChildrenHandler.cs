@@ -72,6 +72,7 @@ public class GetDepartmentChildrenHandler
                                   d.name,
                                   d.identifier,
                                   d.depth,
+                                  d.path,
                                   d.is_active,
                                   d.created_at,
                                   d.updated_at,

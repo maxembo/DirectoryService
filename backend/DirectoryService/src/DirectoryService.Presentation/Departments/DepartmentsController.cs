@@ -56,7 +56,7 @@ public class DepartmentsController : ControllerBase
         return await handler.Handle(command, cancellationToken);
     }
 
-    [HttpPatch("{departmentId:guid}/parent")]
+    [HttpPut("{departmentId:guid}/parent")]
     public async Task<EndpointResult<Guid>> MoveDepartment(
         Guid departmentId,
         [FromServices] ICommandHandler<Guid, MoveDepartmentCommand> handler,
