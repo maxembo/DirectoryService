@@ -200,6 +200,12 @@ public sealed class Department : BaseEntity<DepartmentId>, ISoftDeletable
         return UnitResult.Success<Error>();
     }
 
+    public void SetActivity(bool isActive)
+    {
+        IsActive = isActive;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
     public void Restore()
     {
         IsActive = true;

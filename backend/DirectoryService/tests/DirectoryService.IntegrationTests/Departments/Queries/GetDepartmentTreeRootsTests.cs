@@ -2,7 +2,9 @@
 using DirectoryService.Application.Departments.Queries.GetDepartmentTreeRoots;
 using DirectoryService.Contracts.Departments.GetDepartments.Dtos;
 using DirectoryService.Contracts.Departments.GetDepartments.Requests;
+using DirectoryService.Domain.Departments;
 using DirectoryService.IntegrationTests.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 using SharedService.SharedKernel;
 using SharedService.SharedKernel.Response;
 
@@ -139,6 +141,70 @@ public class GetDepartmentTreeRootsTests(DirectoryTestWebFactory factory) : Dire
     }
 
     [Fact]
+    public async Task GetDepartmentTreeRoots_WhenOnlyActiveIsFalse_ShouldReturnActiveAndInactiveRoots()
+    {
+        // arrange
+        var locationId = await CreateLocation();
+
+        var active = await CreateParentDepartment("active", "active", [locationId]);
+        var inactive = await CreateParentDepartment("inactive", "inactive", [locationId]);
+
+        await SetDepartmentActivity(inactive.Id, false);
+        await ClearDepartmentCache();
+
+        // act
+        var result = await Execute(CreateQuery(onlyActive: false));
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.Contains(result.Value.Items, department => department.Id == active.Id.Value);
+        Assert.Contains(result.Value.Items, department => department.Id == inactive.Id.Value);
+    }
+
+    [Fact]
+    public async Task GetDepartmentTreeRoots_WhenOnlyActiveIsTrue_ShouldReturnOnlyActiveRoots()
+    {
+        // arrange
+        var locationId = await CreateLocation();
+
+        var active = await CreateParentDepartment("active", "active", [locationId]);
+        var inactive = await CreateParentDepartment("inactive", "inactive", [locationId]);
+
+        await SetDepartmentActivity(inactive.Id, false);
+        await ClearDepartmentCache();
+
+        // act
+        var result = await Execute(CreateQuery(onlyActive: true));
+
+        // assert
+        Assert.True(result.IsSuccess);
+        var root = Assert.Single(result.Value.Items);
+        Assert.Equal(active.Id.Value, root.Id);
+    }
+
+    [Fact]
+    public async Task GetDepartmentTreeRoots_WhenOnlyActiveAndChildrenAreInactive_ShouldHideChildren()
+    {
+        // arrange
+        var locationId = await CreateLocation();
+
+        var company = await CreateParentDepartment("company", "company", [locationId]);
+        var inactive = await CreateChildDepartment("inactive", "inactive", company, [locationId]);
+
+        await SetDepartmentActivity(inactive.Id, false);
+        await ClearDepartmentCache();
+
+        // act
+        var result = await Execute(CreateQuery(onlyActive: true));
+
+        // arrange
+        Assert.True(result.IsSuccess);
+        var root = Assert.Single(result.Value.Items);
+        Assert.False(root.HasChildren);
+        Assert.Empty(root.Children);
+    }
+
+    [Fact]
     public async Task GetDepartmentTreeRoots_WhenPrefetchIsSpecified_ShouldReturnLimitedDirectChildren()
     {
         // arrange
@@ -166,8 +232,16 @@ public class GetDepartmentTreeRootsTests(DirectoryTestWebFactory factory) : Dire
         Assert.Equal(prefetch, root.Children.Count);
     }
 
-    private static GetDepartmentTreeRootsQuery CreateQuery(int prefetch = 3) =>
-        new(new GetDepartmentTreeRootsRequest(prefetch));
+    private static GetDepartmentTreeRootsQuery CreateQuery(int prefetch = 3, bool onlyActive = false) =>
+        new(new GetDepartmentTreeRootsRequest(prefetch, onlyActive));
+
+    private Task SetDepartmentActivity(DepartmentId departmentId, bool isActive) =>
+        ExecuteInDb(async dbContext =>
+        {
+            var department = await dbContext.Departments.SingleAsync(d => d.Id == departmentId);
+            department.SetActivity(isActive);
+            await dbContext.SaveChangesAsync();
+        });
 
     private Task<Result<PaginationEnvelope<GetDepartmentTreeRootsDto>, Errors>> Execute(
         GetDepartmentTreeRootsQuery query)

@@ -286,6 +286,33 @@ public class SoftDeleteDepartmentTests(DirectoryTestWebFactory factory) : Direct
         });
     }
 
+    [Fact]
+    public async Task SoftDeleteDepartment_WhenDepartmentIsInactive_ShouldArchiveIt()
+    {
+        // arrange
+        var locationId = await CreateLocation();
+        var company = await CreateParentDepartment("company", "company", [locationId]);
+
+        await ExecuteInDb(async dbContext =>
+        {
+            var department = await dbContext.Departments.SingleAsync(d => d.Id == company.Id);
+            department.SetActivity(false);
+            await dbContext.SaveChangesAsync();
+        });
+
+        // act
+        var result = await Execute(new SoftDeleteDepartmentCommand(company.Id.Value));
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        await ExecuteInDb(async dbContext =>
+        {
+            var department = await dbContext.Departments.SingleAsync(d => d.Id == company.Id);
+            Assert.False(department.IsActive);
+            Assert.NotNull(department.DeletedAt);
+        });
+    }
+
     private Task<Result<Guid, Errors>> Execute(SoftDeleteDepartmentCommand command) =>
         Execute<Result<Guid, Errors>, SoftDeleteDepartmentHandler>(handler => handler.Handle(command));
 }

@@ -2,14 +2,21 @@ import {
 	departmentsApi,
 	type GetDepartmentTreeRootsRequest,
 } from "@/entities/departments";
-import { useCursorRef } from "@/shared/hooks/use-cursor-ref";
+import { useCursorRef } from "@/shared/hooks";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import {
+	useDepartmentTreeOnlyActive,
+	type DepartmentTreeId,
+} from "./department-tree-store";
 
 type Props = {
 	request?: GetDepartmentTreeRootsRequest;
+	stateId?: DepartmentTreeId;
 };
 
-export function useDepartmentTreeRoots({ request }: Props) {
+export function useDepartmentTreeRoots({ request, stateId }: Props) {
+	const onlyActive = useDepartmentTreeOnlyActive(stateId);
+
 	const {
 		data,
 		isPending,
@@ -23,6 +30,7 @@ export function useDepartmentTreeRoots({ request }: Props) {
 	} = useInfiniteQuery({
 		...departmentsApi.getDepartmentTreeRootsInfinityQueryOptions({
 			...request,
+			onlyActive,
 		}),
 	});
 

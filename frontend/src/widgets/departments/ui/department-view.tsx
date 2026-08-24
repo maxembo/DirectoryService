@@ -1,9 +1,9 @@
 "use client";
 
-import { ArchiveViewSwitch } from "@/shared/components/archive-view-switch";
-import { useArchiveView } from "@/shared/hooks/use-archive-view";
-import { ArchivedDepartmentList } from "./archived-department-list";
+import { useArchiveView } from "@/shared/hooks";
 import { DepartmentPositions } from "@/widgets/department-positions";
+import { ArchivedDepartmentList } from "./archived-department-list";
+import { DepartmentViewSwitch } from "./department-view-switch";
 
 export function DepartmentView() {
 	const { view, setView } = useArchiveView();
@@ -19,11 +19,7 @@ export function DepartmentView() {
 							: "Удалённые отделы"}
 					</p>
 				</div>
-				<ArchiveViewSwitch
-					value={view}
-					onValueChange={setView}
-					title="Режим отображения отделов"
-				/>
+				<DepartmentViewSwitch value={view} onValueChange={setView} />
 			</div>
 
 			<div className="min-h-0 flex-1 overflow-y-auto">

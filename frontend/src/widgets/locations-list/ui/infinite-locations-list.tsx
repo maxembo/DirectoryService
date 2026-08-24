@@ -8,9 +8,8 @@ import {
 	SelectedDepartment,
 } from "@/features/select-department";
 import { UpdateLocationDialog } from "@/features/update-location";
-import { ArchiveViewSwitch } from "@/shared/components/archive-view-switch";
 import { Spinner } from "@/shared/components/ui/spinner";
-import { useArchiveView } from "@/shared/hooks/use-archive-view";
+import { useArchiveView } from "@/shared/hooks";
 import { ListEmpty } from "@/shared/ui/list-empty";
 import { ListError } from "@/shared/ui/list-error";
 import { useState } from "react";
@@ -22,6 +21,7 @@ import {
 	useLocationSelectedDepartments,
 } from "../model/location-list-store";
 import { LocationFilters } from "./location-filters";
+import { LocationArchiveViewSwitch } from "./location-archive-view-switch";
 
 const LOCATIONS_DEPARTMENT_SELECT_STATE_ID = "locations-department-select";
 
@@ -86,11 +86,7 @@ export function InfiniteLocationsList() {
 					</p>
 				</div>
 
-				<ArchiveViewSwitch
-					value={view}
-					onValueChange={setView}
-					title="Режим отображения локаций"
-				/>
+				<LocationArchiveViewSwitch value={view} onValueChange={setView} />
 			</div>
 
 			<LocationFilters />

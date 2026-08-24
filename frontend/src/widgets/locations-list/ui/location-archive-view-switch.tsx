@@ -1,18 +1,17 @@
 import { Button } from "@/shared/components/ui/button";
-import { ArchiveView } from "@/shared/hooks/use-archive-view";
+import type { ArchiveView } from "@/shared/hooks";
 
 type Props = {
 	value: ArchiveView;
 	onValueChange: (value: ArchiveView) => void;
-	title?: string;
 };
 
-export function ArchiveViewSwitch({ value, onValueChange, title }: Props) {
+export function LocationArchiveViewSwitch({ value, onValueChange }: Props) {
 	return (
 		<div
 			role="group"
 			className="bg-muted flex justify-end gap-2 rounded-2xl border p-2"
-			title={title ?? "Режим отображения"}
+			aria-label="Режим отображения локаций"
 		>
 			<Button
 				type="button"

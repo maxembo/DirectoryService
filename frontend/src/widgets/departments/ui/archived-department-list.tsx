@@ -22,6 +22,7 @@ export function ArchivedDepartmentList() {
 	} = useInfiniteDepartmentsList({
 		request: {
 			isActive: false,
+			isArchived: true,
 			search: debouncedSearch,
 		},
 	});

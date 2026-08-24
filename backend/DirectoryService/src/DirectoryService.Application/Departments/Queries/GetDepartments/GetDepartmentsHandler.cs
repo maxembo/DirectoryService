@@ -52,6 +52,11 @@ public class GetDepartmentsHandler : IQueryHandler<PaginationEnvelope<Department
             conditions.Add("d.is_active = @isActive");
         }
 
+        if (request.IsArchived.HasValue)
+        {
+            conditions.Add(request.IsArchived.Value ? "d.deleted_at IS NOT NULL" : "d.deleted_at IS NULL");
+        }
+
         if (request.ParentId.HasValue)
         {
             parameters.Add("parentId", request.ParentId, DbType.Guid);

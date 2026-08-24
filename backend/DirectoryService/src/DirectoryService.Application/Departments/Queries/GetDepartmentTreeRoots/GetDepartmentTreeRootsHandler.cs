@@ -48,6 +48,7 @@ public class
     {
         string key = CacheKeys.CreateDepartmentsKey(
             "prefetch", query.Request.Prefetch.ToString(),
+            "onlyActive", query.Request.OnlyActive.ToString(),
             "page", query.Request.Page.ToString(),
             "pageSize", query.Request.PageSize.ToString());
 
@@ -69,75 +70,79 @@ public class
         GetDepartmentTreeRootsQuery query)
     {
         const string sql = """
-                           WITH roots AS (SELECT d.id,
-                                                 d.parent_id,
-                                                 d.name,
-                                                 d.identifier,
-                                                 d.depth,
-                                                 d.path,
-                                                 d.is_active,
-                                                 d.created_at,
-                                                 d.updated_at,
-                                                 COUNT(*) OVER () AS total_count
-                                          FROM departments d
-                                          WHERE d.parent_id IS NULL 
-                                                AND d.is_active = true
-                                          ORDER BY d.created_at
-                                          LIMIT @RootSize OFFSET @RootPage),
+                      WITH roots AS (SELECT d.id,
+                                            d.parent_id,
+                                            d.name,
+                                            d.identifier,
+                                            d.depth,
+                                            d.path,
+                                            d.is_active,
+                                            d.created_at,
+                                            d.updated_at,
+                                            COUNT(*) OVER () AS total_count
+                                     FROM departments d
+                                     WHERE d.parent_id IS NULL
+                                       AND d.deleted_at IS NULL
+                                       AND (@OnlyActive = FALSE OR d.is_active = TRUE)
+                                     ORDER BY d.created_at
+                                     LIMIT @RootSize OFFSET @RootPage),
 
-                                ranked_children AS (SELECT d.id,
-                                                           d.parent_id,
-                                                           d.name,
-                                                           d.identifier,
-                                                           d.depth,
-                                                           d.path,
-                                                           d.is_active,
-                                                           d.created_at,
-                                                           d.updated_at,
-                                                           ROW_NUMBER() OVER (PARTITION BY d.parent_id ORDER BY d.created_at) AS child_rank,
-                                                           COUNT(*) OVER ()                                                   AS total_count
-                                                    FROM departments d
-                                                             JOIN roots r ON d.parent_id = r.id
-                                                    WHERE d.is_active = true)
+                           ranked_children AS (SELECT d.id,
+                                                      d.parent_id,
+                                                      d.name,
+                                                      d.identifier,
+                                                      d.depth,
+                                                      d.path,
+                                                      d.is_active,
+                                                      d.created_at,
+                                                      d.updated_at,
+                                                      ROW_NUMBER() OVER (PARTITION BY d.parent_id ORDER BY d.created_at) AS child_rank,
+                                                      COUNT(*) OVER ()                                                   AS total_count
+                                               FROM departments d
+                                                        JOIN roots r ON d.parent_id = r.id
+                                               WHERE d.deleted_at IS NULL
+                                                 AND (@OnlyActive = FALSE OR d.is_active = TRUE))
 
-                           SELECT r.id,
-                                  r.parent_id,
-                                  r.name,
-                                  r.identifier,
-                                  r.depth,
-                                  r.path,
-                                  r.is_active,
-                                  r.created_at,
-                                  r.updated_at,
-                                  r.total_count,
+                      SELECT r.id,
+                             r.parent_id,
+                             r.name,
+                             r.identifier,
+                             r.depth,
+                             r.path,
+                             r.is_active,
+                             r.created_at,
+                             r.updated_at,
+                             r.total_count,
 
-                                  (EXISTS(SELECT 1
-                                          FROM departments d
-                                          WHERE d.parent_id = r.id 
-                                            AND d.is_active = true)) AS has_more_children
-                           FROM roots r
+                             (EXISTS(SELECT 1
+                                     FROM departments d
+                                     WHERE d.parent_id = r.id
+                                       AND d.deleted_at IS NULL
+                                       AND (@OnlyActive = FALSE OR d.is_active = TRUE))) AS has_more_children
+                      FROM roots r
 
-                           UNION ALL
+                      UNION ALL
 
-                           SELECT rc.id,
-                                  rc.parent_id,
-                                  rc.name,
-                                  rc.identifier,
-                                  rc.depth,
-                                  rc.path,
-                                  rc.is_active,
-                                  rc.created_at,
-                                  rc.updated_at,
-                                  rc.total_count,
+                      SELECT rc.id,
+                             rc.parent_id,
+                             rc.name,
+                             rc.identifier,
+                             rc.depth,
+                             rc.path,
+                             rc.is_active,
+                             rc.created_at,
+                             rc.updated_at,
+                             rc.total_count,
 
-                                  (EXISTS(SELECT 1
-                                          FROM departments d
-                                          WHERE d.parent_id = rc.id 
-                                            AND d.is_active = true)) AS has_more_children
+                             (EXISTS(SELECT 1
+                                     FROM departments d
+                                     WHERE d.parent_id = rc.id
+                                       AND d.deleted_at IS NULL
+                                       AND (@OnlyActive = FALSE OR d.is_active = TRUE))) AS has_more_children
 
-                           FROM ranked_children rc
-                           WHERE rc.child_rank <= @Prefetch
-                           """;
+                      FROM ranked_children rc
+                      WHERE rc.child_rank <= @Prefetch;
+                      """;
 
         var dbConnection = _dbConnectionFactory.GetDbConnection();
 
@@ -157,6 +162,7 @@ public class
                 },
                 param: new
                 {
+                    query.Request.OnlyActive,
                     RootSize = query.Request.PageSize,
                     RootPage = (query.Request.Page - 1) * query.Request.PageSize,
                     Prefetch = query.Request.Prefetch,

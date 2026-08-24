@@ -2,7 +2,9 @@
 using DirectoryService.Application.Departments.Queries.GetDepartmentChildren;
 using DirectoryService.Contracts.Departments.GetDepartments.Dtos;
 using DirectoryService.Contracts.Departments.GetDepartments.Requests;
+using DirectoryService.Domain.Departments;
 using DirectoryService.IntegrationTests.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 using SharedService.SharedKernel;
 using SharedService.SharedKernel.Response;
 
@@ -293,6 +295,59 @@ public class GetDepartmentChildrenTests(DirectoryTestWebFactory factory) : Direc
     }
 
     [Fact]
+    public async Task GetDepartmentChildren_WhenOnlyActiveIsFalse_ShouldReturnActiveAndInactiveChildren()
+    {
+        var locationId = await CreateLocation();
+        var company = await CreateParentDepartment("company", "company", [locationId]);
+        var active = await CreateChildDepartment("active", "active", company, [locationId]);
+        var inactive = await CreateChildDepartment("inactive", "inactive", company, [locationId]);
+        await SetDepartmentActivity(inactive.Id, false);
+
+        var result = await Execute(CreateQuery(company.Id.Value, onlyActive: false));
+
+        Assert.True(result.IsSuccess);
+        Assert.Contains(result.Value.Items, department => department.Id == active.Id.Value);
+        Assert.Contains(result.Value.Items, department => department.Id == inactive.Id.Value);
+    }
+
+    [Fact]
+    public async Task GetDepartmentChildren_WhenOnlyActiveIsTrue_ShouldReturnOnlyActiveChildren()
+    {
+        var locationId = await CreateLocation();
+        var company = await CreateParentDepartment("company", "company", [locationId]);
+        var active = await CreateChildDepartment("active", "active", company, [locationId]);
+        var inactive = await CreateChildDepartment("inactive", "inactive", company, [locationId]);
+        await SetDepartmentActivity(inactive.Id, false);
+
+        var result = await Execute(CreateQuery(company.Id.Value, onlyActive: true));
+
+        Assert.True(result.IsSuccess);
+        var child = Assert.Single(result.Value.Items);
+        Assert.Equal(active.Id.Value, child.Id);
+    }
+
+    [Fact]
+    public async Task GetDepartmentChildren_WhenOnlyActiveAndDescendantIsInactive_ShouldSetHasChildrenToFalse()
+    {
+        // arrange
+        var locationId = await CreateLocation();
+
+        var company = await CreateParentDepartment("company", "company", [locationId]);
+        var backend = await CreateChildDepartment("backend", "backend", company, [locationId]);
+        var inactive = await CreateChildDepartment("inactive", "inactive", backend, [locationId]);
+
+        await SetDepartmentActivity(inactive.Id, false);
+
+        // act
+        var result = await Execute(CreateQuery(company.Id.Value, onlyActive: true));
+
+        // assert
+        Assert.True(result.IsSuccess);
+        var child = Assert.Single(result.Value.Items);
+        Assert.False(child.HasChildren);
+    }
+
+    [Fact]
     public async Task GetDepartmentChildren_WhenChildHasActiveDescendant_ShouldSetHasChildrenToTrue()
     {
         // arrange
@@ -360,10 +415,19 @@ public class GetDepartmentChildrenTests(DirectoryTestWebFactory factory) : Direc
     private static GetDepartmentChildrenQuery CreateQuery(
         Guid parentId,
         int page = 1,
-        int pageSize = 20) =>
+        int pageSize = 20,
+        bool onlyActive = false) =>
         new(
             parentId,
-            new GetDepartmentChildrenRequest { Page = page, PageSize = pageSize });
+            new GetDepartmentChildrenRequest(onlyActive) { Page = page, PageSize = pageSize });
+
+    private Task SetDepartmentActivity(DepartmentId departmentId, bool isActive) =>
+        ExecuteInDb(async dbContext =>
+        {
+            var department = await dbContext.Departments.SingleAsync(d => d.Id == departmentId);
+            department.SetActivity(isActive);
+            await dbContext.SaveChangesAsync();
+        });
 
     private Task<Result<PaginationEnvelope<GetDepartmentChildrenDto>, Errors>> Execute(GetDepartmentChildrenQuery query)
         => Execute<Result<PaginationEnvelope<GetDepartmentChildrenDto>, Errors>,
