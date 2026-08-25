@@ -61,8 +61,7 @@ public class SoftDeleteDepartmentHandler : ICommandHandler<Guid, SoftDeleteDepar
 
         using var transaction = transactionResult.Value;
 
-        var departmentResult = await _departmentsRepository.GetBy(
-            d => d.Id == departmentId && d.IsActive == true, cancellationToken);
+        var departmentResult = await _departmentsRepository.GetByIdWithLock(departmentId, cancellationToken);
         if (departmentResult.IsFailure)
         {
             transaction.Rollback();
@@ -70,6 +69,12 @@ public class SoftDeleteDepartmentHandler : ICommandHandler<Guid, SoftDeleteDepar
         }
 
         var department = departmentResult.Value;
+
+        if (department.DeletedAt is not null)
+        {
+            transaction.Rollback();
+            return GeneralErrors.NotFound("department", departmentId.Value).ToErrors();
+        }
 
         department.MarkAsDelete();
 

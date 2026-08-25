@@ -1,3 +1,3 @@
 ﻿namespace DirectoryService.Contracts.Departments.GetDepartments.Requests;
 
-public record GetDepartmentChildrenRequest() : PaginationRequest;
+public record GetDepartmentChildrenRequest(bool OnlyActive = false) : PaginationRequest;

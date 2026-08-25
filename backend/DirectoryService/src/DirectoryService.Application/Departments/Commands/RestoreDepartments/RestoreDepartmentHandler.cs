@@ -70,6 +70,12 @@ public class RestoreDepartmentHandler : ICommandHandler<Guid, RestoreDepartmentC
             return department.Id.Value;
         }
 
+        if (department.DeletedAt is null)
+        {
+            transaction.Rollback();
+            return DepartmentErrors.DepartmentIsNotArchived().ToErrors();
+        }
+
         await _departmentsRepository.LockDescendants(department.Path, cancellationToken);
 
         Path restoredPath;

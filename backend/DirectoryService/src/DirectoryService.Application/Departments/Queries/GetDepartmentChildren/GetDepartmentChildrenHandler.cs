@@ -46,6 +46,7 @@ public class GetDepartmentChildrenHandler
     {
         string key = CacheKeys.CreateDepartmentsKey(
             "parentId", query.ParentId.ToString(),
+            "onlyActive", query.Request.OnlyActive.ToString(),
             "page", query.Request.Page.ToString(),
             "pageSize", query.Request.PageSize.ToString());
 
@@ -67,29 +68,31 @@ public class GetDepartmentChildrenHandler
         GetDepartmentChildrenQuery query)
     {
         const string sql = """
-                           SELECT d.id,
-                                  d.parent_id,
-                                  d.name,
-                                  d.identifier,
-                                  d.depth,
-                                  d.path,
-                                  d.is_active,
-                                  d.created_at,
-                                  d.updated_at,
-                                  d.deleted_at,
+                      SELECT d.id,
+                             d.parent_id,
+                             d.name,
+                             d.identifier,
+                             d.depth,
+                             d.path,
+                             d.is_active,
+                             d.created_at,
+                             d.updated_at,
+                             d.deleted_at,
 
-                                  (EXISTS(SELECT 1
-                                          FROM departments child
-                                          WHERE parent_id = d.id 
-                                            AND child.is_active = true)) AS has_more_children,
+                             (EXISTS(SELECT 1
+                                     FROM departments child
+                                     WHERE parent_id = d.id
+                                       AND child.deleted_at IS NULL
+                                       AND (@OnlyActive = FALSE OR child.is_active = TRUE))) AS has_more_children,
 
-                                  COUNT(*) OVER ()                 AS total_count
-                           FROM departments d
-                           WHERE d.parent_id = @ParentId
-                             AND d.is_active = true
-                           ORDER BY d.created_at, d.id
-                           LIMIT @ChildSize OFFSET @ChildPage
-                           """;
+                             COUNT(*) OVER ()                 AS total_count
+                      FROM departments d
+                      WHERE d.parent_id = @ParentId
+                        AND d.deleted_at IS NULL
+                        AND (@OnlyActive = FALSE OR d.is_active = TRUE)
+                      ORDER BY d.created_at, d.id
+                      LIMIT @ChildSize OFFSET @ChildPage
+                      """;
 
         var dbConnection = _dbConnectionFactory.GetDbConnection();
 
@@ -111,6 +114,7 @@ public class GetDepartmentChildrenHandler
                 new
                 {
                     ParentId = query.ParentId,
+                    query.Request.OnlyActive,
                     ChildSize = query.Request.PageSize,
                     ChildPage = (query.Request.Page - 1) * query.Request.PageSize,
                 })).ToList();

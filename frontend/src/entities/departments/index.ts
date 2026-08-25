@@ -1,6 +1,11 @@
 export { departmentsApi } from "./api/api";
+export {
+	optimisticallyUpdateDepartmentActivity,
+	restoreDepartmentQueries,
+} from "./api/department-activity-cache";
 
 export type {
+	ChangeDepartmentActivityRequest,
 	GetDepartmentChildrenRequest,
 	GetDepartmentsInfinityRequest,
 	GetDepartmentsRequest,

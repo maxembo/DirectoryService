@@ -34,6 +34,7 @@ export function useDepartmentTreeNode({ department, stateId }: Props) {
 	} = useInfiniteDepartmentChildren({
 		request: { parentId: department.id },
 		enabled: isExpanded && hasChildren,
+		stateId,
 	});
 
 	const handleToggle = () => {

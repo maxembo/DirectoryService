@@ -7,6 +7,7 @@ export type DepartmentTreeId = string;
 type DepartmentTreeState = {
 	selectedId: DepartmentId | null;
 	expandedIds: DepartmentId[];
+	onlyActive: boolean;
 };
 
 type DepartmentTreeStates = Record<
@@ -17,6 +18,7 @@ type DepartmentTreeStates = Record<
 const initialState: DepartmentTreeState = {
 	selectedId: null,
 	expandedIds: [],
+	onlyActive: false,
 };
 
 const DEFAULT_STATE_ID = "__default__";
@@ -29,7 +31,7 @@ const resolveStateId = (stateId?: DepartmentTreeId) =>
 const getDepartmentTreeState = (
 	states: DepartmentTreeStates,
 	stateId?: DepartmentTreeId,
-) => states[resolveStateId(stateId)] ?? initialState;
+) => ({ ...initialState, ...states[resolveStateId(stateId)] });
 
 const useDepartmentTreeStore = create<DepartmentTreeStates>()(
 	persist(() => ({ ...initialStates }), {
@@ -100,6 +102,22 @@ export const collapseAllDepartments = (stateId?: DepartmentTreeId) =>
 		[resolveStateId(stateId)]: {
 			...getDepartmentTreeState(states, stateId),
 			expandedIds: [],
+		},
+	}));
+
+export const useDepartmentTreeOnlyActive = (stateId?: DepartmentTreeId) =>
+	useDepartmentTreeStore(
+		(state) => getDepartmentTreeState(state, stateId).onlyActive,
+	);
+
+export const setDepartmentTreeOnlyActive = (
+	onlyActive: boolean,
+	stateId?: DepartmentTreeId,
+) =>
+	useDepartmentTreeStore.setState((states) => ({
+		[resolveStateId(stateId)]: {
+			...getDepartmentTreeState(states, stateId),
+			onlyActive,
 		},
 	}));
 

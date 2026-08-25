@@ -1,6 +1,6 @@
 import type { DepartmentParentFilter, DepartmentSortByFilter } from "./types";
-import { PAGE_SIZE } from "@/shared/api/pagination-request";
-import { ActiveFilter, SortDirectionFilter } from "@/shared/model/filter-types";
+import { PAGE_SIZE } from "@/shared/api";
+import type { ActiveFilter, SortDirectionFilter } from "@/shared/model";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 

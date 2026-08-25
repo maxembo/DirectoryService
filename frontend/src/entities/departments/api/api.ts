@@ -1,9 +1,9 @@
-import { apiClient } from "@/shared/api/axios-instance";
 import {
+	apiClient,
 	Envelope,
 	envelopeInfinityQueryOptions,
 	PaginationEnvelope,
-} from "@/shared/api/envelops";
+} from "@/shared/api";
 import { infiniteQueryOptions } from "@tanstack/react-query";
 import {
 	DepartmentId,
@@ -11,6 +11,7 @@ import {
 	DepartmentTreeDto,
 } from "../model/types";
 import {
+	type ChangeDepartmentActivityRequest,
 	GetDepartmentChildrenRequest,
 	GetDepartmentsInfinityRequest,
 	GetDepartmentsRequest,
@@ -110,6 +111,18 @@ export const departmentsApi = {
 		const response = await apiClient.put<Envelope<DepartmentId>>(
 			`${DEPARTMENTS_ENDPOINT}/${request.departmentId}/parent`,
 			{ parentId: request.parentId },
+		);
+
+		return response.data;
+	},
+
+	changeDepartmentActivity: async ({
+		departmentId,
+		isActive,
+	}: ChangeDepartmentActivityRequest) => {
+		const response = await apiClient.patch<Envelope<DepartmentId>>(
+			`${DEPARTMENTS_ENDPOINT}/${departmentId}/activity`,
+			{ isActive },
 		);
 
 		return response.data;

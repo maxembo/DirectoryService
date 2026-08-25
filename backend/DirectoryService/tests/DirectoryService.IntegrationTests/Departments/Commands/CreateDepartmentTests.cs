@@ -18,11 +18,10 @@ public class CreateDepartmentTests : DirectoryBaseTests
     public async Task CreateDepartmentWithoutLocationShouldFailed()
     {
         // arrange
-        var cancellationToken = CancellationToken.None;
+        var command = CreateCommand("подразделение", "company", null, []);
 
         // act
-        var result = await Execute(
-            new CreateDepartmentCommand(new CreateDepartmentRequest("подразделение", "company", null, [])));
+        var result = await Execute(command);
 
         // assert
         Assert.NotEmpty(result.Error);
@@ -39,10 +38,10 @@ public class CreateDepartmentTests : DirectoryBaseTests
 
         await CreateParentDepartment("подразделение", "company", [locationId]);
 
+        var command = CreateCommand("подразделение", "company", null, [locationId.Value]);
+
         // act
-        var result = await Execute(
-            new CreateDepartmentCommand(
-                new CreateDepartmentRequest("подразделение", "company", null, [locationId.Value])));
+        var result = await Execute(command);
 
         // assert
         Assert.NotEmpty(result.Error);
@@ -55,16 +54,30 @@ public class CreateDepartmentTests : DirectoryBaseTests
         // arrange
         var locationId = await CreateLocation("локация");
 
-        var cancellationToken = CancellationToken.None;
+        var command = CreateCommand(string.Empty, "company", null, [locationId.Value]);
 
         // act
-        var result = await Execute(
-            new CreateDepartmentCommand(
-                new CreateDepartmentRequest(string.Empty, "company", null, [locationId.Value])));
+        var result = await Execute(command);
 
         // assert
         Assert.NotEmpty(result.Error);
         Assert.True(result.IsFailure);
+    }
+
+    [Fact]
+    public async Task CreateDepartment_WhenIdentifierUsesArchivedPathPrefix_ShouldFail()
+    {
+        // arrange
+        var locationId = await CreateLocation("локация");
+
+        var command = CreateCommand("подразделение", "delete-company", null, [locationId.Value]);
+
+        // act
+        var result = await Execute(command);
+
+        // assert
+        Assert.True(result.IsFailure);
+        Assert.Contains(result.Error, error => error.InvalidField == "department.identifier");
     }
 
     [Fact]
@@ -77,10 +90,10 @@ public class CreateDepartmentTests : DirectoryBaseTests
 
         var parent = await CreateParentDepartment("подразделение", "company", [locationId]);
 
+        var command = CreateCommand("подразделение 1", "sales", parent.Id.Value, [locationId.Value]);
+
         // act
-        var result = await Execute(
-            new CreateDepartmentCommand(
-                new CreateDepartmentRequest("подразделение 1", "sales", parent.Id.Value, [locationId.Value])));
+        var result = await Execute(command);
 
         // assert
         await ExecuteInDb(async dbContext =>
@@ -104,10 +117,10 @@ public class CreateDepartmentTests : DirectoryBaseTests
 
         var cancellationToken = CancellationToken.None;
 
+        var command = CreateCommand("подразделение", "company", null, [locationId.Value]);
+
         // act
-        var result = await Execute(
-            new CreateDepartmentCommand(
-                new CreateDepartmentRequest("подразделение", "company", null, [locationId.Value])));
+        var result = await Execute(command);
 
         // assert
         await ExecuteInDb(async dbContext =>
@@ -122,6 +135,10 @@ public class CreateDepartmentTests : DirectoryBaseTests
         Assert.True(result.IsSuccess);
         Assert.NotEqual(Guid.Empty, result.Value);
     }
+
+    private static CreateDepartmentCommand CreateCommand(
+        string name, string identifier, Guid? parentId, Guid[] locationIds) =>
+        new(new CreateDepartmentRequest(name, identifier, parentId, locationIds));
 
     private Task<Result<Guid, Errors>> Execute(CreateDepartmentCommand command)
         => Execute<Result<Guid, Errors>, CreateDepartmentHandler>(handler => handler.Handle(

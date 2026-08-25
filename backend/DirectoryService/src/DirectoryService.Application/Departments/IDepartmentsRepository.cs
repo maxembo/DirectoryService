@@ -23,6 +23,8 @@ public interface IDepartmentsRepository
 
     Task LockDescendants(Path path, CancellationToken cancellationToken = default);
 
+    Task<bool> HasActiveDescendants(Path path, CancellationToken cancellationToken = default);
+
     Task<UnitResult<Error>> MoveDepartments(
         Path parentPath,
         Path departmentPath,

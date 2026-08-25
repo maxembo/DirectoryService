@@ -4,6 +4,38 @@ namespace DirectoryService.Application.Departments;
 
 public static class DepartmentErrors
 {
+    public static Error ArchivedActivityCannotBeChanged()
+    {
+        return Error.Conflict(
+            "department.activity.archived",
+            "Нельзя изменить активность подразделения, находящегося в архиве.",
+            "departmentId");
+    }
+
+    public static Error ActiveDescendantsPreventDeactivation()
+    {
+        return Error.Conflict(
+            "department.activity.active_descendants",
+            "Нельзя деактивировать подразделение, пока у него есть активные дочерние подразделения.",
+            "departmentId");
+    }
+
+    public static Error InactiveParentPreventsActivation()
+    {
+        return Error.Conflict(
+            "department.activity.inactive_parent",
+            "Сначала активируйте родительское подразделение.",
+            "departmentId");
+    }
+
+    public static Error DepartmentIsNotArchived()
+    {
+        return Error.Conflict(
+            "department.restore.not_archived",
+            "Подразделение не находится в архиве.",
+            "departmentId");
+    }
+
     public static Error ParentIsArchived()
     {
         return Error.Conflict(

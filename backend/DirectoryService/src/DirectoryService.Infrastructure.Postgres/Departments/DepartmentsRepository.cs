@@ -149,6 +149,27 @@ public class DepartmentsRepository : IDepartmentsRepository
         await dbConnection.QueryAsync(sql, sqlParams);
     }
 
+    public async Task<bool> HasActiveDescendants(Path path, CancellationToken cancellationToken = default)
+    {
+        const string sql = """
+                           SELECT EXISTS(
+                               SELECT 1
+                               FROM departments
+                               WHERE path <@ @parentPath::ltree
+                                 AND path <> @parentPath::ltree
+                                 AND deleted_at IS NULL
+                                 AND is_active = TRUE
+                                 AND NOT path ~ '*.delete-*.*'::lquery)
+                           """;
+
+        var command = new CommandDefinition(
+            sql,
+            new { parentPath = path.Value },
+            cancellationToken: cancellationToken);
+
+        return await _dbContext.Database.GetDbConnection().QuerySingleAsync<bool>(command);
+    }
+
     public async Task<UnitResult<Error>> MoveDepartments(
         Path parentPath,
         Path departmentPath,

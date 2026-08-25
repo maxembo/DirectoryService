@@ -1,4 +1,5 @@
-﻿using DirectoryService.Application.Departments.Commands.CreateDepartments;
+﻿using DirectoryService.Application.Departments.Commands.ChangeDepartmentActivity;
+using DirectoryService.Application.Departments.Commands.CreateDepartments;
 using DirectoryService.Application.Departments.Commands.MoveDepartments;
 using DirectoryService.Application.Departments.Commands.RestoreDepartments;
 using DirectoryService.Application.Departments.Commands.SoftDeleteDepartments;
@@ -7,6 +8,7 @@ using DirectoryService.Application.Departments.Queries.GetDepartmentChildren;
 using DirectoryService.Application.Departments.Queries.GetDepartments;
 using DirectoryService.Application.Departments.Queries.GetDepartmentTreeRoots;
 using DirectoryService.Application.Departments.Queries.GetTopFiveDepartmentsWithMostPositions;
+using DirectoryService.Contracts.Departments.ChangeActivity;
 using DirectoryService.Contracts.Departments.CreateDepartments;
 using DirectoryService.Contracts.Departments.GetDepartments.Dtos;
 using DirectoryService.Contracts.Departments.GetDepartments.Requests;
@@ -145,6 +147,18 @@ public class DepartmentsController : ControllerBase
         CancellationToken cancellationToken)
     {
         var command = new RestoreDepartmentCommand(departmentId);
+
+        return await handler.Handle(command, cancellationToken);
+    }
+
+    [HttpPatch("{departmentId:guid}/activity")]
+    public async Task<EndpointResult<Guid>> ChangeActivity(
+        Guid departmentId,
+        [FromServices] ICommandHandler<Guid, ChangeDepartmentActivityCommand> handler,
+        [FromBody] ChangeDepartmentActivityRequest request,
+        CancellationToken cancellationToken)
+    {
+        var command = new ChangeDepartmentActivityCommand(departmentId, request.IsActive);
 
         return await handler.Handle(command, cancellationToken);
     }

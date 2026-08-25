@@ -9,6 +9,7 @@ using FluentValidation;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
 using SharedService.Core.Abstractions;
+using SharedService.Core.Database;
 using SharedService.Core.Validation;
 using SharedService.SharedKernel;
 
@@ -20,19 +21,23 @@ public class CreateDepartmentHandler : ICommandHandler<Guid, CreateDepartmentCom
     private readonly IDepartmentsRepository _departmentsRepository;
     private readonly ILocationsRepository _locationsRepository;
     private readonly ILogger<CreateDepartmentHandler> _logger;
+    private readonly ITransactionManager _transactionManager;
     private readonly IValidator<CreateDepartmentRequest> _validator;
 
     public CreateDepartmentHandler(
         ILocationsRepository locationsRepository,
         IDepartmentsRepository departmentsRepository,
         IValidator<CreateDepartmentRequest> validator,
-        ILogger<CreateDepartmentHandler> logger, HybridCache cache)
+        ILogger<CreateDepartmentHandler> logger,
+        HybridCache cache,
+        ITransactionManager transactionManager)
     {
         _validator = validator;
         _locationsRepository = locationsRepository;
         _departmentsRepository = departmentsRepository;
         _logger = logger;
         _cache = cache;
+        _transactionManager = transactionManager;
     }
 
     public async Task<Result<Guid, Errors>> Handle(
@@ -60,6 +65,14 @@ public class CreateDepartmentHandler : ICommandHandler<Guid, CreateDepartmentCom
             return checkExistingIdsResult.Error;
         }
 
+        var transactionResult = await _transactionManager.BeginTransactionAsync(cancellationToken);
+        if (transactionResult.IsFailure)
+        {
+            return transactionResult.Error.ToErrors();
+        }
+
+        using var transaction = transactionResult.Value;
+
         var locationIds =
             command.Request.LocationIds.Select(l => new DepartmentLocation(
                     DepartmentLocationId.CreateNew(), departmentId, LocationId.Create(l)))
@@ -82,10 +95,17 @@ public class CreateDepartmentHandler : ICommandHandler<Guid, CreateDepartmentCom
             var parentDepartmentId = DepartmentId.Create(parentId.Value);
 
             var getParentDepartmentResult =
-                await _departmentsRepository.GetByIdAsync(parentDepartmentId, cancellationToken);
+                await _departmentsRepository.GetByIdWithLock(parentDepartmentId, cancellationToken);
             if (getParentDepartmentResult.IsFailure)
             {
+                transaction.Rollback();
                 return getParentDepartmentResult.Error.ToErrors();
+            }
+
+            if (!getParentDepartmentResult.Value.IsActive || getParentDepartmentResult.Value.DeletedAt is not null)
+            {
+                transaction.Rollback();
+                return GeneralErrors.NotFound("department", parentDepartmentId.Value).ToErrors();
             }
 
             var childParentDepartmentResult = Department.CreateChild(
@@ -101,8 +121,16 @@ public class CreateDepartmentHandler : ICommandHandler<Guid, CreateDepartmentCom
         var repositoryResult = await _departmentsRepository.AddAsync(department, cancellationToken);
         if (repositoryResult.IsFailure)
         {
+            transaction.Rollback();
             return Error.Failure(null, repositoryResult.Error.Message)
                 .ToErrors();
+        }
+
+        var commitResult = transaction.Commit();
+        if (commitResult.IsFailure)
+        {
+            transaction.Rollback();
+            return commitResult.Error.ToErrors();
         }
 
         await _cache.RemoveByTagAsync(CacheKeys.DEPARTMENT_KEY, cancellationToken);

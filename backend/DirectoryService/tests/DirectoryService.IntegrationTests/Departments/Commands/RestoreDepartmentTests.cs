@@ -498,6 +498,35 @@ public class RestoreDepartmentTests(DirectoryTestWebFactory factory) : Directory
     }
 
     [Fact]
+    public async Task RestoreDepartment_WhenDepartmentIsInactiveButNotArchived_ShouldFail()
+    {
+        // arrange
+        var locationId = await CreateLocation();
+        var department = await CreateParentDepartment("company", "company", [locationId]);
+
+        await ExecuteInDb(async dbContext =>
+        {
+            var storedDepartment = await dbContext.Departments.SingleAsync(d => d.Id == department.Id);
+            storedDepartment.SetActivity(false);
+            await dbContext.SaveChangesAsync();
+        });
+
+        // act
+        var result = await Execute(new RestoreDepartmentCommand(department.Id.Value));
+
+        // assert
+        Assert.True(result.IsFailure);
+        Assert.Contains(result.Error, error => error.Code == "department.restore.not_archived");
+
+        await ExecuteInDb(async dbContext =>
+        {
+            var storedDepartment = await dbContext.Departments.SingleAsync(d => d.Id == department.Id);
+            Assert.False(storedDepartment.IsActive);
+            Assert.Null(storedDepartment.DeletedAt);
+        });
+    }
+
+    [Fact]
     public async Task RestoreDepartment_WhenParentIsActive_ShouldSucceed()
     {
         // arrange

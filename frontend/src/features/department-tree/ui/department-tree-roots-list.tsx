@@ -10,10 +10,13 @@ import type { ReactNode } from "react";
 import {
 	collapseAllDepartments,
 	DepartmentTreeId,
+	setDepartmentTreeOnlyActive,
 	useDepartmentTreeExpandedIds,
+	useDepartmentTreeOnlyActive,
 } from "../model/department-tree-store";
 import { useDepartmentTreeRoots } from "../model/use-department-tree-roots";
 import { DepartmentTreeNode } from "./department-tree-node";
+import { Checkbox } from "@/shared/components/ui/checkbox";
 
 type Props = {
 	stateId?: DepartmentTreeId;
@@ -31,11 +34,17 @@ export function DepartmentTreeRootsList({ stateId, renderActions }: Props) {
 		isFetchNextPageError,
 		fetchNextPage,
 		refetch,
-	} = useDepartmentTreeRoots({});
+	} = useDepartmentTreeRoots({ stateId });
 
 	const expandedIds = useDepartmentTreeExpandedIds(stateId);
+	const onlyActive = useDepartmentTreeOnlyActive(stateId);
 
 	const hasExpandedBranches = expandedIds.length > 0;
+
+	const handleActiveChange = (checked: boolean | "indeterminate") => {
+		setDepartmentTreeOnlyActive(checked === true, stateId);
+		collapseAllDepartments(stateId);
+	};
 	return (
 		<section className="bg-background flex h-full min-h-0 w-full flex-col rounded-xl border">
 			<div className="flex items-center justify-between border-b px-4 py-3">
@@ -45,6 +54,11 @@ export function DepartmentTreeRootsList({ stateId, renderActions }: Props) {
 						Выберите отдел из дерева
 					</p>
 				</div>
+
+				<label className="flex items-center gap-2 text-sm">
+					<Checkbox checked={onlyActive} onCheckedChange={handleActiveChange} />
+					Только активные
+				</label>
 
 				<div>
 					<Button
