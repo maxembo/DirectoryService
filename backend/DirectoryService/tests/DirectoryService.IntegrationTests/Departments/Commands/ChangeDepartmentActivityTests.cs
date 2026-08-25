@@ -2,6 +2,7 @@
 using System.Net.Http.Json;
 using CSharpFunctionalExtensions;
 using DirectoryService.Application.Departments.Commands.ChangeDepartmentActivity;
+using DirectoryService.Application.Departments.Commands.SoftDeleteDepartments;
 using DirectoryService.Contracts.Departments.ChangeActivity;
 using DirectoryService.Domain.Departments;
 using DirectoryService.IntegrationTests.Infrastructure;
@@ -107,6 +108,32 @@ public class ChangeDepartmentActivityTests(DirectoryTestWebFactory factory) : Di
     }
 
     [Fact]
+    public async Task ChangeActivity_WhenActiveDescendantIsBehindArchivedDepartment_ShouldDeactivate()
+    {
+        // arrange
+        var locationId = await CreateLocation();
+
+        var company = await CreateParentDepartment("company", "company", [locationId]);
+        var archived = await CreateChildDepartment("archived", "archived", company, [locationId]);
+
+        await CreateChildDepartment("active", "active", archived, [locationId]);
+
+        var archiveResult = await ExecuteSoftDelete(new SoftDeleteDepartmentCommand(archived.Id.Value));
+
+        Assert.True(archiveResult.IsSuccess);
+
+        // act
+        var result = await Execute(new ChangeDepartmentActivityCommand(company.Id.Value, false));
+
+        Assert.True(result.IsSuccess);
+        await ExecuteInDb(async dbContext =>
+        {
+            var department = await dbContext.Departments.SingleAsync(d => d.Id == company.Id);
+            Assert.False(department.IsActive);
+        });
+    }
+
+    [Fact]
     public async Task ChangeActivity_WhenParentIsInactive_ShouldNotActivateChild()
     {
         var locationId = await CreateLocation();
@@ -162,5 +189,9 @@ public class ChangeDepartmentActivityTests(DirectoryTestWebFactory factory) : Di
 
     private Task<Result<Guid, Errors>> Execute(ChangeDepartmentActivityCommand command) =>
         Execute<Result<Guid, Errors>, ChangeDepartmentActivityHandler>(handler =>
+            handler.Handle(command, CancellationToken.None));
+
+    private Task<Result<Guid, Errors>> ExecuteSoftDelete(SoftDeleteDepartmentCommand command) =>
+        Execute<Result<Guid, Errors>, SoftDeleteDepartmentHandler>(handler =>
             handler.Handle(command, CancellationToken.None));
 }

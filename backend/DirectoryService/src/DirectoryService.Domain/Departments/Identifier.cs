@@ -7,6 +7,8 @@ namespace DirectoryService.Domain.Departments;
 
 public sealed record Identifier
 {
+    private const string ARCHIVED_PATH_PREFIX = "delete-";
+
     private static readonly Regex _identifierRegex =
         new("^[A-Za-z-]+$", RegexOptions.Compiled);
 
@@ -25,6 +27,11 @@ public sealed record Identifier
         }
 
         if (!_identifierRegex.IsMatch(value))
+        {
+            return GeneralErrors.MismatchRegex("department.identifier");
+        }
+
+        if (value.StartsWith(ARCHIVED_PATH_PREFIX, StringComparison.Ordinal))
         {
             return GeneralErrors.MismatchRegex("department.identifier");
         }

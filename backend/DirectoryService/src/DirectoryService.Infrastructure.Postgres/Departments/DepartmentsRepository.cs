@@ -158,7 +158,8 @@ public class DepartmentsRepository : IDepartmentsRepository
                                WHERE path <@ @parentPath::ltree
                                  AND path <> @parentPath::ltree
                                  AND deleted_at IS NULL
-                                 AND is_active = TRUE)
+                                 AND is_active = TRUE
+                                 AND NOT path ~ '*.delete-*.*'::lquery)
                            """;
 
         var command = new CommandDefinition(

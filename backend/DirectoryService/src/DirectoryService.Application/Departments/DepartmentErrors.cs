@@ -28,6 +28,14 @@ public static class DepartmentErrors
             "departmentId");
     }
 
+    public static Error DepartmentIsNotArchived()
+    {
+        return Error.Conflict(
+            "department.restore.not_archived",
+            "Подразделение не находится в архиве.",
+            "departmentId");
+    }
+
     public static Error ParentIsArchived()
     {
         return Error.Conflict(
