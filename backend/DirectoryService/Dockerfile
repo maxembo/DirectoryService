@@ -1,27 +1,25 @@
 ﻿FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG NUGET_USERNAME
-ARG NUGET_PASSWORD
 WORKDIR /src
 
 COPY ["nuget.config", "."]
 COPY ["DirectoryService/.editorconfig", "./DirectoryService/"]
-
-RUN dotnet nuget update source github \
-    --username $NUGET_USERNAME \
-    --password $NUGET_PASSWORD \
-    --store-password-in-clear-text \
-    --configfile nuget.config
-
 COPY ["DirectoryService/", "DirectoryService/"]
 
-RUN dotnet restore "DirectoryService/src/DirectoryService.Web/DirectoryService.Web.csproj"
+RUN --mount=type=secret,id=nuget_password,required=true \
+      NuGetPackageSourceCredentials_github="Username=${NUGET_USERNAME};Password=$(cat /run/secrets/nuget_password);ValidAuthenticationTypes=Basic" \
+      dotnet restore \
+        "DirectoryService/src/DirectoryService.Web/DirectoryService.Web.csproj" \
+        --configfile /src/nuget.config
+
 
 WORKDIR "/src/DirectoryService/src/DirectoryService.Web"
 
 RUN dotnet publish "DirectoryService.Web.csproj" \
-    -c Release \
-    -o /app/publish \
-    /p:UseAppHost=false
+      -c Release \
+      -o /app/publish \
+      /p:UseAppHost=false \
+      --no-restore
 
 
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
