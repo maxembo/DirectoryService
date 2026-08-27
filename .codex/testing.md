@@ -61,7 +61,7 @@ Frontend использует Vitest, `jsdom`, Testing Library, `jest-dom` и `u
 
 Примеры:
 
-- `MoveDepartment_WhenTargetIsDescendant_ShouldFail`
+- `MoveDepartment_WhenTargetIsDescendant_ShouldReturnCycleError`
 - `MoveDepartment_WhenParentIsNull_ShouldMoveToRoot`
 - `GetPositions_WhenPageIsEmpty_ShouldPreserveTotalCount`
 
@@ -177,7 +177,7 @@ Backend integration test project:
 
 - все: `dotnet test backend/DirectoryService/tests/DirectoryService.IntegrationTests/DirectoryService.IntegrationTests.csproj`
 - класс: `dotnet test backend/DirectoryService/tests/DirectoryService.IntegrationTests/DirectoryService.IntegrationTests.csproj --filter "FullyQualifiedName~MoveDepartmentTests"`
-- тест: `dotnet test backend/DirectoryService/tests/DirectoryService.IntegrationTests/DirectoryService.IntegrationTests.csproj --filter "FullyQualifiedName~MoveDepartmentTests.MoveDepartment_WhenTargetIsDescendant_ShouldFail"`
+- тест: `dotnet test backend/DirectoryService/tests/DirectoryService.IntegrationTests/DirectoryService.IntegrationTests.csproj --filter "FullyQualifiedName~MoveDepartmentTests.MoveDepartment_WhenTargetIsDescendant_ShouldReturnCycleError"`
 
 Frontend:
 
