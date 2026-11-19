@@ -4,20 +4,17 @@ import { Spinner } from "@/shared/components/ui/spinner";
 import { ListEmpty } from "@/shared/ui/list-empty";
 import { ListError } from "@/shared/ui/list-error";
 import { DepartmentPositionCard } from "./department-position-card";
-import { useDepartmentPositionsList } from "../model/use-department-positions-list";
-import {
-	useDepartmentTreeSelectedId,
-	type DepartmentTreeId,
-} from "@/features/department-tree";
 import { PositionFilters } from "@/features/positions";
+import { useDepartmentPositionsList } from "../../model/use-department-positions-list";
+import type { DepartmentId } from "@/entities/departments";
 
 const POSITIONS_DEPARTMENT_SELECT_STATE_ID = "positions-select-department";
 
 type Props = {
-	departmentTreeStateId?: DepartmentTreeId;
+	positionsDepartmentId: DepartmentId | null;
 };
 
-export function DepartmentPositionsList({ departmentTreeStateId }: Props) {
+export function DepartmentPositionsList({ positionsDepartmentId }: Props) {
 	const {
 		positions,
 		isFetchingNextPage,
@@ -28,12 +25,8 @@ export function DepartmentPositionsList({ departmentTreeStateId }: Props) {
 		refetch,
 	} = useDepartmentPositionsList({
 		stateId: POSITIONS_DEPARTMENT_SELECT_STATE_ID,
-		departmentTreeStateId,
+		positionsDepartmentId,
 	});
-
-	const selectedDepartmentId = useDepartmentTreeSelectedId(
-		departmentTreeStateId,
-	);
 
 	return (
 		<div className="flex h-full min-h-0 flex-col space-y-4">
@@ -42,7 +35,7 @@ export function DepartmentPositionsList({ departmentTreeStateId }: Props) {
 				<PositionFilters stateId={POSITIONS_DEPARTMENT_SELECT_STATE_ID} />
 			</div>
 
-			{!selectedDepartmentId ? (
+			{!positionsDepartmentId ? (
 				<ListEmpty title="Выберите подразделение" />
 			) : isPending ? (
 				<div className="flex min-h-0 flex-1 items-center justify-center">

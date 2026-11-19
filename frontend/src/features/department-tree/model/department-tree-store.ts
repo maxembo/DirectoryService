@@ -58,7 +58,7 @@ export const useDepartmentTreeSelectedId = (stateId?: DepartmentTreeId) =>
 	);
 
 export const setDepartmentTreeSelectedId = (
-	selectedId: DepartmentId,
+	selectedId: DepartmentId | null,
 	stateId?: DepartmentTreeId,
 ) =>
 	useDepartmentTreeStore.setState((states) => ({

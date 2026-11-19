@@ -1,3 +1,4 @@
+import { GlobalSearch } from "@/features/global-search";
 import { SidebarTrigger } from "@/shared/components/ui/sidebar";
 import { routes } from "@/shared/routes";
 import Link from "next/link";
@@ -20,6 +21,10 @@ export function Header() {
 						{routes.home.title}
 					</span>
 				</Link>
+
+				<div>
+					<GlobalSearch />
+				</div>
 			</div>
 		</header>
 	);

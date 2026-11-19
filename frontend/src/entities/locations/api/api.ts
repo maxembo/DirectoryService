@@ -45,6 +45,20 @@ export const locationsApi = {
 		});
 	},
 
+	getLocation: async (id: LocationId) => {
+		const response = await apiClient.get<Envelope<LocationDto>>(
+			`${LOCATIONS_ENDPOINT}/${id}`,
+		);
+
+		return response.data;
+	},
+
+	getLocationQueryOptions: (id: LocationId) =>
+		queryOptions({
+			queryKey: [locationsApi.baseKey, id],
+			queryFn: () => locationsApi.getLocation(id),
+		}),
+
 	createLocation: async (request: CreateLocationRequest) => {
 		const response = await apiClient.post<Envelope<LocationDto>>(
 			LOCATIONS_ENDPOINT,

@@ -4,11 +4,12 @@ import {
 	envelopeInfinityQueryOptions,
 	PaginationEnvelope,
 } from "@/shared/api";
-import { infiniteQueryOptions } from "@tanstack/react-query";
+import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 import {
 	DepartmentId,
 	DepartmentShortDto,
 	DepartmentTreeDto,
+	type DepartmentDetailDto,
 } from "../model/types";
 import {
 	type ChangeDepartmentActivityRequest,
@@ -127,4 +128,18 @@ export const departmentsApi = {
 
 		return response.data;
 	},
+
+	getDepartment: async (id: DepartmentId) => {
+		const response = await apiClient.get<Envelope<DepartmentDetailDto>>(
+			`${DEPARTMENTS_ENDPOINT}/${id}`,
+		);
+
+		return response.data;
+	},
+
+	getDepartmentQueryOptions: (id: DepartmentId) =>
+		queryOptions({
+			queryKey: [departmentsApi.baseKey, "detail", id],
+			queryFn: () => departmentsApi.getDepartment(id),
+		}),
 };

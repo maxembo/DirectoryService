@@ -1,6 +1,5 @@
 "use client";
 
-import type { DepartmentTreeDto } from "@/entities/departments";
 import { Button } from "@/shared/components/ui/button";
 import {
 	DropdownMenu,
@@ -17,9 +16,13 @@ import {
 import { EllipsisVertical, MoveRight } from "lucide-react";
 import { useState } from "react";
 import { MoveDepartmentDialog } from "./move-department-dialog";
+import type { DepartmentDetailDto } from "@/entities/departments";
 
 type Props = {
-	department: DepartmentTreeDto;
+	department: Pick<
+		DepartmentDetailDto,
+		"id" | "name" | "identifier" | "isActive" | "parentId" | "path"
+	>;
 };
 
 export function MoveDepartmentAction({ department }: Props) {

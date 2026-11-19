@@ -1,9 +1,5 @@
-import type { Envelope, PaginationEnvelope } from "@/shared/api";
-import type {
-	InfiniteData,
-	QueryClient,
-	QueryKey,
-} from "@tanstack/react-query";
+import { type Envelope, type PaginationEnvelope } from "@/shared/api";
+import { InfiniteData, QueryClient, QueryKey } from "@tanstack/react-query";
 import { departmentsApi } from "./api";
 import type { ChangeDepartmentActivityRequest } from "./types";
 import type { DepartmentId } from "../model/types";
@@ -13,14 +9,18 @@ type DepartmentCacheItem = {
 	isActive: boolean;
 };
 
-type DepartmentQueryData = InfiniteData<
+type DepartmentListQueryData = InfiniteData<
 	Envelope<PaginationEnvelope<DepartmentCacheItem>>
 >;
+
+type DepartmentDetailQueryData = Envelope<DepartmentCacheItem>;
 
 export type DepartmentQueriesSnapshot = [
 	QueryKey,
 	DepartmentQueryData | undefined,
 ][];
+
+type DepartmentQueryData = DepartmentListQueryData | DepartmentDetailQueryData;
 
 export function optimisticallyUpdateDepartmentActivity(
 	queryClient: QueryClient,
@@ -31,10 +31,19 @@ export function optimisticallyUpdateDepartmentActivity(
 	});
 
 	for (const [queryKey, data] of snapshots) {
-		queryClient.setQueryData(
-			queryKey,
-			updateDepartmentQueryData(data, queryKey, request),
-		);
+		if (!data) continue;
+
+		if ("pages" in data) {
+			queryClient.setQueryData(
+				queryKey,
+				updateDepartmentListQueryData(data, queryKey, request),
+			);
+		} else {
+			queryClient.setQueryData(
+				queryKey,
+				updateDepartmentDetailData(data, request),
+			);
+		}
 	}
 
 	return snapshots;
@@ -49,11 +58,11 @@ export function restoreDepartmentQueries(
 	}
 }
 
-function updateDepartmentQueryData(
-	data: DepartmentQueryData | undefined,
+function updateDepartmentListQueryData(
+	data: DepartmentListQueryData | undefined,
 	queryKey: QueryKey,
 	request: ChangeDepartmentActivityRequest,
-): DepartmentQueryData | undefined {
+): DepartmentListQueryData | undefined {
 	if (!data) return data;
 
 	const containsDepartment = data.pages.some((page) =>
@@ -75,9 +84,7 @@ function updateDepartmentQueryData(
 						(department) => department.id !== request.departmentId,
 					)
 				: page.result.items.map((department) =>
-						department.id === request.departmentId
-							? { ...department, isActive: request.isActive }
-							: department,
+						updateDepartmentActivity(department, request),
 					);
 
 			return {
@@ -92,6 +99,15 @@ function updateDepartmentQueryData(
 			};
 		}),
 	};
+}
+
+function updateDepartmentDetailData(
+	data: DepartmentDetailQueryData | undefined,
+	request: ChangeDepartmentActivityRequest,
+): DepartmentDetailQueryData | undefined {
+	if (!data || !data.result) return data;
+
+	return { ...data, result: updateDepartmentActivity(data.result, request) };
 }
 
 function doesActivityFilterExclude(
@@ -110,4 +126,15 @@ function doesActivityFilterExclude(
 		typeof request.isActive === "boolean" &&
 		request.isActive !== isActive
 	);
+}
+
+function updateDepartmentActivity<T extends DepartmentCacheItem>(
+	department: T,
+	request: ChangeDepartmentActivityRequest,
+): T {
+	if (department.id !== request.departmentId) {
+		return department;
+	}
+
+	return { ...department, isActive: request.isActive };
 }

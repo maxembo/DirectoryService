@@ -1,6 +1,6 @@
 "use client";
 
-import type { DepartmentTreeDto } from "@/entities/departments";
+import type { DepartmentId, DepartmentTreeDto } from "@/entities/departments";
 import { Button } from "@/shared/components/ui/button";
 import { Spinner } from "@/shared/components/ui/spinner";
 import type { DepartmentTreeId } from "../model/department-tree-store";
@@ -26,7 +26,10 @@ export function DepartmentTreeNode({
 	depth,
 	renderActions,
 }: Props) {
-	const node = useDepartmentTreeNode({ department, stateId });
+	const node = useDepartmentTreeNode({
+		department,
+		stateId,
+	});
 
 	return (
 		<li className="relative list-none">
@@ -73,6 +76,7 @@ type DepartmentTreeChildrenProps = {
 	onRetry: () => void;
 	onLoadMore: () => void;
 	renderActions?: (department: DepartmentTreeDto) => ReactNode;
+	onDepartmentSelect?: (selectedDepartment: DepartmentId) => void;
 };
 
 function DepartmentTreeChildren({

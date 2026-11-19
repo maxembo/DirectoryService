@@ -1,7 +1,4 @@
-import type {
-	DepartmentShortDto,
-	DepartmentTreeDto,
-} from "@/entities/departments";
+import type { DepartmentShortDto } from "@/entities/departments";
 import { useMoveDepartment } from "@/features/move-department";
 import {
 	SelectDepartmentDialog,
@@ -28,9 +25,16 @@ import { Label } from "@/shared/components/ui/label";
 import { Spinner } from "@/shared/components/ui/spinner";
 import { MoveRight } from "lucide-react";
 import { useState } from "react";
+import { formatDepartmentPath } from "../../lib/format-department-path";
 
 type Props = {
-	department: DepartmentTreeDto;
+	department: {
+		id: string;
+		name: string;
+		identifier: string;
+		parentId: string | null;
+		path: string;
+	};
 	open: boolean;
 	onOpenChange: (nextOpen: boolean) => void;
 };
@@ -39,10 +43,6 @@ type MoveTarget =
 	| { kind: "unset" }
 	| { kind: "root" }
 	| { kind: "department"; department: DepartmentShortDto };
-
-function formatDepartmentPath(path: string) {
-	return path.split(".").join(" / ");
-}
 
 export function MoveDepartmentDialog({
 	department,
