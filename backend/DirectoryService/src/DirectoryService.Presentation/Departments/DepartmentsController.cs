@@ -4,6 +4,7 @@ using DirectoryService.Application.Departments.Commands.MoveDepartments;
 using DirectoryService.Application.Departments.Commands.RestoreDepartments;
 using DirectoryService.Application.Departments.Commands.SoftDeleteDepartments;
 using DirectoryService.Application.Departments.Commands.UpdateDepartments;
+using DirectoryService.Application.Departments.Queries.GetDepartment;
 using DirectoryService.Application.Departments.Queries.GetDepartmentChildren;
 using DirectoryService.Application.Departments.Queries.GetDepartments;
 using DirectoryService.Application.Departments.Queries.GetDepartmentTreeRoots;
@@ -68,6 +69,17 @@ public class DepartmentsController : ControllerBase
         var command = new MoveDepartmentCommand(departmentId, request);
 
         return await handler.Handle(command, cancellationToken);
+    }
+
+    [HttpGet("{departmentId:guid}")]
+    public async Task<EndpointResult<GetDepartmentDetailDto>> GetDepartment(
+        Guid departmentId,
+        [FromServices] IQueryHandler<GetDepartmentDetailDto, GetDepartmentQuery> handler,
+        CancellationToken cancellationToken)
+    {
+        var query = new GetDepartmentQuery(departmentId);
+
+        return await handler.Handle(query, cancellationToken);
     }
 
     [HttpGet("top-positions")]
