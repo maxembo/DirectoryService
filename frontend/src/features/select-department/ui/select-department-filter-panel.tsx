@@ -1,4 +1,4 @@
-import { FilterSelect } from "@/shared/components/filter-select";
+import { FilterSelect } from "@/shared/ui/filter-select";
 import {
 	activeFilterOptions,
 	sortDirectionOptions,

@@ -16,7 +16,7 @@ import {
 	type GlobalSearchType,
 } from "@/entities/global-search";
 import { routes } from "@/shared/routes";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Badge } from "@/shared/components/ui/badge";
 import { SearchIcon } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";

@@ -24,8 +24,9 @@ export function DepartmentDetailCard({ department, onSelect }: Props) {
 				<div className="grid gap-4">
 					<CardTitle className="flex items-center justify-between truncate text-lg leading-tight">
 						{department.name}
-						<div onClick={(event) => event.stopPropagation()}></div>
-						<MoveDepartmentAction department={department} />
+						<div onClick={(event) => event.stopPropagation()}>
+							<MoveDepartmentAction department={department} />
+						</div>
 					</CardTitle>
 
 					<div>
