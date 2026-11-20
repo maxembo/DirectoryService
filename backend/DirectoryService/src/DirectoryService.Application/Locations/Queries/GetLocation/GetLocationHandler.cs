@@ -6,7 +6,7 @@ using SharedService.SharedKernel;
 
 namespace DirectoryService.Application.Locations.Queries.GetLocation;
 
-public class GetLocationHandler : IQueryHandler<GetLocationsDto, GetLocationQuery>
+public class GetLocationHandler : IQueryHandler<GetLocationDetailDto, GetLocationQuery>
 {
     private readonly ILocationsRepository _locationsRepository;
 
@@ -15,7 +15,7 @@ public class GetLocationHandler : IQueryHandler<GetLocationsDto, GetLocationQuer
         _locationsRepository = locationsRepository;
     }
 
-    public async Task<Result<GetLocationsDto, Errors>> Handle(
+    public async Task<Result<GetLocationDetailDto, Errors>> Handle(
         GetLocationQuery query, CancellationToken cancellationToken)
     {
         var locationId = LocationId.Create(query.LocationId);
@@ -28,7 +28,7 @@ public class GetLocationHandler : IQueryHandler<GetLocationsDto, GetLocationQuer
 
         var location = locationResult.Value;
 
-        var result = new GetLocationsDto
+        return new GetLocationDetailDto()
         {
             Id = location.Id.Value,
             Name = location.Name.Value,
@@ -40,7 +40,5 @@ public class GetLocationHandler : IQueryHandler<GetLocationsDto, GetLocationQuer
             Timezone = location.Timezone.Value,
             DeletedAt = location.DeletedAt,
         };
-
-        return result;
     }
 }

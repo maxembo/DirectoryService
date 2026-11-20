@@ -65,9 +65,9 @@ public class LocationsController : ControllerBase
     }
 
     [HttpGet("{locationId:guid}")]
-    public async Task<EndpointResult<GetLocationsDto>> Get(
+    public async Task<EndpointResult<GetLocationDetailDto>> Get(
         Guid locationId,
-        [FromServices] IQueryHandler<GetLocationsDto, GetLocationQuery> handler,
+        [FromServices] IQueryHandler<GetLocationDetailDto, GetLocationQuery> handler,
         CancellationToken cancellationToken)
     {
         var query = new GetLocationQuery(locationId);
