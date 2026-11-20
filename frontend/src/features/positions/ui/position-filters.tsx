@@ -1,5 +1,5 @@
-import { FilterSelect } from "@/shared/components/filter-select";
-import { SearchInput } from "@/shared/components/search-input";
+import { FilterSelect } from "@/shared/ui/filter-select";
+import { SearchInput } from "@/shared/ui/search-input";
 import {
 	activeFilterOptions,
 	sortDirectionOptions,

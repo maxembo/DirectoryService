@@ -6,7 +6,7 @@ type Props = {
 	onValueChange: (value: ArchiveView) => void;
 };
 
-export function LocationArchiveViewSwitch({ value, onValueChange }: Props) {
+export function LocationViewSwitch({ value, onValueChange }: Props) {
 	return (
 		<div
 			role="group"

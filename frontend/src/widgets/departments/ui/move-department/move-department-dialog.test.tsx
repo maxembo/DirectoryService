@@ -65,9 +65,6 @@ const department: ComponentProps<typeof MoveDepartmentDialog>["department"] = {
 	name: "Разработка",
 	identifier: "dev",
 	parentId: "current-parent-id",
-	isActive: true,
-	depth: 1,
-	hasChildren: true,
 	path: "company.dev",
 };
 

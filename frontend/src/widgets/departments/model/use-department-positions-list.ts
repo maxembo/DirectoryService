@@ -7,36 +7,30 @@ import {
 	type GetPositionsInfinityRequest,
 } from "@/entities/positions";
 import {
-	useDepartmentTreeSelectedId,
-	type DepartmentTreeId,
-} from "@/features/department-tree";
-import {
 	usePositionIsActive,
 	usePositionSearch,
 	usePositionSortBy,
 	usePositionSortDirection,
 	type PositionListId,
 } from "@/features/positions";
+import type { DepartmentId } from "@/entities/departments";
 
 type Props = {
+	positionsDepartmentId: DepartmentId | null;
 	stateId?: PositionListId;
-	departmentTreeStateId?: DepartmentTreeId;
 	request?: GetPositionsInfinityRequest;
 };
 
 export function useDepartmentPositionsList({
 	request,
 	stateId,
-	departmentTreeStateId,
+	positionsDepartmentId,
 }: Props) {
 	const search = usePositionSearch(stateId);
 	const [debouncedSearch] = useDebounce(search, 600);
 	const isActive = usePositionIsActive(stateId);
 	const sortBy = usePositionSortBy(stateId);
 	const sortDirection = usePositionSortDirection(stateId);
-	const selectedDepartmentId = useDepartmentTreeSelectedId(
-		departmentTreeStateId,
-	);
 
 	const {
 		data,
@@ -50,13 +44,15 @@ export function useDepartmentPositionsList({
 	} = useInfiniteQuery({
 		...positionsApi.getPositionsInfiniteQueryOptions({
 			...request,
-			departmentIds: selectedDepartmentId ? [selectedDepartmentId] : undefined,
+			departmentIds: positionsDepartmentId
+				? [positionsDepartmentId]
+				: undefined,
 			search: debouncedSearch,
 			isActive: isActive === "all" ? undefined : isActive === "active",
 			sortBy,
 			sortDirection,
 		}),
-		enabled: selectedDepartmentId !== null,
+		enabled: positionsDepartmentId !== null,
 	});
 
 	const cursorRef = useCursorRef({

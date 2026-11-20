@@ -9,7 +9,7 @@ import {
 } from "@/features/select-department";
 import { UpdateLocationDialog } from "@/features/update-location";
 import { Spinner } from "@/shared/components/ui/spinner";
-import { useArchiveView } from "@/shared/hooks";
+import { useArchiveView, useFocusedCard } from "@/shared/hooks";
 import { ListEmpty } from "@/shared/ui/list-empty";
 import { ListError } from "@/shared/ui/list-error";
 import { useState } from "react";
@@ -21,7 +21,8 @@ import {
 	useLocationSelectedDepartments,
 } from "../model/location-list-store";
 import { LocationFilters } from "./location-filters";
-import { LocationArchiveViewSwitch } from "./location-archive-view-switch";
+import { FocusedLocation } from "./focused-location";
+import { LocationViewSwitch } from "./location-view-switch";
 
 const LOCATIONS_DEPARTMENT_SELECT_STATE_ID = "locations-department-select";
 
@@ -49,6 +50,8 @@ export function InfiniteLocationsList() {
 			isActive: view === "active",
 		},
 	});
+
+	const { focusedId, handleRemoveFocus } = useFocusedCard();
 
 	const handleRemove = (departmentId: DepartmentId) => {
 		removeLocationSelectedDepartments(departmentId);
@@ -86,8 +89,20 @@ export function InfiniteLocationsList() {
 					</p>
 				</div>
 
-				<LocationArchiveViewSwitch value={view} onValueChange={setView} />
+				<LocationViewSwitch value={view} onValueChange={setView} />
 			</div>
+
+			{focusedId && (
+				<FocusedLocation
+					key={focusedId}
+					id={focusedId}
+					onEdit={(location) => {
+						setSelectedLocation(location);
+						setUpdateOpen(true);
+					}}
+					onRemove={handleRemoveFocus}
+				/>
+			)}
 
 			<LocationFilters />
 
@@ -132,7 +147,10 @@ export function InfiniteLocationsList() {
 						))}
 					</div>
 
-					<div ref={cursorRef} className="flex justify-center py-10">
+					<div
+						ref={cursorRef}
+						className="flex h-24 items-center justify-center"
+					>
 						{isFetchingNextPage && <Spinner />}
 					</div>
 				</>

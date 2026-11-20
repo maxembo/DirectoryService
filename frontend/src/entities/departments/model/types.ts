@@ -1,5 +1,17 @@
 export type DepartmentId = string;
 
+export type DepartmentDetailDto = {
+	id: DepartmentId;
+	name: string;
+	identifier: string;
+	parentId: DepartmentId | null;
+	isActive: boolean;
+	path: string;
+	createdAt: string;
+	updatedAt: string;
+	deletedAt: string | null;
+};
+
 export type DepartmentShortDto = {
 	id: DepartmentId;
 	name: string;
@@ -20,6 +32,7 @@ export type DepartmentTreeDto = {
 	depth: number;
 	hasChildren: boolean;
 	path: string;
+	deletedAt: string | null;
 };
 
 export type DepartmentSortByFilter = "name" | "path" | "created";

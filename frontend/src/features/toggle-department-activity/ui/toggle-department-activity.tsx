@@ -1,12 +1,12 @@
-import type { DepartmentTreeDto } from "@/entities/departments";
 import { Label } from "@/shared/components/ui/label";
 import { Switch } from "@/shared/components/ui/switch";
 import { cn } from "@/shared/lib/utils";
 import { LoaderCircle } from "lucide-react";
 import { useToggleDepartmentActivity } from "../model/use-toggle-department-activity";
+import type { DepartmentDetailDto } from "@/entities/departments";
 
 type Props = {
-	department: DepartmentTreeDto;
+	department: Pick<DepartmentDetailDto, "id" | "isActive">;
 };
 
 export function ToggleDepartmentActivity({ department }: Props) {

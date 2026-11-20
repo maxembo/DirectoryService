@@ -16,6 +16,7 @@ const department = {
 	depth: 0,
 	hasChildren: false,
 	path: "development",
+	deletedAt: null,
 };
 
 describe("MoveDepartmentAction", () => {

@@ -1,4 +1,5 @@
-import type { DepartmentShortDto } from "@/entities/departments";
+"use client";
+
 import { resetDepartmentTreeData } from "@/features/department-tree";
 import { RestoreDepartmentDialog } from "@/features/restore-department";
 import { Badge } from "@/shared/components/ui/badge";
@@ -12,7 +13,14 @@ import { Separator } from "@/shared/components/ui/separator";
 import { CircleCheckBig, CircleX, Clock3 } from "lucide-react";
 
 type Props = {
-	department: DepartmentShortDto;
+	department: {
+		id: string;
+		name: string;
+		isActive: boolean;
+		identifier: string;
+		path: string;
+		deletedAt: string | null;
+	};
 };
 
 export function ArchivedDepartmentCard({ department }: Props) {
