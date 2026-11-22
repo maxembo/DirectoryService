@@ -1,4 +1,4 @@
-import { SearchInput } from "@/shared/components/search-input";
+import { SearchInput } from "@/shared/ui/search-input";
 import {
 	setDepartmentSearch,
 	useDepartmentSearch,

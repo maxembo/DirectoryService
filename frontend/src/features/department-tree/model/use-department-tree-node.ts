@@ -18,7 +18,8 @@ export function useDepartmentTreeNode({ department, stateId }: Props) {
 	const expandedIds = useDepartmentTreeExpandedIds(stateId);
 
 	const isSelected = selectedId === department.id;
-	const isExpanded = expandedIds.includes(department.id);
+	const isExpanded =
+		expandedIds.includes(department.id) && department.hasChildren;
 	const hasChildren = department.hasChildren;
 
 	const {

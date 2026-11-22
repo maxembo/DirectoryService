@@ -38,3 +38,7 @@ export {
 } from "./model/department-list-store";
 
 export { useInfiniteDepartmentsList } from "./model/use-infinite-departments-list";
+
+export { useDepartment } from "./model/use-department";
+
+export type { DepartmentDetailDto } from "./model/types";

@@ -1,6 +1,6 @@
 import type { LocationSortByFilter } from "@/entities/locations";
-import { FilterSelect } from "@/shared/components/filter-select";
-import { SearchInput } from "@/shared/components/search-input";
+import { FilterSelect } from "@/shared/ui/filter-select";
+import { SearchInput } from "@/shared/ui/search-input";
 import { sortDirectionOptions } from "@/shared/model/filter-options";
 import { FilterOption } from "@/shared/model/filter-types";
 import {

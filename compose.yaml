@@ -28,7 +28,7 @@
 
   postgres:
     container_name: ds_postgres
-    image: postgres
+    image: postgres:17.6
     restart: always
     environment:
       POSTGRES_DB: directory_service_db
@@ -37,7 +37,7 @@
     ports:
       - "5434:5432"
     volumes:
-      - postgres-data:/var/lib/postgresql
+      - postgres-data:/var/lib/postgresql/data
 
   seq:
     container_name: seq

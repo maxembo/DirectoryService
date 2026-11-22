@@ -16,3 +16,5 @@ export type {
 	LocationId,
 	LocationSortByFilter,
 } from "./model/types";
+
+export { useLocation } from "./model/use-location";

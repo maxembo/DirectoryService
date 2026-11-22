@@ -2,6 +2,7 @@ using DirectoryService.Application.Locations.Commands.CreateLocations;
 using DirectoryService.Application.Locations.Commands.RestoreLocations;
 using DirectoryService.Application.Locations.Commands.SoftDeleteLocations;
 using DirectoryService.Application.Locations.Commands.UpdateLocations;
+using DirectoryService.Application.Locations.Queries.GetLocation;
 using DirectoryService.Application.Locations.Queries.GetLocations;
 using DirectoryService.Contracts.Locations.CreateLocations;
 using DirectoryService.Contracts.Locations.GetLocations.Dtos;
@@ -59,6 +60,17 @@ public class LocationsController : ControllerBase
         CancellationToken cancellationToken)
     {
         var query = new GetLocationsQuery(request);
+
+        return await handler.Handle(query, cancellationToken);
+    }
+
+    [HttpGet("{locationId:guid}")]
+    public async Task<EndpointResult<GetLocationDetailDto>> Get(
+        Guid locationId,
+        [FromServices] IQueryHandler<GetLocationDetailDto, GetLocationQuery> handler,
+        CancellationToken cancellationToken)
+    {
+        var query = new GetLocationQuery(locationId);
 
         return await handler.Handle(query, cancellationToken);
     }

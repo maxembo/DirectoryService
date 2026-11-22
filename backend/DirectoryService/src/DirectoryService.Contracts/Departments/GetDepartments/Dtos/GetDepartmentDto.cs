@@ -20,6 +20,8 @@ public record GetDepartmentDto
 
     public DateTime UpdatedAt { get; init; }
 
+    public DateTime? DeletedAt { get; init; }
+
     public bool HasMoreChildren { get; init; }
 
     public List<Guid> Children { get; init; } = [];

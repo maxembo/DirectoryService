@@ -3,7 +3,6 @@ import {
 	type GetLocationsInfinityRequest,
 } from "@/entities/locations";
 import { EnvelopeError } from "@/shared/api/errors";
-import { useCursorRef } from "@/shared/hooks/use-cursor-ref";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useDebounce } from "use-debounce";
 import {
@@ -13,6 +12,7 @@ import {
 	useLocationSortDirection,
 	type LocationListId,
 } from "./location-list-store";
+import { useCursorRef } from "@/shared/hooks";
 
 type Props = {
 	stateId?: LocationListId;
@@ -58,7 +58,6 @@ export function useInfiniteLocationsList({ stateId, request }: Props) {
 		error: error instanceof EnvelopeError ? error : undefined,
 		isFetchingNextPage,
 		cursorRef,
-		hasNextPage,
 		refetch,
 	};
 }
